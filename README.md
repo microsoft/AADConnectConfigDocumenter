@@ -36,3 +36,4 @@ How to use the tool:
 * Run the updated batch file. Upon successful execution, the generated report will be found in the Documenter "Report" folder. 
 
 
+[https://aka.ms/aadConnectConfigDocumenter](https://aka.ms/aadconnectconfigdocumenter)
