@@ -1,4 +1,4 @@
-## AADConnectConfigDocumenter Change Log
+## Azure AD Connect Configuration Documenter Change Log
 
 All notable changes to AADConnectConfigDocumenter project will be documented in this file. The "Unreleased" section at the top is for keeping track of important changes that might make it to upcoming releases.
 

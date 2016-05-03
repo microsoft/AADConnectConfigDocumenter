@@ -1,4 +1,4 @@
-# AADConnectConfigDocumenter
+# Azure AD Connect Configuration Documenter
 
 AAD Connect configuration documenter is a tool to generate documentation of an Azure AD Connect Connect installation. Currently, the documentation is only limited to the Azure AD Connect sync configuration.
 
@@ -28,8 +28,8 @@ How to use the tool:
 	* e.g. the "Pilot" configuration files for the customer "Contoso" are provided as a sample under the "Data\Contoso\Pilot" folder.
 * If you want to document the changes from a specific baseline, export the server configuration of your baseline / production Azure AD Connect server and copy the output to a folder under the Documenter "Data" directory.
 	* e.g. the "Production" configuration files for the customer "Contoso" are provided as a sample under the "Data\Contoso\Production" folder.
-* Make a copy of the AzureADSyncDocumenter-Contoso.cmd and edit it as appropriately for "Pilot" and "Production" directories.
+* Edit AzureADSyncDocumenter.cmd for the values of "Pilot" and "Production" directories.
 	* If you don't have a baseline / production config, specify the same path as the "Pilot" config.
-* Run the batch file created in the previous step. Upon successful execution, the generated report will be found in the Documenter "Report" folder. 
+* Run the updated batch file. Upon successful execution, the generated report will be found in the Documenter "Report" folder. 
 
 
