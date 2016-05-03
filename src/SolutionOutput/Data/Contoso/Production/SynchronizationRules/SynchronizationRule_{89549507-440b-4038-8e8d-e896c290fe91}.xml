@@ -1,0 +1,47 @@
+<synchronizationRule>
+  <id>{89549507-440b-4038-8e8d-e896c290fe91}</id>
+  <internal-id>{89549507-440b-4038-8e8d-e896c290fe91}</internal-id>
+  <version>1</version>
+  <name>In from AD - Contact Join</name>
+  <description>Contact object with default Active Directory schema.</description>
+  <immutable-tag>Microsoft.InfromADContactJoin.003</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>contact</sourceObjectType>
+  <targetObjectType>person</targetObjectType>
+  <linkType>Provision</linkType>
+  <precedence>115</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>cloudFiltered</dest>
+      <src>
+        <attr>isCriticalSystemObject</attr>
+      </src>
+      <expression>IIF(IsPresent([isCriticalSystemObject]) || ( (InStr([displayName], "(MSOL)") &gt; 0) &amp;&amp; (CBool([msExchHideFromAddressLists]))) || (Left([mailNickname], 4) = "CAS_" &amp;&amp; (InStr([mailNickname], "}") &gt; 0)) || CBool(InStr(DNComponent(CRef([dn]),1),"\\0ACNF:")&gt;0), True, NULL)</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>mailEnabled</dest>
+      <src>
+        <attr>proxyAddresses</attr>
+        <attr>mail</attr>
+      </src>
+      <expression>IIF(( (IsPresent([proxyAddresses]) = True) &amp;&amp; (Contains([proxyAddresses], "SMTP:") &gt; 0) &amp;&amp; (InStr(Item([proxyAddresses], Contains([proxyAddresses], "SMTP:")), "@") &gt; 0)) ||  (IsPresent([mail]) = True &amp;&amp; (InStr([mail], "@") &gt; 0)), True, False)</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <csAttribute>mail</csAttribute>
+        <ilmAttribute>mail</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria />
+</synchronizationRule>

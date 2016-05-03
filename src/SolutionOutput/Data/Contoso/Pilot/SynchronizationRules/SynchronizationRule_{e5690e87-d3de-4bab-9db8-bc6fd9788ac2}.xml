@@ -1,0 +1,58 @@
+<synchronizationRule>
+  <id>{e5690e87-d3de-4bab-9db8-bc6fd9788ac2}</id>
+  <internal-id>{e5690e87-d3de-4bab-9db8-bc6fd9788ac2}</internal-id>
+  <version>1</version>
+  <name>In from AD - Contact Lync</name>
+  <description>Lync attributes for a Contact object.</description>
+  <immutable-tag>Microsoft.InfromADContactLync.003</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>contact</sourceObjectType>
+  <targetObjectType>person</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>117</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>msRTCSIP-DeploymentLocator</dest>
+      <src>
+        <attr>msRTCSIP-DeploymentLocator</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-Line</dest>
+      <src>
+        <attr>msRTCSIP-Line</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-PrimaryUserAddress</dest>
+      <src>
+        <attr>msRTCSIP-PrimaryUserAddress</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-UserEnabled</dest>
+      <src>
+        <attr>msRTCSIP-UserEnabled</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-OptionFlags</dest>
+      <src>
+        <attr>msRTCSIP-OptionFlags</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria />
+</synchronizationRule>

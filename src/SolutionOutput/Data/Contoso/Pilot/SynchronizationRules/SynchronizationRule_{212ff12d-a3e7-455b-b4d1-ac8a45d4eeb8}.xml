@@ -1,0 +1,39 @@
+<synchronizationRule>
+  <id>{212ff12d-a3e7-455b-b4d1-ac8a45d4eeb8}</id>
+  <internal-id>{212ff12d-a3e7-455b-b4d1-ac8a45d4eeb8}</internal-id>
+  <version>1</version>
+  <name>Out to AD - Group Exchange Hybrid</name>
+  <description />
+  <immutable-tag>Microsoft.OuttoADGroupExchangeHybrid.004</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>group</sourceObjectType>
+  <targetObjectType>group</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>156</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>proxyAddresses</dest>
+      <src>
+        <attr>cloudLegacyExchangeDN</attr>
+      </src>
+      <expression>IIF(IsNullOrEmpty([cloudLegacyExchangeDN]),NULL,"x500:" &amp; [cloudLegacyExchangeDN])</expression>
+      <valueMergeType>MergeCaseInsensitive</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>cloudMastered</csAttribute>
+        <csOperator>NOTEQUAL</csOperator>
+        <csValue>True</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

@@ -1,0 +1,37 @@
+<synchronizationRule>
+  <id>{250624f3-3876-45ed-9e8f-f7333a4fd263}</id>
+  <internal-id>{250624f3-3876-45ed-9e8f-f7333a4fd263}</internal-id>
+  <version>1</version>
+  <name>In from AAD - Contact Exchange Hybrid</name>
+  <description />
+  <immutable-tag>Microsoft.InfromAADContactExchangeHybrid.003</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{b891884f-051e-4a83-95af-2544101c9083}</connector>
+  <sourceObjectType>contact</sourceObjectType>
+  <targetObjectType>person</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>148</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>cloudLegacyExchangeDN</dest>
+      <src>
+        <attr>cloudLegacyExchangeDN</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>cloudPublicDelegates</dest>
+      <src>
+        <attr>cloudPublicDelegates</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria />
+</synchronizationRule>

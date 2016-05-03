@@ -1,0 +1,10 @@
+<StyleCopSettings Version="105">
+  <GlobalSettings>
+    <CollectionProperty Name="RecognizedWords">
+      <Value>diffgram</Value>
+      <Value>metaverse</Value>
+      <Value>indexable</Value>
+      <Value>hashtable</Value>
+    </CollectionProperty>
+  </GlobalSettings>
+</StyleCopSettings>

@@ -1,0 +1,48 @@
+<synchronizationRule>
+  <id>{7b39914c-6938-437d-8957-b8eb8f8608ec}</id>
+  <internal-id>{7b39914c-6938-437d-8957-b8eb8f8608ec}</internal-id>
+  <version>1</version>
+  <name>In from AD - Device Common</name>
+  <description />
+  <immutable-tag>Microsoft.InfromADDeviceCommon.001</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>msDS-Device</sourceObjectType>
+  <targetObjectType>device</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>161</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>isProvisionedInAD</dest>
+      <src>True</src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <csAttribute>msDS-DeviceID</csAttribute>
+        <ilmAttribute>deviceId</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>objectGUID</csAttribute>
+        <csOperator>ISNOTNULL</csOperator>
+        <csValue />
+      </scope>
+      <scope>
+        <csAttribute>msDS-CloudAnchor</csAttribute>
+        <csOperator>ISNOTNULL</csOperator>
+        <csValue />
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

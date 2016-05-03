@@ -1,0 +1,31 @@
+<synchronizationRule>
+  <id>{ed501e7e-451a-45fd-985e-e62709a48c06}</id>
+  <internal-id>{ed501e7e-451a-45fd-985e-e62709a48c06}</internal-id>
+  <version>1</version>
+  <name>Out to AD - Contact Exchange Hybrid</name>
+  <description />
+  <immutable-tag>Microsoft.OuttoADContactExchangeHybrid.003</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>person</sourceObjectType>
+  <targetObjectType>contact</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>155</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>proxyAddresses</dest>
+      <src>
+        <attr>cloudLegacyExchangeDN</attr>
+      </src>
+      <expression>IIF(IsNullOrEmpty([cloudLegacyExchangeDN]),NULL,"x500:" &amp; [cloudLegacyExchangeDN])</expression>
+      <valueMergeType>MergeCaseInsensitive</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria />
+</synchronizationRule>

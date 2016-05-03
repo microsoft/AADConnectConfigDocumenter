@@ -1,0 +1,66 @@
+<synchronizationRule>
+  <id>{8ae664a6-d8a2-45db-ac67-27cfacdc2dc6}</id>
+  <internal-id>{8ae664a6-d8a2-45db-ac67-27cfacdc2dc6}</internal-id>
+  <version>1</version>
+  <name>Out to AAD - Contact Identity</name>
+  <description>Minimal attributes required for the Contact object</description>
+  <immutable-tag>Microsoft.OuttoAADContactIdentity.003</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{b891884f-051e-4a83-95af-2544101c9083}</connector>
+  <sourceObjectType>person</sourceObjectType>
+  <targetObjectType>contact</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>132</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>alias</dest>
+      <src>
+        <attr>mailNickname</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>displayName</dest>
+      <src>
+        <attr>displayName</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>givenName</dest>
+      <src>
+        <attr>givenName</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>proxyAddresses</dest>
+      <src>
+        <attr>proxyAddresses</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>surname</dest>
+      <src>
+        <attr>sn</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>sourceObjectType</csAttribute>
+        <csOperator>EQUAL</csOperator>
+        <csValue>Contact</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

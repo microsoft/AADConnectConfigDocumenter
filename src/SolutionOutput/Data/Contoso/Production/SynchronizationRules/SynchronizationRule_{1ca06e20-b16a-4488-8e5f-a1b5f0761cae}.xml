@@ -1,0 +1,72 @@
+<synchronizationRule>
+  <id>{1ca06e20-b16a-4488-8e5f-a1b5f0761cae}</id>
+  <internal-id>{1ca06e20-b16a-4488-8e5f-a1b5f0761cae}</internal-id>
+  <version>1</version>
+  <name>In from AD - InetOrgPerson Lync</name>
+  <description>Lync attribute for a InetOrgPerson object.</description>
+  <immutable-tag>Microsoft.InfromADInetOrgPersonLync.003</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>inetOrgPerson</sourceObjectType>
+  <targetObjectType>person</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>111</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>msRTCSIP-ApplicationOptions</dest>
+      <src>
+        <attr>msRTCSIP-ApplicationOptions</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-DeploymentLocator</dest>
+      <src>
+        <attr>msRTCSIP-DeploymentLocator</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-Line</dest>
+      <src>
+        <attr>msRTCSIP-Line</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-OwnerUrn</dest>
+      <src>
+        <attr>msRTCSIP-OwnerUrn</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-PrimaryUserAddress</dest>
+      <src>
+        <attr>msRTCSIP-PrimaryUserAddress</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-UserEnabled</dest>
+      <src>
+        <attr>msRTCSIP-UserEnabled</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msRTCSIP-OptionFlags</dest>
+      <src>
+        <attr>msRTCSIP-OptionFlags</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria />
+</synchronizationRule>

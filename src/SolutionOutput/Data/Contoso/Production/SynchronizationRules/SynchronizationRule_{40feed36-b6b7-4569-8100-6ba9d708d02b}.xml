@@ -1,0 +1,45 @@
+<synchronizationRule>
+  <id>{40feed36-b6b7-4569-8100-6ba9d708d02b}</id>
+  <internal-id>{40feed36-b6b7-4569-8100-6ba9d708d02b}</internal-id>
+  <version>1</version>
+  <name>Out to AAD - Contact AzureRMS</name>
+  <description>Minimal set of attributes required for Azure RMS.</description>
+  <immutable-tag>Microsoft.OuttoAADContactAzureRMS.003</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{b891884f-051e-4a83-95af-2544101c9083}</connector>
+  <sourceObjectType>person</sourceObjectType>
+  <targetObjectType>contact</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>138</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>mail</dest>
+      <src>
+        <attr>mail</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>proxyAddresses</dest>
+      <src>
+        <attr>proxyAddresses</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>sourceObjectType</csAttribute>
+        <csOperator>EQUAL</csOperator>
+        <csValue>Contact</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

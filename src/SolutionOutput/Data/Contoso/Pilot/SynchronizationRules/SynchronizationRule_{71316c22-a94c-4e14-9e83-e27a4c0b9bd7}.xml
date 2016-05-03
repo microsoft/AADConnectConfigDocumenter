@@ -1,0 +1,61 @@
+<synchronizationRule>
+  <id>{71316c22-a94c-4e14-9e83-e27a4c0b9bd7}</id>
+  <internal-id>{71316c22-a94c-4e14-9e83-e27a4c0b9bd7}</internal-id>
+  <version>1</version>
+  <name>Out to AD - User Join SOAInAD</name>
+  <description />
+  <immutable-tag>Microsoft.OuttoADUserJoinSOAInAD.004</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>person</sourceObjectType>
+  <targetObjectType>user</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>154</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings />
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <csAttribute>objectSid</csAttribute>
+        <ilmAttribute>objectSid</ilmAttribute>
+      </condition>
+    </conditions>
+    <conditions>
+      <condition>
+        <csAttribute>msExchMasterAccountSid</csAttribute>
+        <ilmAttribute>objectSid</ilmAttribute>
+      </condition>
+    </conditions>
+    <conditions>
+      <condition>
+        <csAttribute>objectSid</csAttribute>
+        <ilmAttribute>msExchMasterAccountSid</ilmAttribute>
+      </condition>
+    </conditions>
+    <conditions>
+      <condition>
+        <csAttribute>msRTCSIP-OriginatorSid</csAttribute>
+        <ilmAttribute>objectSid</ilmAttribute>
+      </condition>
+    </conditions>
+    <conditions>
+      <condition>
+        <csAttribute>objectSid</csAttribute>
+        <ilmAttribute>msRTCSIP-OriginatorSid</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>cloudMastered</csAttribute>
+        <csOperator>EQUAL</csOperator>
+        <csValue>False</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

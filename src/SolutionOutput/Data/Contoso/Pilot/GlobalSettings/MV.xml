@@ -1,0 +1,1244 @@
+<saved-mv-configuration server='CONTOSO-SYNC01' export-date='2016-05-03 14:28:09.784'>
+<!--WARNING>
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!
+!! The contents of this file should not be edited.
+!! Any such modifications to this file may result in errors during import.
+!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+</WARNING-->
+<mv-data>
+ <format-version>1</format-version>
+ <version>695</version>
+ <schema>
+  <dsml:dsml xmlns:ms-dsml="http://www.microsoft.com/MMS/DSML" xmlns:dsml="http://www.dsml.org/DSML">
+      <dsml:directory-schema ms-dsml:no-objectclass-validation="true">
+        <dsml:class id="person" type="structural">
+          <dsml:name>person</dsml:name>
+          <dsml:attribute ref="#accountEnabled" required="false" />
+          <dsml:attribute ref="#accountName" required="true" />
+          <dsml:attribute ref="#assistant" required="false" />
+          <dsml:attribute ref="#altRecipient" required="false" />
+          <dsml:attribute ref="#authOrig" required="false" />
+          <dsml:attribute ref="#c" required="false" />
+          <dsml:attribute ref="#cloudAnchor" required="false" />
+          <dsml:attribute ref="#cloudFiltered" required="false" />
+          <dsml:attribute ref="#cloudLegacyExchangeDN" required="false" />
+          <dsml:attribute ref="#cloudMastered" required="false" />
+          <dsml:attribute ref="#cloudMSExchBlockedSendersHash" required="false" />
+          <dsml:attribute ref="#cloudMSExchDelegateListLink" required="false" />
+          <dsml:attribute ref="#cloudMSExchSafeRecipientsHash" required="false" />
+          <dsml:attribute ref="#cloudMSExchTeamMailboxExpiration" required="false" />
+          <dsml:attribute ref="#cloudMSExchTeamMailboxOwners" required="false" />
+          <dsml:attribute ref="#cloudMSExchTeamMailboxSharePointUrl" required="false" />
+          <dsml:attribute ref="#cloudMSExchRecipientDisplayType" required="false" />
+          <dsml:attribute ref="#cloudMSExchSafeSendersHash" required="false" />
+          <dsml:attribute ref="#cloudMSExchArchiveStatus" required="false" />
+          <dsml:attribute ref="#cloudMSExchUCVoiceMailSettings" required="false" />
+          <dsml:attribute ref="#cloudMSExchUserHoldPolicies" required="false" />
+          <dsml:attribute ref="#cloudPublicDelegates" required="false" />
+          <dsml:attribute ref="#cloudSOAExchMailbox" required="false" />
+          <dsml:attribute ref="#cloudSourceAnchor" required="false" />
+          <dsml:attribute ref="#cn" required="false" />
+          <dsml:attribute ref="#co" required="false" />
+          <dsml:attribute ref="#contributingConnectorExchange" required="false" />
+          <dsml:attribute ref="#contributingConnectorUser" required="false" />
+          <dsml:attribute ref="#comment" required="false" />
+          <dsml:attribute ref="#company" required="false" />
+          <dsml:attribute ref="#countryCode" required="false" />
+          <dsml:attribute ref="#department" required="false" />
+          <dsml:attribute ref="#description" required="false" />
+          <dsml:attribute ref="#deviceKey" required="false" />
+          <dsml:attribute ref="#displayName" required="false" />
+          <dsml:attribute ref="#division" required="false" />
+          <dsml:attribute ref="#dLMemRejectPerms" required="false" />
+          <dsml:attribute ref="#dLMemSubmitPerms" required="false" />
+          <dsml:attribute ref="#domain" required="false" />
+          <dsml:attribute ref="#domainFQDN" required="false" />
+          <dsml:attribute ref="#domainNetBios" required="false" />
+          <dsml:attribute ref="#employeeID" required="false" />
+          <dsml:attribute ref="#employeeType" required="false" />
+          <dsml:attribute ref="#extensionAttribute1" required="false" />
+          <dsml:attribute ref="#extensionAttribute10" required="false" />
+          <dsml:attribute ref="#extensionAttribute11" required="false" />
+          <dsml:attribute ref="#extensionAttribute12" required="false" />
+          <dsml:attribute ref="#extensionAttribute13" required="false" />
+          <dsml:attribute ref="#extensionAttribute14" required="false" />
+          <dsml:attribute ref="#extensionAttribute15" required="false" />
+          <dsml:attribute ref="#extensionAttribute2" required="false" />
+          <dsml:attribute ref="#extensionAttribute3" required="false" />
+          <dsml:attribute ref="#extensionAttribute4" required="false" />
+          <dsml:attribute ref="#extensionAttribute5" required="false" />
+          <dsml:attribute ref="#extensionAttribute6" required="false" />
+          <dsml:attribute ref="#extensionAttribute7" required="false" />
+          <dsml:attribute ref="#extensionAttribute8" required="false" />
+          <dsml:attribute ref="#extensionAttribute9" required="false" />
+          <dsml:attribute ref="#facsimileTelephoneNumber" required="false" />
+          <dsml:attribute ref="#forestFQDN" required="false" />
+          <dsml:attribute ref="#forestNetBios" required="false" />
+          <dsml:attribute ref="#givenName" required="false" />
+          <dsml:attribute ref="#homePhone" required="false" />
+          <dsml:attribute ref="#info" required="false" />
+          <dsml:attribute ref="#initials" required="false" />
+          <dsml:attribute ref="#ipPhone" required="false" />
+          <dsml:attribute ref="#l" required="false" />
+          <dsml:attribute ref="#legacyExchangeDN" required="false" />
+          <dsml:attribute ref="#manager" required="false" />
+          <dsml:attribute ref="#mail" required="false" />
+          <dsml:attribute ref="#mailEnabled" required="false" />
+          <dsml:attribute ref="#mailNickname" required="false" />
+          <dsml:attribute ref="#middleName" required="false" />
+          <dsml:attribute ref="#mobile" required="false" />
+          <dsml:attribute ref="#msDS-HABSeniorityIndex" required="false" />
+          <dsml:attribute ref="#msDS-PhoneticDisplayName" required="false" />
+          <dsml:attribute ref="#msExchArchiveGUID" required="false" />
+          <dsml:attribute ref="#msExchArchiveName" required="false" />
+          <dsml:attribute ref="#msExchAssistantName" required="false" />
+          <dsml:attribute ref="#msExchAuditAdmin" required="false" />
+          <dsml:attribute ref="#msExchAuditDelegate" required="false" />
+          <dsml:attribute ref="#msExchAuditDelegateAdmin" required="false" />
+          <dsml:attribute ref="#msExchAuditOwner" required="false" />
+          <dsml:attribute ref="#msExchBlockedSendersHash" required="false" />
+          <dsml:attribute ref="#msExchBypassAudit" required="false" />
+          <dsml:attribute ref="#msExchBypassModerationFromDLMembersLink" required="false" />
+          <dsml:attribute ref="#msExchBypassModerationLink" required="false" />
+          <dsml:attribute ref="#msExchDelegateListLink" required="false" />
+          <dsml:attribute ref="#msExchELCExpirySuspensionEnd" required="false" />
+          <dsml:attribute ref="#msExchELCExpirySuspensionStart" required="false" />
+          <dsml:attribute ref="#msExchELCMailboxFlags" required="false" />
+          <dsml:attribute ref="#msExchEnableModeration" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute1" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute2" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute3" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute4" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute5" required="false" />
+          <dsml:attribute ref="#msExchHideFromAddressLists" required="false" />
+          <dsml:attribute ref="#msExchImmutableId" required="false" />
+          <dsml:attribute ref="#msExchLitigationHoldDate" required="false" />
+          <dsml:attribute ref="#msExchLitigationHoldOwner" required="false" />
+          <dsml:attribute ref="#msExchMailboxAuditEnable" required="false" />
+          <dsml:attribute ref="#msExchMailboxAuditLogAgeLimit" required="false" />
+          <dsml:attribute ref="#msExchMailboxGuid" required="false" />
+          <dsml:attribute ref="#msExchMasterAccountSid" required="false" />
+          <dsml:attribute ref="#msExchModeratedByLink" required="false" />
+          <dsml:attribute ref="#msExchModerationFlags" required="false" />
+          <dsml:attribute ref="#msExchRecipientDisplayType" required="false" />
+          <dsml:attribute ref="#msExchRecipientTypeDetails" required="false" />
+          <dsml:attribute ref="#msExchRemoteRecipientType" required="false" />
+          <dsml:attribute ref="#msExchRequireAuthToSendTo" required="false" />
+          <dsml:attribute ref="#msExchResourceCapacity" required="false" />
+          <dsml:attribute ref="#msExchResourceDisplay" required="false" />
+          <dsml:attribute ref="#msExchResourceMetaData" required="false" />
+          <dsml:attribute ref="#msExchResourceSearchProperties" required="false" />
+          <dsml:attribute ref="#msExchRetentionComment" required="false" />
+          <dsml:attribute ref="#msExchRetentionURL" required="false" />
+          <dsml:attribute ref="#msExchSafeRecipientsHash" required="false" />
+          <dsml:attribute ref="#msExchSafeSendersHash" required="false" />
+          <dsml:attribute ref="#msExchSenderHintTranslations" required="false" />
+          <dsml:attribute ref="#msExchTeamMailboxExpiration" required="false" />
+          <dsml:attribute ref="#msExchTeamMailboxOwners" required="false" />
+          <dsml:attribute ref="#msExchTeamMailboxSharePointLinkedBy" required="false" />
+          <dsml:attribute ref="#msExchTeamMailboxSharePointUrl" required="false" />
+          <dsml:attribute ref="#msExchUserHoldPolicies" required="false" />
+          <dsml:attribute ref="#msRTCSIP-ApplicationOptions" required="false" />
+          <dsml:attribute ref="#msRTCSIP-DeploymentLocator" required="false" />
+          <dsml:attribute ref="#msRTCSIP-Line" required="false" />
+          <dsml:attribute ref="#msRTCSIP-OriginatorSid" required="false" />
+          <dsml:attribute ref="#msRTCSIP-OwnerUrn" required="false" />
+          <dsml:attribute ref="#msRTCSIP-PrimaryUserAddress" required="false" />
+          <dsml:attribute ref="#msRTCSIP-UserEnabled" required="false" />
+          <dsml:attribute ref="#msRTCSIP-OptionFlags" required="false" />
+          <dsml:attribute ref="#o" required="false" />
+          <dsml:attribute ref="#objectID" required="true" />
+          <dsml:attribute ref="#objectSid" required="true" />
+          <dsml:attribute ref="#objectSidString" required="false" />
+          <dsml:attribute ref="#objectType" required="true" />
+          <dsml:attribute ref="#onPremisesUserPrincipalName" required="false" />
+          <dsml:attribute ref="#otherFacsimileTelephoneNumber" required="false" />
+          <dsml:attribute ref="#otherHomePhone" required="false" />
+          <dsml:attribute ref="#otherIpPhone" required="false" />
+          <dsml:attribute ref="#otherMailbox" required="false" />
+          <dsml:attribute ref="#otherMobile" required="false" />
+          <dsml:attribute ref="#otherPager" required="false" />
+          <dsml:attribute ref="#otherTelephone" required="false" />
+          <dsml:attribute ref="#ou" required="false" />
+          <dsml:attribute ref="#pager" required="false" />
+          <dsml:attribute ref="#personalTitle" required="false" />
+          <dsml:attribute ref="#photo" required="false" />
+          <dsml:attribute ref="#physicalDeliveryOfficeName" required="false" />
+          <dsml:attribute ref="#postOfficeBox" required="false" />
+          <dsml:attribute ref="#postalAddress" required="false" />
+          <dsml:attribute ref="#postalCode" required="false" />
+          <dsml:attribute ref="#preferredLanguage" required="false" />
+          <dsml:attribute ref="#proxyAddresses" required="false" />
+          <dsml:attribute ref="#proxyAddressesIsValid" required="false" />
+          <dsml:attribute ref="#publicDelegates" required="false" />
+          <dsml:attribute ref="#pwdLastSet" required="false" />
+          <dsml:attribute ref="#secretary" required="false" />
+          <dsml:attribute ref="#seeAlso" required="false" />
+          <dsml:attribute ref="#sIDHistory" required="false" />
+          <dsml:attribute ref="#sourceAnchor" required="false" />
+          <dsml:attribute ref="#sourceAnchorBinary" required="false" />
+          <dsml:attribute ref="#sourceObjectType" required="false" />
+          <dsml:attribute ref="#sn" required="false" />
+          <dsml:attribute ref="#st" required="false" />
+          <dsml:attribute ref="#street" required="false" />
+          <dsml:attribute ref="#streetAddress" required="false" />
+          <dsml:attribute ref="#targetAddress" required="false" />
+          <dsml:attribute ref="#telephoneAssistant" required="false" />
+          <dsml:attribute ref="#telephoneNumber" required="false" />
+          <dsml:attribute ref="#thumbnailPhoto" required="false" />
+          <dsml:attribute ref="#title" required="false" />
+          <dsml:attribute ref="#uid" required="false" />
+          <dsml:attribute ref="#unauthOrig" required="false" />
+          <dsml:attribute ref="#url" required="false" />
+          <dsml:attribute ref="#usageLocation" required="false" />
+          <dsml:attribute ref="#userCertificate" required="false" />
+          <dsml:attribute ref="#userPrincipalName" required="false" />
+          <dsml:attribute ref="#userSMIMECertificate" required="false" />
+          <dsml:attribute ref="#wWWHomePage" required="false" />
+        </dsml:class>
+        <dsml:class id="group" type="structural">
+          <dsml:name>group</dsml:name>
+          <dsml:attribute ref="#accountName" required="false" />
+          <dsml:attribute ref="#altRecipient" required="false" />
+          <dsml:attribute ref="#authOrig" required="false" />
+          <dsml:attribute ref="#cloudAnchor" required="false" />
+          <dsml:attribute ref="#cloudFiltered" required="false" />
+          <dsml:attribute ref="#cloudLegacyExchangeDN" required="false" />
+          <dsml:attribute ref="#cloudMastered" required="false" />
+          <dsml:attribute ref="#cloudPublicDelegates" required="false" />
+          <dsml:attribute ref="#cloudSOAExchMailbox" required="false" />
+          <dsml:attribute ref="#cloudSourceAnchor" required="false" />
+          <dsml:attribute ref="#cn" required="false" />
+          <dsml:attribute ref="#description" required="false" />
+          <dsml:attribute ref="#displayName" required="false" />
+          <dsml:attribute ref="#dLMemRejectPerms" required="false" />
+          <dsml:attribute ref="#dLMemSubmitPerms" required="false" />
+          <dsml:attribute ref="#domain" required="true" />
+          <dsml:attribute ref="#extensionAttribute1" required="false" />
+          <dsml:attribute ref="#extensionAttribute10" required="false" />
+          <dsml:attribute ref="#extensionAttribute11" required="false" />
+          <dsml:attribute ref="#extensionAttribute12" required="false" />
+          <dsml:attribute ref="#extensionAttribute13" required="false" />
+          <dsml:attribute ref="#extensionAttribute14" required="false" />
+          <dsml:attribute ref="#extensionAttribute15" required="false" />
+          <dsml:attribute ref="#extensionAttribute2" required="false" />
+          <dsml:attribute ref="#extensionAttribute3" required="false" />
+          <dsml:attribute ref="#extensionAttribute4" required="false" />
+          <dsml:attribute ref="#extensionAttribute5" required="false" />
+          <dsml:attribute ref="#extensionAttribute6" required="false" />
+          <dsml:attribute ref="#extensionAttribute7" required="false" />
+          <dsml:attribute ref="#extensionAttribute8" required="false" />
+          <dsml:attribute ref="#extensionAttribute9" required="false" />
+          <dsml:attribute ref="#hideDLMembership" required="false" />
+          <dsml:attribute ref="#info" required="false" />
+          <dsml:attribute ref="#legacyExchangeDN" required="false" />
+          <dsml:attribute ref="#mail" required="false" />
+          <dsml:attribute ref="#mailEnabled" required="false" />
+          <dsml:attribute ref="#mailNickname" required="false" />
+          <dsml:attribute ref="#managedBy" required="false" />
+          <dsml:attribute ref="#manager" required="false" />
+          <dsml:attribute ref="#member" required="false" />
+          <dsml:attribute ref="#memberCount" required="false" />
+          <dsml:attribute ref="#msDS-HABSeniorityIndex" required="false" />
+          <dsml:attribute ref="#msDS-PhoneticDisplayName" required="false" />
+          <dsml:attribute ref="#msExchBypassModerationFromDLMembersLink" required="false" />
+          <dsml:attribute ref="#msExchBypassModerationLink" required="false" />
+          <dsml:attribute ref="#msExchCoManagedByLink" required="false" />
+          <dsml:attribute ref="#msExchEnableModeration" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute1" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute2" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute3" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute4" required="false" />
+          <dsml:attribute ref="#msExchExtensionCustomAttribute5" required="false" />
+          <dsml:attribute ref="#msExchGroupDepartRestriction" required="false" />
+          <dsml:attribute ref="#msExchGroupJoinRestriction" required="false" />
+          <dsml:attribute ref="#msExchHideFromAddressLists" required="false" />
+          <dsml:attribute ref="#msExchLabeledURI" required="false" />
+          <dsml:attribute ref="#msExchLitigationHoldDate" required="false" />
+          <dsml:attribute ref="#msExchLitigationHoldOwner" required="false" />
+          <dsml:attribute ref="#msExchModeratedByLink" required="false" />
+          <dsml:attribute ref="#msExchModerationFlags" required="false" />
+          <dsml:attribute ref="#msExchRecipientDisplayType" required="false" />
+          <dsml:attribute ref="#msExchRecipientTypeDetails" required="false" />
+          <dsml:attribute ref="#msExchRequireAuthToSendTo" required="false" />
+          <dsml:attribute ref="#msExchRetentionComment" required="false" />
+          <dsml:attribute ref="#msExchRetentionURL" required="false" />
+          <dsml:attribute ref="#msExchSenderHintTranslations" required="false" />
+          <dsml:attribute ref="#msOrg-IsOrganizational" required="false" />
+          <dsml:attribute ref="#o" required="false" />
+          <dsml:attribute ref="#objectID" required="true" />
+          <dsml:attribute ref="#objectSid" required="true" />
+          <dsml:attribute ref="#objectSidString" required="false" />
+          <dsml:attribute ref="#objectType" required="true" />
+          <dsml:attribute ref="#oOFReplyToOriginator" required="false" />
+          <dsml:attribute ref="#ou" required="false" />
+          <dsml:attribute ref="#owner" required="false" />
+          <dsml:attribute ref="#publicDelegates" required="false" />
+          <dsml:attribute ref="#proxyAddresses" required="false" />
+          <dsml:attribute ref="#proxyAddressesIsValid" required="false" />
+          <dsml:attribute ref="#reportToOriginator" required="false" />
+          <dsml:attribute ref="#reportToOwner" required="false" />
+          <dsml:attribute ref="#securityEnabled" required="false" />
+          <dsml:attribute ref="#seeAlso" required="false" />
+          <dsml:attribute ref="#sourceAnchor" required="false" />
+          <dsml:attribute ref="#sourceAnchorBinary" required="false" />
+          <dsml:attribute ref="#targetAddress" required="false" />
+          <dsml:attribute ref="#unauthOrig" required="false" />
+        </dsml:class>
+        <dsml:class id="device" type="structural">
+          <dsml:name>device</dsml:name>
+          <dsml:attribute ref="#accountEnabled" required="false" />
+          <dsml:attribute ref="#alternativeSecurityId" required="false" />
+          <dsml:attribute ref="#approximateLastLogonTimestamp" required="false" />
+          <dsml:attribute ref="#cloudAccountEnabled" required="false" />
+          <dsml:attribute ref="#cloudAnchor" required="false" />
+          <dsml:attribute ref="#cloudCreated" required="false" />
+          <dsml:attribute ref="#cloudDeviceOSType" required="false" />
+          <dsml:attribute ref="#cloudDeviceOSVersion" required="false" />
+          <dsml:attribute ref="#cloudDisplayName" required="false" />
+          <dsml:attribute ref="#cloudFiltered" required="false" />
+          <dsml:attribute ref="#cloudIsManaged" required="false" />
+          <dsml:attribute ref="#deviceId" required="false" />
+          <dsml:attribute ref="#deviceKey" required="false" />
+          <dsml:attribute ref="#deviceObjectVersion" required="false" />
+          <dsml:attribute ref="#deviceOSType" required="false" />
+          <dsml:attribute ref="#deviceOSVersion" required="false" />
+          <dsml:attribute ref="#devicePhysicalIds" required="false" />
+          <dsml:attribute ref="#dirSyncOverrides" required="false" />
+          <dsml:attribute ref="#deviceTrustType" required="false" />
+          <dsml:attribute ref="#displayName" required="false" />
+          <dsml:attribute ref="#isCompliant" required="false" />
+          <dsml:attribute ref="#isManaged" required="false" />
+          <dsml:attribute ref="#isProvisionedInAD" required="false" />
+          <dsml:attribute ref="#registeredOwnerReference" required="false" />
+          <dsml:attribute ref="#registeredUsersReference" required="false" />
+          <dsml:attribute ref="#sourceAnchor" required="false" />
+          <dsml:attribute ref="#sourceObjectType" required="false" />
+          <dsml:attribute ref="#objectSid" required="false" />
+          <dsml:attribute ref="#userCertificate" required="false" />
+        </dsml:class>
+        <dsml:attribute-type id="accountEnabled" single-value="true">
+          <dsml:name>accountEnabled</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="accountName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>accountName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="assistant" single-value="true">
+          <dsml:name>assistant</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="altRecipient" single-value="false">
+          <dsml:name>altRecipient</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="authOrig" single-value="false">
+          <dsml:name>authOrig</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="c" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>c</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudAnchor" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>cloudAnchor</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudFiltered" single-value="true">
+          <dsml:name>cloudFiltered</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudLegacyExchangeDN" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>cloudLegacyExchangeDN</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMastered" single-value="true">
+          <dsml:name>cloudMastered</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchArchiveStatus" single-value="true">
+          <dsml:name>cloudMSExchArchiveStatus</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchBlockedSendersHash" single-value="true">
+          <dsml:name>cloudMSExchBlockedSendersHash</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchDelegateListLink" single-value="false">
+          <dsml:name>cloudMSExchDelegateListLink</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchRecipientDisplayType" single-value="true">
+          <dsml:name>cloudMSExchRecipientDisplayType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchSafeRecipientsHash" single-value="true">
+          <dsml:name>cloudMSExchSafeRecipientsHash</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchSafeSendersHash" single-value="true">
+          <dsml:name>cloudMSExchSafeSendersHash</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchTeamMailboxExpiration" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>cloudMSExchTeamMailboxExpiration</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchTeamMailboxOwners" single-value="false">
+          <dsml:name>cloudMSExchTeamMailboxOwners</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchTeamMailboxSharePointUrl" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>cloudMSExchTeamMailboxSharePointUrl</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchUCVoiceMailSettings" single-value="false">
+          <dsml:name>cloudMSExchUCVoiceMailSettings</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudMSExchUserHoldPolicies" single-value="false">
+          <dsml:name>cloudMSExchUserHoldPolicies</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudPublicDelegates" single-value="false">
+          <dsml:name>cloudPublicDelegates</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudSOAExchMailbox" single-value="true">
+          <dsml:name>cloudSOAExchMailbox</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudSourceAnchor" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>cloudSourceAnchor</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cn" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>cn</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="co" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>co</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="comment" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>comment</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="company" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>company</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="contributingConnectorExchange" single-value="true">
+          <dsml:name>contributingConnectorExchange</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="contributingConnectorUser" single-value="true">
+          <dsml:name>contributingConnectorUser</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="countryCode" single-value="true">
+          <dsml:name>countryCode</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="department" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>department</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="description" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>description</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="deviceKey" single-value="false">
+          <dsml:name>deviceKey</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="displayName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>displayName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="division" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>division</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="dLMemRejectPerms" single-value="false">
+          <dsml:name>dLMemRejectPerms</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="dLMemSubmitPerms" single-value="false">
+          <dsml:name>dLMemSubmitPerms</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="domain" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>domain</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="domainFQDN" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>domainFQDN</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="domainNetBios" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>domainNetBios</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="employeeID" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>employeeID</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="employeeType" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>employeeType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute1" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute1</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute10" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute10</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute11" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute11</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute12" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute12</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute13" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute13</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute14" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute14</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute15" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute15</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute2" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute2</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute3" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute3</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute4" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute4</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute5" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute5</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute6" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute6</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute7" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute7</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute8" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute8</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="extensionAttribute9" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>extensionAttribute9</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="facsimileTelephoneNumber" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>facsimileTelephoneNumber</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="forestFQDN" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>forestFQDN</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="forestNetBios" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>forestNetBios</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="givenName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>givenName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="hideDLMembership" single-value="true">
+          <dsml:name>hideDLMembership</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="homePhone" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>homePhone</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="info" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>info</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="initials" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>initials</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="ipPhone" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>ipPhone</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="l" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>l</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="legacyExchangeDN" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>legacyExchangeDN</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="mail" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>mail</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="mailEnabled" single-value="true">
+          <dsml:name>mailEnabled</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="mailNickname" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>mailNickname</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="managedBy" single-value="true">
+          <dsml:name>managedBy</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="manager" single-value="true">
+          <dsml:name>manager</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="member" single-value="false">
+          <dsml:name>member</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="memberCount" single-value="true">
+          <dsml:name>memberCount</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="middleName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>middleName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="mobile" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>mobile</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msDS-HABSeniorityIndex" single-value="true">
+          <dsml:name>msDS-HABSeniorityIndex</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msDS-PhoneticDisplayName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msDS-PhoneticDisplayName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchArchiveGUID" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchArchiveGUID</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchArchiveName" single-value="false">
+          <dsml:name>msExchArchiveName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchArchiveStatus" single-value="true">
+          <dsml:name>msExchArchiveStatus</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchAssistantName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchAssistantName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchAuditAdmin" single-value="true">
+          <dsml:name>msExchAuditAdmin</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchAuditDelegate" single-value="true">
+          <dsml:name>msExchAuditDelegate</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchAuditDelegateAdmin" single-value="true">
+          <dsml:name>msExchAuditDelegateAdmin</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchAuditOwner" single-value="true">
+          <dsml:name>msExchAuditOwner</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchBlockedSendersHash" single-value="true">
+          <dsml:name>msExchBlockedSendersHash</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchBypassAudit" single-value="true">
+          <dsml:name>msExchBypassAudit</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchBypassModerationFromDLMembersLink" single-value="false">
+          <dsml:name>msExchBypassModerationFromDLMembersLink</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchBypassModerationLink" single-value="false">
+          <dsml:name>msExchBypassModerationLink</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchCoManagedByLink" single-value="false">
+          <dsml:name>msExchCoManagedByLink</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchDelegateListLink" single-value="false">
+          <dsml:name>msExchDelegateListLink</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchELCExpirySuspensionEnd" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchELCExpirySuspensionEnd</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchELCExpirySuspensionStart" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchELCExpirySuspensionStart</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchELCMailboxFlags" single-value="true">
+          <dsml:name>msExchELCMailboxFlags</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchEnableModeration" single-value="true">
+          <dsml:name>msExchEnableModeration</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchExtensionCustomAttribute1" single-value="false">
+          <dsml:name>msExchExtensionCustomAttribute1</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchExtensionCustomAttribute2" single-value="false">
+          <dsml:name>msExchExtensionCustomAttribute2</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchExtensionCustomAttribute3" single-value="false">
+          <dsml:name>msExchExtensionCustomAttribute3</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchExtensionCustomAttribute4" single-value="false">
+          <dsml:name>msExchExtensionCustomAttribute4</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchExtensionCustomAttribute5" single-value="false">
+          <dsml:name>msExchExtensionCustomAttribute5</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchGroupDepartRestriction" single-value="true">
+          <dsml:name>msExchGroupDepartRestriction</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchGroupJoinRestriction" single-value="true">
+          <dsml:name>msExchGroupJoinRestriction</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchHideFromAddressLists" single-value="true">
+          <dsml:name>msExchHideFromAddressLists</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchImmutableId" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchImmutableId</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchLabeledURI" single-value="true">
+          <dsml:name>msExchLabeledURI</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchLitigationHoldDate" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchLitigationHoldDate</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchLitigationHoldOwner" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchLitigationHoldOwner</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchMailboxGuid" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchMailboxGuid</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchMailboxAuditEnable" single-value="true">
+          <dsml:name>msExchMailboxAuditEnable</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchMailboxAuditLogAgeLimit" single-value="true">
+          <dsml:name>msExchMailboxAuditLogAgeLimit</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchMasterAccountSid" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchMasterAccountSid</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchModeratedByLink" single-value="false">
+          <dsml:name>msExchModeratedByLink</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchModerationFlags" single-value="true">
+          <dsml:name>msExchModerationFlags</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchRecipientDisplayType" single-value="true">
+          <dsml:name>msExchRecipientDisplayType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchRecipientTypeDetails" single-value="true">
+          <dsml:name>msExchRecipientTypeDetails</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchRemoteRecipientType" single-value="true">
+          <dsml:name>msExchRemoteRecipientType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchRequireAuthToSendTo" single-value="true">
+          <dsml:name>msExchRequireAuthToSendTo</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchResourceCapacity" single-value="true">
+          <dsml:name>msExchResourceCapacity</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchResourceDisplay" single-value="true">
+          <dsml:name>msExchResourceDisplay</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchResourceMetaData" single-value="false">
+          <dsml:name>msExchResourceMetaData</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchResourceSearchProperties" single-value="false">
+          <dsml:name>msExchResourceSearchProperties</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchRetentionComment" single-value="true">
+          <dsml:name>msExchRetentionComment</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchRetentionURL" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchRetentionURL</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchSafeRecipientsHash" single-value="true">
+          <dsml:name>msExchSafeRecipientsHash</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchSafeSendersHash" single-value="true">
+          <dsml:name>msExchSafeSendersHash</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchSenderHintTranslations" single-value="false">
+          <dsml:name>msExchSenderHintTranslations</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchTeamMailboxExpiration" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchTeamMailboxExpiration</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchTeamMailboxOwners" single-value="false">
+          <dsml:name>msExchTeamMailboxOwners</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchTeamMailboxSharePointLinkedBy" single-value="true">
+          <dsml:name>msExchTeamMailboxSharePointLinkedBy</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchTeamMailboxSharePointUrl" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msExchTeamMailboxSharePointUrl</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchUCVoiceMailSettings" single-value="false">
+          <dsml:name>msExchUCVoiceMailSettings</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msExchUserHoldPolicies" single-value="false">
+          <dsml:name>msExchUserHoldPolicies</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msOrg-IsOrganizational" single-value="true">
+          <dsml:name>msOrg-IsOrganizational</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-ApplicationOptions" single-value="true">
+          <dsml:name>msRTCSIP-ApplicationOptions</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-DeploymentLocator" single-value="true">
+          <dsml:name>msRTCSIP-DeploymentLocator</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-Line" single-value="true">
+          <dsml:name>msRTCSIP-Line</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-OriginatorSid" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msRTCSIP-OriginatorSid</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-OwnerUrn" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msRTCSIP-OwnerUrn</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-PrimaryUserAddress" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>msRTCSIP-PrimaryUserAddress</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-UserEnabled" single-value="true">
+          <dsml:name>msRTCSIP-UserEnabled</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="msRTCSIP-OptionFlags" single-value="true">
+          <dsml:name>msRTCSIP-OptionFlags</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="o" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>o</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="objectID" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>objectID</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="objectSid" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>objectSid</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="objectSidString" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>objectSidString</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="objectType" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>objectType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="oOFReplyToOriginator" single-value="true">
+          <dsml:name>oOFReplyToOriginator</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="onPremisesUserPrincipalName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>onPremisesUserPrincipalName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="otherFacsimileTelephoneNumber" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>otherFacsimileTelephoneNumber</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="otherHomePhone" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>otherHomePhone</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="otherIpPhone" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>otherIpPhone</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="otherMailbox" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>otherMailbox</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="otherMobile" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>otherMobile</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="otherPager" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>otherPager</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="otherTelephone" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>otherTelephone</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="ou" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>ou</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="owner" single-value="false">
+          <dsml:name>owner</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="pager" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>pager</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="personalTitle" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>personalTitle</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="photo" single-value="true">
+          <dsml:name>photo</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="physicalDeliveryOfficeName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>physicalDeliveryOfficeName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="postOfficeBox" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>postOfficeBox</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="postalAddress" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>postalAddress</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="postalCode" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>postalCode</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="preferredLanguage" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>preferredLanguage</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="proxyAddresses" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>proxyAddresses</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="proxyAddressesIsValid" single-value="true">
+          <dsml:name>proxyAddressesIsValid</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="publicDelegates" single-value="false">
+          <dsml:name>publicDelegates</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="pwdLastSet" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>pwdLastSet</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="reportToOriginator" single-value="true">
+          <dsml:name>reportToOriginator</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="reportToOwner" single-value="true">
+          <dsml:name>reportToOwner</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="secretary" single-value="true">
+          <dsml:name>secretary</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="securityEnabled" single-value="true">
+          <dsml:name>securityEnabled</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="seeAlso" single-value="true">
+          <dsml:name>seeAlso</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="sIDHistory" single-value="false">
+          <dsml:name>sIDHistory</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="sn" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>sn</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="sourceAnchor" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>sourceAnchor</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="sourceAnchorBinary" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>sourceAnchorBinary</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="sourceObjectType" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>sourceObjectType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="st" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>st</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="street" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>street</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="streetAddress" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>streetAddress</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="targetAddress" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>targetAddress</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="telephoneAssistant" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>telephoneAssistant</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="telephoneNumber" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>telephoneNumber</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="thumbnailPhoto" single-value="true">
+          <dsml:name>thumbnailPhoto</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="title" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>title</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="uid" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>uid</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="unauthOrig" single-value="false">
+          <dsml:name>unauthOrig</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="url" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>url</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="usageLocation" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>usageLocation</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="userCertificate" single-value="false">
+          <dsml:name>userCertificate</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="userPrincipalName" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>userPrincipalName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="userSMIMECertificate" single-value="false">
+          <dsml:name>userSMIMECertificate</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="wWWHomePage" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>wWWHomePage</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudAccountEnabled" single-value="true">
+          <dsml:name>cloudAccountEnabled</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="alternativeSecurityId" single-value="false" ms-dsml:indexable="true">
+          <dsml:name>alternativeSecurityId</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="approximateLastLogonTimestamp" single-value="true">
+          <dsml:name>approximateLastLogonTimestamp</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="deviceId" single-value="true" ms-dsml:indexable="true">
+          <dsml:name>deviceId</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.5</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="deviceOSType" single-value="true">
+          <dsml:name>deviceOSType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudDeviceOSType" single-value="true">
+          <dsml:name>cloudDeviceOSType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="deviceOSVersion" single-value="true">
+          <dsml:name>deviceOSVersion</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudDeviceOSVersion" single-value="true">
+          <dsml:name>cloudDeviceOSVersion</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="devicePhysicalIds" single-value="false">
+          <dsml:name>devicePhysicalIds</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="deviceObjectVersion" single-value="true">
+          <dsml:name>deviceObjectVersion</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudDisplayName" single-value="true">
+          <dsml:name>cloudDisplayName</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="deviceTrustType" single-value="true">
+          <dsml:name>deviceTrustType</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.15</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="lastPasswordChangeTimestamp" single-value="true">
+          <dsml:name>lastPasswordChangeTimestamp</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="dirSyncOverrides" single-value="true">
+          <dsml:name>dirSyncOverrides</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.27</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudCreated" single-value="true">
+          <dsml:name>cloudCreated</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="isCompliant" single-value="true">
+          <dsml:name>isCompliant</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="isManaged" single-value="true">
+          <dsml:name>isManaged</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="isProvisionedInAD" single-value="true">
+          <dsml:name>isProvisionedInAD</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="cloudIsManaged" single-value="true">
+          <dsml:name>cloudIsManaged</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.7</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="registeredOwnerReference" single-value="true">
+          <dsml:name>registeredOwnerReference</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+        <dsml:attribute-type id="registeredUsersReference" single-value="false">
+          <dsml:name>registeredUsersReference</dsml:name>
+          <dsml:syntax>1.3.6.1.4.1.1466.115.121.1.12</dsml:syntax>
+        </dsml:attribute-type>
+      </dsml:directory-schema>
+    </dsml:dsml>
+ </schema>
+ <password-change-history-size>24</password-change-history-size>
+ <password-sync />
+ <parameter-values>
+    <parameter name="Microsoft.Synchronize.SynchronizationPolicy" type="string" use="SynchronizationGlobal" dataType="String">Delta</parameter>
+    <parameter name="Microsoft.SynchronizationOption.JoinCriteria" type="string" use="SynchronizationGlobal" dataType="String">ObjectSID</parameter>
+    <parameter name="Microsoft.Synchronize.MaintenanceEnabled" type="string" use="SynchronizationGlobal" dataType="String">True</parameter>
+    <parameter name="Microsoft.OptionalFeature.ExportDeletionThresholdValue" type="string" use="SynchronizationGlobal" dataType="String">500</parameter>
+    <parameter name="Microsoft.Version.SynchronizationRuleImmutableTag" type="string" use="SynchronizationGlobal" dataType="String">V1</parameter>
+    <parameter name="Microsoft.SynchronizationOption.AnchorAttribute" type="string" use="SynchronizationGlobal" dataType="String">objectGUID</parameter>
+    <parameter name="Microsoft.OptionalFeature.DirectoryExtensionAttributes" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.OptionalFeature.FilterAAD" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.GroupWriteBack.Forest" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.GroupWriteBack.Container" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.SynchronizationOption.UPNAttribute" type="string" use="SynchronizationGlobal" dataType="String">userPrincipalName</parameter>
+    <parameter name="Microsoft.Synchronize.SchedulerSuspended" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.OptionalFeature.DirectoryExtension" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.SynchronizationOption.CustomAttribute" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.Synchronize.TimeInterval" type="string" use="SynchronizationGlobal" dataType="String">00:30:00</parameter>
+    <parameter name="Microsoft.Synchronize.ServerConfigurationVersion" type="string" use="SynchronizationGlobal" dataType="String">1.1.130.0</parameter>
+    <parameter name="Microsoft.AADFilter.AttributeExclusionList" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.OptionalFeature.DeviceWriteBack" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.OptionalFeature.AutoUpgradeState" type="string" use="SynchronizationGlobal" dataType="String">Suspended</parameter>
+    <parameter name="Microsoft.UserWriteBack.Forest" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.Synchronize.RunHistoryPurgeInterval" type="string" use="SynchronizationGlobal" dataType="String">7.00:00:00</parameter>
+    <parameter name="Microsoft.OptionalFeature.GroupFiltering" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.DeviceWriteBack.Forest" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.Synchronize.SynchronizationSchedule" type="string" use="SynchronizationGlobal" dataType="String">True</parameter>
+    <parameter name="Microsoft.Synchronize.NextStartTime" type="string" use="SynchronizationGlobal" dataType="String">Tue, 03 May 2016 14:39:16 GMT</parameter>
+    <parameter name="Microsoft.Synchronize.StagingMode" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.OptionalFeature.PasswordWriteback" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.OptionalFeature.PasswordHashSync" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.OptionalFeature.ExportDeletionThreshold" type="string" use="SynchronizationGlobal" dataType="String">True</parameter>
+    <parameter name="Microsoft.OptionalFeature.DeviceWriteUp" type="string" use="SynchronizationGlobal" dataType="String">True</parameter>
+    <parameter name="Microsoft.OptionalFeature.UserWriteBack" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+    <parameter name="Microsoft.AADFilter.ApplicationList" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.DirectoryExtension.SourceTargetAttributesMap" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.DeviceWriteBack.Container" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.UserWriteBack.Container" type="string" use="SynchronizationGlobal" dataType="String" />
+    <parameter name="Microsoft.OptionalFeature.HybridExchange" type="string" use="SynchronizationGlobal" dataType="String">True</parameter>
+    <parameter name="Microsoft.OptionalFeature.GroupWriteBack" type="string" use="SynchronizationGlobal" dataType="String">False</parameter>
+  </parameter-values>
+</mv-data>
+
+</saved-mv-configuration>

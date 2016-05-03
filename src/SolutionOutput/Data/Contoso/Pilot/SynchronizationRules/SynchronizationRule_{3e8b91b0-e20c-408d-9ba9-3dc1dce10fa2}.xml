@@ -1,0 +1,37 @@
+<synchronizationRule>
+  <id>{3e8b91b0-e20c-408d-9ba9-3dc1dce10fa2}</id>
+  <internal-id>{3e8b91b0-e20c-408d-9ba9-3dc1dce10fa2}</internal-id>
+  <version>1</version>
+  <name>Out to AD - Group Join</name>
+  <description />
+  <immutable-tag>Microsoft.OuttoADGroupJoin.004</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>group</sourceObjectType>
+  <targetObjectType>group</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>152</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings />
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <csAttribute>objectGUID</csAttribute>
+        <ilmAttribute>sourceAnchorBinary</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>cloudMastered</csAttribute>
+        <csOperator>NOTEQUAL</csOperator>
+        <csValue>True</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

@@ -1,0 +1,73 @@
+<synchronizationRule>
+  <id>{e7165896-0027-41d0-bd87-509b984a281e}</id>
+  <internal-id>{e7165896-0027-41d0-bd87-509b984a281e}</internal-id>
+  <version>1</version>
+  <name>Out to AD - User Exchange Hybrid</name>
+  <description />
+  <immutable-tag>Microsoft.OuttoADUserExchangeHybrid.003</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>person</sourceObjectType>
+  <targetObjectType>user</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>158</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>msExchBlockedSendersHash</dest>
+      <src>
+        <attr>cloudSOAExchMailbox</attr>
+        <attr>cloudMSExchBlockedSendersHash</attr>
+      </src>
+      <expression>IIF([cloudSOAExchMailbox] = True,[cloudMSExchBlockedSendersHash],IgnoreThisFlow)</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msExchSafeRecipientsHash</dest>
+      <src>
+        <attr>cloudSOAExchMailbox</attr>
+        <attr>cloudMSExchSafeRecipientsHash</attr>
+      </src>
+      <expression>IIF([cloudSOAExchMailbox] = True,[cloudMSExchSafeRecipientsHash],IgnoreThisFlow)</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msExchSafeSendersHash</dest>
+      <src>
+        <attr>cloudSOAExchMailbox</attr>
+        <attr>cloudMSExchSafeSendersHash</attr>
+      </src>
+      <expression>IIF([cloudSOAExchMailbox] = True,[cloudMSExchSafeSendersHash],IgnoreThisFlow)</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msExchUCVoiceMailSettings</dest>
+      <src>
+        <attr>cloudMSExchUCVoiceMailSettings</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>msExchUserHoldPolicies</dest>
+      <src>
+        <attr>cloudMSExchUserHoldPolicies</attr>
+      </src>
+      <expression>IIF(IsNullOrEmpty([cloudMSExchUserHoldPolicies]),IgnoreThisFlow,[cloudMSExchUserHoldPolicies])</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>proxyAddresses</dest>
+      <src>
+        <attr>cloudLegacyExchangeDN</attr>
+      </src>
+      <expression>IIF(IsNullOrEmpty([cloudLegacyExchangeDN]),NULL,"x500:" &amp; [cloudLegacyExchangeDN])</expression>
+      <valueMergeType>MergeCaseInsensitive</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria />
+</synchronizationRule>

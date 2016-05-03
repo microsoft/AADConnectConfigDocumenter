@@ -1,0 +1,65 @@
+<synchronizationRule>
+  <id>{0ba9f56b-0501-4c4f-81c3-f437b0240c21}</id>
+  <internal-id>{0ba9f56b-0501-4c4f-81c3-f437b0240c21}</internal-id>
+  <version>1</version>
+  <name>Out to AAD - Contact Join</name>
+  <description />
+  <immutable-tag>Microsoft.OuttoAADContactJoin.003</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{b891884f-051e-4a83-95af-2544101c9083}</connector>
+  <sourceObjectType>person</sourceObjectType>
+  <targetObjectType>contact</targetObjectType>
+  <linkType>Provision</linkType>
+  <precedence>131</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>sourceAnchor</dest>
+      <src>
+        <attr>cloudSourceAnchor</attr>
+        <attr>sourceAnchor</attr>
+      </src>
+      <expression>IIF(IsPresent([cloudSourceAnchor]), IIF(Word([cloudAnchor],1,"_")=[sourceObjectType],IIF([cloudSourceAnchor] = [sourceAnchor],[sourceAnchor],Error("SourceAnchor attribute has changed.")),[sourceAnchor]),[sourceAnchor])</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>dn</dest>
+      <src>
+        <attr>sourceAnchor</attr>
+      </src>
+      <expression>"CN={" &amp; ConvertToUTF8Hex([sourceAnchor]) &amp; "}"</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <csAttribute>sourceAnchor</csAttribute>
+        <ilmAttribute>sourceAnchor</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>sourceObjectType</csAttribute>
+        <csOperator>EQUAL</csOperator>
+        <csValue>Contact</csValue>
+      </scope>
+      <scope>
+        <csAttribute>cloudFiltered</csAttribute>
+        <csOperator>NOTEQUAL</csOperator>
+        <csValue>True</csValue>
+      </scope>
+      <scope>
+        <csAttribute>mailEnabled</csAttribute>
+        <csOperator>EQUAL</csOperator>
+        <csValue>True</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

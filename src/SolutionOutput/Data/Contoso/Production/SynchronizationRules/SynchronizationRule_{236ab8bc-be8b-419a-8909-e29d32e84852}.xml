@@ -1,0 +1,54 @@
+<synchronizationRule>
+  <id>{236ab8bc-be8b-419a-8909-e29d32e84852}</id>
+  <internal-id>{236ab8bc-be8b-419a-8909-e29d32e84852}</internal-id>
+  <version>1</version>
+  <name>In from AAD - Group Join</name>
+  <description />
+  <immutable-tag>Microsoft.InfromAADGroupJoin.004</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{b891884f-051e-4a83-95af-2544101c9083}</connector>
+  <sourceObjectType>group</sourceObjectType>
+  <targetObjectType>group</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>121</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>cloudAnchor</dest>
+      <src>
+        <attr>cloudAnchor</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>cloudSourceAnchor</dest>
+      <src>
+        <attr>sourceAnchor</attr>
+      </src>
+      <expression>ImportedValue("sourceAnchor")</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <caseSensitive>True</caseSensitive>
+        <csAttribute>sourceAnchor</csAttribute>
+        <ilmAttribute>sourceAnchor</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>cloudMastered</csAttribute>
+        <csOperator>NOTEQUAL</csOperator>
+        <csValue>True</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

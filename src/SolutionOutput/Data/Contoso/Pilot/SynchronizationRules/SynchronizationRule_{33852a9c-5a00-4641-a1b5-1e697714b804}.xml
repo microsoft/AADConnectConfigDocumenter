@@ -1,0 +1,29 @@
+<synchronizationRule>
+  <id>{33852a9c-5a00-4641-a1b5-1e697714b804}</id>
+  <internal-id>{33852a9c-5a00-4641-a1b5-1e697714b804}</internal-id>
+  <version>1</version>
+  <name>In from AD - ForeignSecurityPrincipal Join User</name>
+  <description />
+  <immutable-tag>Microsoft.InfromADForeignSecurityPrincipalJoinUser.001</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>foreignSecurityPrincipal</sourceObjectType>
+  <targetObjectType>*</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>118</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings />
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <csAttribute>cn</csAttribute>
+        <ilmAttribute>objectSidString</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria />
+</synchronizationRule>

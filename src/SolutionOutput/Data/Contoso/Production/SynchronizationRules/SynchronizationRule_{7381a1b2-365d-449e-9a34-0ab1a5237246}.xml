@@ -1,0 +1,59 @@
+<synchronizationRule>
+  <id>{7381a1b2-365d-449e-9a34-0ab1a5237246}</id>
+  <internal-id>{7381a1b2-365d-449e-9a34-0ab1a5237246}</internal-id>
+  <version>1</version>
+  <name>Out to AAD - Group AzureRMS</name>
+  <description />
+  <immutable-tag>Microsoft.OuttoAADGroupAzureRMS.004</immutable-tag>
+  <direction>Outbound</direction>
+  <disabled>False</disabled>
+  <connector>{b891884f-051e-4a83-95af-2544101c9083}</connector>
+  <sourceObjectType>group</sourceObjectType>
+  <targetObjectType>group</targetObjectType>
+  <linkType>Join</linkType>
+  <precedence>146</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>displayName</dest>
+      <src>
+        <attr>displayName</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>mail</dest>
+      <src>
+        <attr>mail</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>member</dest>
+      <src>
+        <attr>member</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>proxyAddresses</dest>
+      <src>
+        <attr>proxyAddresses</attr>
+      </src>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria />
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>cloudMastered</csAttribute>
+        <csOperator>NOTEQUAL</csOperator>
+        <csValue>True</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>

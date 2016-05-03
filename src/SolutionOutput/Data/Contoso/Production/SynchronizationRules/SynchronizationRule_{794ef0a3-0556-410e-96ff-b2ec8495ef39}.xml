@@ -1,0 +1,60 @@
+<synchronizationRule>
+  <id>{794ef0a3-0556-410e-96ff-b2ec8495ef39}</id>
+  <internal-id>{794ef0a3-0556-410e-96ff-b2ec8495ef39}</internal-id>
+  <version>1</version>
+  <name>In from AD - Group Join</name>
+  <description />
+  <immutable-tag>Microsoft.InfromADGroupJoin.003</immutable-tag>
+  <direction>Inbound</direction>
+  <disabled>False</disabled>
+  <connector>{ae4db4cc-b16b-4eb2-acf5-837ca84e4d7d}</connector>
+  <sourceObjectType>group</sourceObjectType>
+  <targetObjectType>group</targetObjectType>
+  <linkType>Provision</linkType>
+  <precedence>112</precedence>
+  <precedence-after>{00000000-0000-0000-0000-000000000000}</precedence-after>
+  <precedence-before>{00000000-0000-0000-0000-000000000000}</precedence-before>
+  <softDeleteExpiryInterval>00:00:00</softDeleteExpiryInterval>
+  <EnablePasswordSync>false</EnablePasswordSync>
+  <attribute-mappings>
+    <mapping>
+      <dest>cloudFiltered</dest>
+      <src>
+        <attr>isCriticalSystemObject</attr>
+      </src>
+      <expression>IIF(IsPresent([isCriticalSystemObject]) || [sAMAccountName] = "MSOL_AD_Sync_RichCoexistence" || CBool(IIF(IsPresent([msExchRecipientTypeDetails]),BitAnd([msExchRecipientTypeDetails],&amp;H40000000) &gt; 0,NULL))  || CBool(InStr(DNComponent(CRef([dn]),1),"\\0ACNF:")&gt;0), True, NULL)</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+    <mapping>
+      <dest>mailEnabled</dest>
+      <src>
+        <attr>proxyAddresses</attr>
+        <attr>mail</attr>
+      </src>
+      <expression>IIF(( (IsPresent([proxyAddresses]) = True) &amp;&amp; (Contains([proxyAddresses], "SMTP:") &gt; 0) &amp;&amp; (InStr(Item([proxyAddresses], Contains([proxyAddresses], "SMTP:")), "@") &gt; 0)) ||  (IsPresent([mail]) = True &amp;&amp; (InStr([mail], "@") &gt; 0)), True, False)</expression>
+      <valueMergeType>Update</valueMergeType>
+    </mapping>
+  </attribute-mappings>
+  <relationshipCriteria>
+    <conditions>
+      <condition>
+        <csAttribute>objectGUID</csAttribute>
+        <ilmAttribute>sourceAnchorBinary</ilmAttribute>
+      </condition>
+    </conditions>
+  </relationshipCriteria>
+  <synchronizationCriteria>
+    <conditions>
+      <scope>
+        <csAttribute>isCriticalSystemObject</csAttribute>
+        <csOperator>NOTEQUAL</csOperator>
+        <csValue>True</csValue>
+      </scope>
+      <scope>
+        <csAttribute>adminDescription</csAttribute>
+        <csOperator>NOTSTARTSWITH</csOperator>
+        <csValue>Group_</csValue>
+      </scope>
+    </conditions>
+  </synchronizationCriteria>
+</synchronizationRule>
