@@ -6,7 +6,7 @@ The goal of this project is to:
 
 * To enable quick understanding of the synchronization configuration and "how it happens"!
 * To build confidence in getting things right when making changes to the default configuration!!
-* To know what was changed when you applied a new build of Azure AD Connect!!!
+* To know what was changed when you applied a new build / configuration of Azure AD Connect or added/udpated custom sync rules!!!
 
 Prerequisites:
 
@@ -15,7 +15,7 @@ Prerequisites:
 
 How to use the tool:
 
-* Download the latest release from the [releases](https://github.com/Microsoft/AADConnectConfigDocumenter/releases) tab under the Code tab tab and extract the zip file to an empty local folder on a machine which has .NET Framework 4.5 installed.
+* Download the latest release from the [releases](https://github.com/Microsoft/AADConnectConfigDocumenter/releases) tab under the Code tab tab, UNBLOCK the downloaded zip file and extract the zip file to an empty local folder on a machine which has .NET Framework 4.5 installed.
 	* This will extract the Documenter application binaries along with the sample data files for "Contoso".
 	* Make sure that the tool runs by double-clicking on the cmd file AzureADConnectSyncDocumenter.cmd.
 * Export the Server Configuration of your pilot / test Azure AD Connect sync server by running Get-ADSyncServerConfiguration cmdlet defined in ADSync module shipped with Azure AD Connect.
