@@ -7,7 +7,7 @@
     <ProjectGuid>{D05015A0-3968-4A57-B4C7-384EE3878AD8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AzureADConnectSyncDocumenter</RootNamespace>
+    <RootNamespace>AzureADConnectConfigDocumenter</RootNamespace>
     <AssemblyName>AzureADConnectSyncDocumenter</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

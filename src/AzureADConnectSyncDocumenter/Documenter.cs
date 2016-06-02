@@ -8,7 +8,7 @@
 // </summary>
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace AzureADConnectSyncDocumenter
+namespace AzureADConnectConfigDocumenter
 {
     using System;
     using System.Collections.Generic;
@@ -768,7 +768,7 @@ namespace AzureADConnectSyncDocumenter
                 #endregion style
 
                 htmlWriter.WriteFullBeginTag("title");
-                htmlWriter.Write("AADSync Documenter Report");
+                htmlWriter.Write("AAD Connect Config Documenter Report");
                 htmlWriter.WriteEndTag("title");
 
                 htmlWriter.WriteEndTag("head");

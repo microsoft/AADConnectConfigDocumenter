@@ -10,7 +10,7 @@
 // </summary>
 //-----------------------------------------------------------------------------------------------------------------------
 
-namespace AzureADConnectSyncDocumenter
+namespace AzureADConnectConfigDocumenter
 {
     #region Namespaces Declarations
 
@@ -33,19 +33,19 @@ namespace AzureADConnectSyncDocumenter
     public class Logger
     {
         /// <summary>
-        /// The prefix to be used in all log messages. Since the logger also listens on the FIM trace sources, we'll append this prefix to avoid any confusion.
+        /// The prefix to be used in all log messages.
         /// </summary>
-        private const string LogPrefix = "AADSyncDocumenter";
+        private const string LogPrefix = "AADConnectSyncDocumenter";
 
         /// <summary>
-        /// The connectors log source name
+        /// The documenter log source name
         /// </summary>
-        private const string AzureADSyncDocumenterLogSourceName = "AADSyncDocumenterLog";
+        private const string AzureADSyncDocumenterLogSourceName = "AADConnectSyncDocumenterLog";
 
         /// <summary>
-        /// The connectors console log source name
+        /// The documenter console log source name
         /// </summary>
-        private const string AzureADSyncDocumenterConsoleSourceName = "AADSyncDocumenterConsole";
+        private const string AzureADSyncDocumenterConsoleSourceName = "AADConnectSyncDocumenterConsole";
 
         /// <summary>
         /// The locker
@@ -536,8 +536,6 @@ namespace AzureADConnectSyncDocumenter
                 }
                 catch (Win32Exception e)
                 {
-                    // FIM Portal run in WSS_Minimal trust level by default
-                    // the quickest way to fix this is to make FIM Portal Web Apppool Identity a local admin
                     Debug.WriteLine(e);
                 }
                 catch (Exception e)

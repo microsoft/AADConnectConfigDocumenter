@@ -8,7 +8,7 @@
 // </summary>
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace AzureADConnectSyncDocumenter
+namespace AzureADConnectConfigDocumenter
 {
     using System;
     using System.Globalization;

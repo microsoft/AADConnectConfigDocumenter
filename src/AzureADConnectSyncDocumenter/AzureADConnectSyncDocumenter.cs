@@ -8,9 +8,10 @@
 // </summary>
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace AzureADConnectSyncDocumenter
+namespace AzureADConnectConfigDocumenter
 {
     using System;
+    using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
@@ -25,7 +26,7 @@ namespace AzureADConnectSyncDocumenter
     {
         /// <summary>
         /// The current pilot / test configuration directory.
-        /// This is the revised / target configuration which has introduces new changes to the baseline / production environment. 
+        /// This is the revised / target configuration which has introduced new changes to the baseline / production environment. 
         /// </summary>
         private string pilotConfigDirectory;
 
@@ -34,6 +35,16 @@ namespace AzureADConnectSyncDocumenter
         /// The is the baseline / reference configuration on which the changes will be reported.
         /// </summary>
         private string productionConfigDirectory;
+
+        /// <summary>
+        /// The relative path of the current pilot / test configuration directory.
+        /// </summary>
+        private string pilotConfigRelativePath;
+
+        /// <summary>
+        /// The relative path of the current production configuration directory.
+        /// </summary>
+        private string productionConfigRelativePath;
 
         /// <summary>
         /// The configuration report file path
@@ -53,10 +64,12 @@ namespace AzureADConnectSyncDocumenter
 
             try
             {
+                this.pilotConfigRelativePath = targetSystem;
+                this.productionConfigRelativePath = referenceSystem;
                 this.ReportFileName = Documenter.GetTempFilePath("Report.tmp.html");
                 this.ReportToCFileName = Documenter.GetTempFilePath("Report.TOC.tmp.html");
 
-                this.ValidateInput(targetSystem, referenceSystem);
+                this.ValidateInput();
                 this.MergeSyncExports();
             }
             finally
@@ -88,7 +101,7 @@ namespace AzureADConnectSyncDocumenter
         }
 
         /// <summary>
-        /// Gets the AADSync configuration report.
+        /// Gets the AAD Connect sync configuration report.
         /// </summary>
         /// <returns>
         /// The Tuple of configuration report and associated TOC
@@ -113,11 +126,45 @@ namespace AzureADConnectSyncDocumenter
                 this.ReportWriter.WriteFullBeginTag("body");
 
                 this.ReportWriter.WriteFullBeginTag("h1");
-                this.ReportWriter.Write("AADSync Service Configuration");
+                this.ReportWriter.Write("AAD Connect Sync Service Configuration");
                 this.ReportWriter.WriteEndTag("h1");
                 this.ReportWriter.WriteLine();
 
                 Documenter.WriteDocumenterInfo(this.ReportWriter);
+
+                string syncVersionXPath = "//mv-data//parameter-values/parameter[@name = 'Microsoft.Synchronize.ServerConfigurationVersion']";
+
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Target / Pilot", this.PilotXml.XPathSelectElement(syncVersionXPath)));
+                this.ReportWriter.WriteEndTag("strong");
+
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    this.ReportWriter.Write(this.pilotConfigRelativePath);
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.ReportWriter.WriteBeginTag("br");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                }
+
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Reference / Production", this.ProductionXml.XPathSelectElement(syncVersionXPath)));
+                this.ReportWriter.WriteEndTag("strong");
+
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    this.ReportWriter.Write(this.productionConfigRelativePath);
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.ReportWriter.WriteBeginTag("br");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                }
+
+                this.ReportWriter.WriteLine();
 
                 this.ReportWriter.WriteFullBeginTag("h1");
                 this.ReportWriter.Write("Table of Contents");
@@ -126,7 +173,7 @@ namespace AzureADConnectSyncDocumenter
 
                 this.ReportWriter.WriteLine("##TOC##");
 
-                var sectionTitle = "AADSync Service Configuration";
+                var sectionTitle = "AAD Connect Sync Service Configuration";
                 this.ReportToCWriter.WriteBeginTag("span");
                 this.ReportToCWriter.WriteAttribute("class", "toc1");
                 this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
@@ -141,6 +188,7 @@ namespace AzureADConnectSyncDocumenter
                 this.ReportWriter.WriteEndTag("h1");
                 this.ReportWriter.WriteLine();
 
+                this.ProcessGlobalSettings();
                 this.ProcessMetaverseConfiguration();
                 this.ProcessConnectorConfigurations();
             }
@@ -175,18 +223,16 @@ namespace AzureADConnectSyncDocumenter
         /// <summary>
         /// Validates the input.
         /// </summary>
-        /// <param name="targetSystem">The target system.</param>
-        /// <param name="referenceSystem">The reference system.</param>
-        private void ValidateInput(string targetSystem, string referenceSystem)
+        private void ValidateInput()
         {
-            Logger.Instance.WriteMethodEntry("TargetSystem: '{0}'. ReferenceSystem: '{1}'.", targetSystem, referenceSystem);
+            Logger.Instance.WriteMethodEntry("TargetSystem: '{0}'. ReferenceSystem: '{1}'.", this.pilotConfigRelativePath, this.productionConfigRelativePath);
 
             try
             {
                 var rootDirectory = Directory.GetCurrentDirectory().TrimEnd('\\');
 
-                this.pilotConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, targetSystem);
-                this.productionConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, referenceSystem);
+                this.pilotConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, this.pilotConfigRelativePath);
+                this.productionConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, this.productionConfigRelativePath);
 
                 if (!Directory.Exists(this.pilotConfigDirectory))
                 {
@@ -200,11 +246,11 @@ namespace AzureADConnectSyncDocumenter
                     throw Logger.Instance.ReportError(new FileNotFoundException(error));
                 }
 
-                this.configReportFilePath = Documenter.ReportFolder + @"\" + (targetSystem ?? string.Empty).Replace(@"\", "_") + "_To_" + (referenceSystem ?? string.Empty).Replace(@"\", "_") + "_AADSync_report.html";
+                this.configReportFilePath = Documenter.ReportFolder + @"\" + (this.pilotConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_To_" + (this.productionConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AADConnectSync_report.html";
             }
             finally
             {
-                Logger.Instance.WriteMethodExit("TargetSystem: '{0}'. ReferenceSystem: '{1}'.", targetSystem, referenceSystem);
+                Logger.Instance.WriteMethodExit("TargetSystem: '{0}'. ReferenceSystem: '{1}'.", this.pilotConfigRelativePath, this.productionConfigRelativePath);
             }
         }
 
@@ -225,6 +271,158 @@ namespace AzureADConnectSyncDocumenter
                 Logger.Instance.WriteMethodExit();
             }
         }
+
+        #region Global Settings
+
+        /// <summary>
+        /// Processes the global settings configuration.
+        /// </summary>
+        private void ProcessGlobalSettings()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                Logger.Instance.WriteInfo("Processing Global Settings.");
+
+                this.CreateSimpleSettingsDataSets(2);  // 1 = Name, 2 = Value
+
+                this.FillGlobalSettingsDataSet(true);
+                this.FillGlobalSettingsDataSet(false);
+
+                this.CreateSimpleSettingsDiffgram();
+
+                this.PrintGlobalSettings();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Fills the global settings data set.
+        /// </summary>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
+        private void FillGlobalSettingsDataSet(bool pilotConfig)
+        {
+            Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
+
+            try
+            {
+                var config = pilotConfig ? this.PilotXml : this.ProductionXml;
+                var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
+
+                var table = dataSet.Tables[0];
+
+                var parameters = config.XPathSelectElements("//mv-data//parameter-values/parameter");
+
+                // Sort by name
+                parameters = from parameter in parameters
+                             let name = (string)parameter.Attribute("name")
+                             orderby name
+                             select parameter;
+
+                for (var parameterIndex = 0; parameterIndex < parameters.Count(); ++parameterIndex)
+                {
+                    var parameter = parameters.ElementAt(parameterIndex);
+                    Documenter.AddRow(table, new object[] { (string)parameter.Attribute("name"), (string)parameter });
+                }
+
+                table.AcceptChanges();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Pilot Config: '{0}'", pilotConfig);
+            }
+        }
+
+        /// <summary>
+        /// Prints the global settings.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        private void PrintGlobalSettings()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var sectionTitle = "Global Settings";
+
+                #region toc
+
+                this.ReportToCWriter.WriteBeginTag("span");
+                this.ReportToCWriter.WriteAttribute("class", "toc2");
+                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
+                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
+                this.ReportToCWriter.WriteEndTag("span");
+                this.ReportToCWriter.WriteBeginTag("br");
+                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
+                this.ReportToCWriter.WriteLine();
+
+                #endregion toc
+
+                #region section
+
+                this.ReportWriter.WriteFullBeginTag("h2");
+                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
+                this.ReportWriter.WriteEndTag("h2");
+
+                #endregion section
+
+                #region table
+
+                this.ReportWriter.WriteBeginTag("table");
+                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                {
+                    #region thead
+
+                    this.ReportWriter.WriteBeginTag("thead");
+                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                    {
+                        this.ReportWriter.WriteBeginTag("tr");
+                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                        {
+                            this.ReportWriter.WriteBeginTag("th");
+                            this.ReportWriter.WriteAttribute("class", "column-th");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("Setting");
+                            this.ReportWriter.WriteEndTag("th");
+
+                            this.ReportWriter.WriteBeginTag("th");
+                            this.ReportWriter.WriteAttribute("class", "column-th");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("Value");
+                            this.ReportWriter.WriteEndTag("th");
+                        }
+
+                        this.ReportWriter.WriteEndTag("tr");
+                        this.ReportWriter.WriteLine();
+                    }
+
+                    this.ReportWriter.WriteEndTag("thead");
+
+                    #endregion thead
+                }
+
+                #region rows
+
+                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows.Cast<DataRow>().ToArray(), 0, 0);
+
+                #endregion rows
+
+                this.ReportWriter.WriteEndTag("table");
+
+                #endregion table
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        #endregion Global Settings
 
         /// <summary>
         /// Processes the metaverse configuration.

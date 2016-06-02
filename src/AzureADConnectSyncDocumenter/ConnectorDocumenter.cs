@@ -8,7 +8,7 @@
 // </summary>
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace AzureADConnectSyncDocumenter
+namespace AzureADConnectConfigDocumenter
 {
     using System;
     using System.Collections.Specialized;
@@ -897,7 +897,7 @@ namespace AzureADConnectSyncDocumenter
                         var attributeInfo = connector.XPathSelectElement("//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
 
                         var inboundSyncRules = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound']/attribute-mappings/mapping/src[attr = '" + attributeName + "']");
-                        var outboundSyncRules = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound']/attribute-mappings/mapping/src[attr = '" + attributeName + "']");
+                        var outboundSyncRules = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound']/attribute-mappings/mapping[dest = '" + attributeName + "']");
 
                         var hasInboundFlows = inboundSyncRules.Count() != 0;
                         var hasOutboundFlows = outboundSyncRules.Count() != 0;

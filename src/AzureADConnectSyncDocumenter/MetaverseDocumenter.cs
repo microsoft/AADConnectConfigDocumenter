@@ -8,7 +8,7 @@
 // </summary>
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace AzureADConnectSyncDocumenter
+namespace AzureADConnectConfigDocumenter
 {
     using System;
     using System.Collections.Specialized;
@@ -104,7 +104,6 @@ namespace AzureADConnectSyncDocumenter
 
                 #endregion section
 
-                this.ProcessGlobalSettings();
                 this.ProcessMetaverseObjectTypes();
                 this.ProcessMetaverseObjectDeletionRules();
 
@@ -130,158 +129,6 @@ namespace AzureADConnectSyncDocumenter
                 Logger.Instance.WriteMethodExit();
             }
         }
-
-        #region Global Settings
-
-        /// <summary>
-        /// Processes the global settings configuration.
-        /// </summary>
-        private void ProcessGlobalSettings()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                Logger.Instance.WriteInfo("Processing Global Settings.");
-
-                this.CreateSimpleSettingsDataSets(2);  // 1 = Name, 2 = Value
-
-                this.FillGlobalSettingsDataSet(true);
-                this.FillGlobalSettingsDataSet(false);
-
-                this.CreateSimpleSettingsDiffgram();
-
-                this.PrintGlobalSettings();
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Fills the global settings data set.
-        /// </summary>
-        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillGlobalSettingsDataSet(bool pilotConfig)
-        {
-            Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
-
-            try
-            {
-                var config = pilotConfig ? this.PilotXml : this.ProductionXml;
-                var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
-
-                var table = dataSet.Tables[0];
-
-                var parameters = config.XPathSelectElements("//mv-data//parameter-values/parameter");
-
-                // Sort by name
-                parameters = from parameter in parameters
-                             let name = (string)parameter.Attribute("name")
-                             orderby name
-                             select parameter;
-
-                for (var parameterIndex = 0; parameterIndex < parameters.Count(); ++parameterIndex)
-                {
-                    var parameter = parameters.ElementAt(parameterIndex);
-                    Documenter.AddRow(table, new object[] { (string)parameter.Attribute("name"), (string)parameter });
-                }
-
-                table.AcceptChanges();
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Pilot Config: '{0}'", pilotConfig);
-            }
-        }
-
-        /// <summary>
-        /// Prints the global settings.
-        /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintGlobalSettings()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                var sectionTitle = "Global Settings";
-
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Value");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows.Cast<DataRow>().ToArray(), 0, 0);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        #endregion Global Settings
 
         #region Metaverse ObjectType
 
@@ -1191,6 +1038,9 @@ namespace AzureADConnectSyncDocumenter
                 // Connector
                 printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 2 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
 
+                // ConnectorGuid
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
                 // Table 3
                 // Object Type
                 printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
@@ -1203,6 +1053,12 @@ namespace AzureADConnectSyncDocumenter
 
                 // Sync Rule Type
                 printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", 2 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+
+                // ConnectorGuid
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // SyncRuleGuid
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
 
                 printTable.AcceptChanges();
 
