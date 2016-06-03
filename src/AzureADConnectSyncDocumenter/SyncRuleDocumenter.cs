@@ -537,7 +537,7 @@ namespace AzureADConnectConfigDocumenter
 
                     if (conditionCount == 0)
                     {
-                        Documenter.AddRow(table, new object[] { 0, "-", " ", " ", " " });
+                        Documenter.AddRow(table, new object[] { 0, "-", "-", "-", "-" }, true);
                     }
                     else
                     {
@@ -708,7 +708,7 @@ namespace AzureADConnectConfigDocumenter
 
                     if (joinRuleCount == 0)
                     {
-                        Documenter.AddRow(table, new object[] { 0, "-", " ", " ", " " });
+                        Documenter.AddRow(table, new object[] { 0, "-", "-", "-", "-" }, true);
                     }
                     else
                     {
@@ -879,7 +879,7 @@ namespace AzureADConnectConfigDocumenter
 
                     if (!transformations.Any())
                     {
-                        Documenter.AddRow(table, new object[] { "-", null, null, null, null });
+                        Documenter.AddRow(table, new object[] { "-", "-", "-", "-", "-" }, true);
                     }
                     else
                     {

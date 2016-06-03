@@ -49,6 +49,12 @@ namespace AzureADConnectConfigDocumenter
         public const string UppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         /// <summary>
+        /// The row error text added to identify a row that was to an empty table so that it prints better
+        /// Such row is not printed if it appears as a deleted row in the diffgram
+        /// </summary>
+        public const string VanityRow = "~~VANITY_ROW~~";
+
+        /// <summary>
         /// The namespace manager
         /// </summary>
         private static XmlNamespaceManager namespaceManager = new XmlNamespaceManager(new NameTable());
@@ -543,6 +549,11 @@ namespace AzureADConnectConfigDocumenter
                 // Populate deleted rows
                 foreach (var row in deletedRows)
                 {
+                    if (row.RowError == Documenter.VanityRow)
+                    {
+                        break;
+                    }
+
                     var newRow = diffGramTable.NewRow();
                     newRow[Documenter.RowStateColumn] = DataRowState.Deleted;
                     foreach (DataColumn column in pilotTable.Columns)
@@ -696,6 +707,17 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="row">The row.</param>
         protected static void AddRow(DataTable table, object row)
         {
+            AddRow(table, row, false);
+        }
+
+        /// <summary>
+        /// Adds the row to the table.
+        /// </summary>
+        /// <param name="table">The table.</param>
+        /// <param name="row">The row.</param>
+        /// <param name="vanityRow">if set to <c>true</c>, the row is not printed if it appears as a deleted row in the diffgram.</param>
+        protected static void AddRow(DataTable table, object row, bool vanityRow)
+        {
             if (table == null)
             {
                 throw new ArgumentNullException("table");
@@ -718,12 +740,17 @@ namespace AzureADConnectConfigDocumenter
                     var values = row as object[];
                     if (values != null)
                     {
-                        table.Rows.Add(values);
+                        dataRow = table.Rows.Add(values);
                     }
                     else
                     {
                         throw new ArgumentException("Parameter must be a DataRow or object[].", "row");
                     }
+                }
+
+                if (vanityRow)
+                {
+                    dataRow.RowError = Documenter.VanityRow;
                 }
             }
             catch (DataException e)
