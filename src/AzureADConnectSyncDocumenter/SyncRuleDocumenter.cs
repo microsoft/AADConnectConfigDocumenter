@@ -701,8 +701,9 @@ namespace AzureADConnectConfigDocumenter
                 {
                     var table = dataSet.Tables[0];
                     var currentConnectorGuid = ((string)connector.Element("id") ?? string.Empty).ToUpperInvariant(); // This may be pilot or production GUID
-                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid) + "/relationshipCriteria/conditions";
-
+                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid);
+                    var syncRule = config.XPathSelectElement(xpath);
+                    xpath += "/relationshipCriteria/conditions";
                     var syncRuleJoiningRules = config.XPathSelectElements(xpath);
                     var joinRuleCount = syncRuleJoiningRules.Count();
 
@@ -712,6 +713,8 @@ namespace AzureADConnectConfigDocumenter
                     }
                     else
                     {
+                        this.syncRuleDirection = (SyncRuleDirection)Enum.Parse(typeof(SyncRuleDirection), (string)syncRule.Element("direction"), true);
+
                         for (var joinRuleIndex = 0; joinRuleIndex < joinRuleCount; ++joinRuleIndex)
                         {
                             var joinRule = syncRuleJoiningRules.ElementAt(joinRuleIndex);
@@ -721,7 +724,14 @@ namespace AzureADConnectConfigDocumenter
                                 var scopeAttribute = (string)condition.Element("csAttribute") ?? " ";
                                 var scopeOperator = (string)condition.Element("ilmAttribute") ?? " ";
                                 var scopeValue = (string)condition.Element("caseSensitive") ?? " ";
-                                Documenter.AddRow(table, new object[] { joinRuleIndex + 1, joinRuleIndex + 1, scopeAttribute, scopeOperator, scopeValue });
+                                if (this.syncRuleDirection == SyncRuleDirection.Inbound)
+                                {
+                                    Documenter.AddRow(table, new object[] { joinRuleIndex + 1, joinRuleIndex + 1, scopeAttribute, scopeOperator, scopeValue });
+                                }
+                                else
+                                {
+                                    Documenter.AddRow(table, new object[] { joinRuleIndex + 1, joinRuleIndex + 1, scopeOperator, scopeAttribute, scopeValue });
+                                }
                             }
                         }
                     }

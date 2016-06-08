@@ -489,7 +489,7 @@ namespace AzureADConnectConfigDocumenter
                     // Fetch Sync Rules
                     var syncRules = config.XPathSelectElements("//synchronizationRule[targetObjectType = '" + this.currentObjectType + "'and direction = 'Inbound' and attribute-mappings/mapping/dest = '" + attributeName + "']");
                     syncRules = from syncRule in syncRules
-                                let precedence = (string)syncRule.Element("precedence")
+                                let precedence = (int)syncRule.Element("precedence")
                                 orderby precedence
                                 select syncRule;
 
