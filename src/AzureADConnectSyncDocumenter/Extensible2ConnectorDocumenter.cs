@@ -247,7 +247,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows.Cast<DataRow>().ToArray(), 0, 0);
+                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
 
@@ -405,7 +405,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows.Cast<DataRow>().ToArray(), 0, 0);
+                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
 
@@ -563,7 +563,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows.Cast<DataRow>().ToArray(), 0, 0);
+                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
 
@@ -888,7 +888,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows.Cast<DataRow>().ToArray(), 0, 0);
+                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
 

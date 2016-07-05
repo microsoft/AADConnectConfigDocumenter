@@ -141,7 +141,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     this.ReportWriter.WriteBeginTag("span");
                     this.ReportWriter.WriteAttribute("class", "Unchanged");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write(this.pilotConfigRelativePath);
                     this.ReportWriter.WriteEndTag("span");
 
@@ -156,7 +156,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     this.ReportWriter.WriteBeginTag("span");
                     this.ReportWriter.WriteAttribute("class", "Unchanged");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write(this.productionConfigRelativePath);
                     this.ReportWriter.WriteEndTag("span");
 
@@ -408,7 +408,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows.Cast<DataRow>().ToArray(), 0, 0);
+                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
 

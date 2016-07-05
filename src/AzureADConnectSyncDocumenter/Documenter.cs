@@ -829,19 +829,19 @@ namespace AzureADConnectConfigDocumenter
                 {
                     htmlWriter.WriteBeginTag("span");
                     htmlWriter.WriteAttribute("class", "Added");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     htmlWriter.Write("Create ");
                     htmlWriter.WriteEndTag("span");
 
                     htmlWriter.WriteBeginTag("span");
                     htmlWriter.WriteAttribute("class", "Modified");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     htmlWriter.Write("Update ");
                     htmlWriter.WriteEndTag("span");
 
                     htmlWriter.WriteBeginTag("span");
                     htmlWriter.WriteAttribute("class", "Deleted");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     htmlWriter.Write("Delete ");
                     htmlWriter.WriteEndTag("span");
 
@@ -856,7 +856,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     htmlWriter.WriteBeginTag("span");
                     htmlWriter.WriteAttribute("class", "Unchanged");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     htmlWriter.Write(VersionInfo.Version);
                     htmlWriter.WriteEndTag("span");
 
@@ -871,7 +871,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     htmlWriter.WriteBeginTag("span");
                     htmlWriter.WriteAttribute("class", "Unchanged");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     htmlWriter.Write(DateTime.Now.ToString(CultureInfo.CurrentCulture));
                     htmlWriter.WriteEndTag("span");
 
@@ -1041,10 +1041,35 @@ namespace AzureADConnectConfigDocumenter
         /// Writes the rows.
         /// </summary>
         /// <param name="rows">The rows.</param>
+        protected void WriteRows(DataRowCollection rows)
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                if (rows == null)
+                {
+                    throw new ArgumentNullException("rows");
+                }
+
+                int currentTableIndex = 0;
+                int currentCellIndex = 0;
+                this.WriteRows(rows.Cast<DataRow>().ToArray(), currentTableIndex, ref currentCellIndex);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Writes the rows.
+        /// </summary>
+        /// <param name="rows">The rows.</param>
         /// <param name="currentTableIndex">Index of the current table.</param>
         /// <param name="currentCellIndex">Index of the current cell.</param>
         [SuppressMessage("Microsoft.Usage", "CA2233:OperationsShouldNotOverflow", MessageId = "currentTableIndex+1", Justification = "Reviewed.")]
-        protected void WriteRows(DataRow[] rows, int currentTableIndex, int currentCellIndex)
+        protected void WriteRows(DataRow[] rows, int currentTableIndex, ref int currentCellIndex)
         {
             Logger.Instance.WriteMethodEntry("Current Table Index: '{0}'. Current Cell Index: '{1}'.", currentTableIndex, currentCellIndex);
 
@@ -1105,10 +1130,12 @@ namespace AzureADConnectConfigDocumenter
 
                         this.ReportWriter.WriteEndTag("tr");
                         this.ReportWriter.WriteLine();
+                        currentCellIndex = 0; // reset the current cell index
                     }
                     else
                     {
-                        this.WriteRows(childRows, childTableIndex, currentCellIndex == maxCellCount ? 0 : currentCellIndex);
+                        currentCellIndex = currentCellIndex == maxCellCount ? 0 : currentCellIndex;
+                        this.WriteRows(childRows, childTableIndex, ref currentCellIndex);
                     }
                 }
             }
@@ -1241,9 +1268,10 @@ namespace AzureADConnectConfigDocumenter
                                     {
                                         this.ReportWriter.Write(oldText);
                                     }
+
+                                    this.ReportWriter.WriteEndTag("span");
                                 }
 
-                                this.ReportWriter.WriteEndTag("span");
                                 this.ReportWriter.WriteBeginTag("span");
                                 this.ReportWriter.WriteAttribute("class", DataRowState.Modified.ToString());
                                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
