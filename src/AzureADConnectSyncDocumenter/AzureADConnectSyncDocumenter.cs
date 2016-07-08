@@ -373,7 +373,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -418,6 +418,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }

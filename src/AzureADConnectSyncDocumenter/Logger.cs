@@ -528,7 +528,14 @@ namespace AzureADConnectConfigDocumenter
             {
                 try
                 {
-                    traceSource.TraceEvent(eventType, eventId, message, args);
+                    if (args != null && args.Length > 0)
+                    {
+                        traceSource.TraceEvent(eventType, eventId, message, args);
+                    }
+                    else
+                    {
+                        traceSource.TraceEvent(eventType, eventId, message);
+                    }
                 }
                 catch (FormatException)
                 {

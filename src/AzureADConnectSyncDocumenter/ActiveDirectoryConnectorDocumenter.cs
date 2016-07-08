@@ -202,7 +202,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -247,6 +247,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -317,7 +318,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -357,6 +358,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -662,15 +664,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
-
-                // Setup data relations
-                var column2 = this.DiffgramDataSet.Tables[0].Columns["Setting"];
-
-                var column12 = this.DiffgramDataSet.Tables[1].Columns["Setting"];
-
-                var dataRelation12 = new DataRelation("DataRelation12", new[] { column2 }, new[] { column12 }, false);
-
-                this.DiffgramDataSet.Relations.Add(dataRelation12);
+                this.DiffgramDataSets.Add(this.DiffgramDataSet);
             }
             finally
             {
@@ -691,7 +685,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -736,6 +730,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -854,7 +849,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -894,6 +889,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -961,7 +957,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -1006,6 +1002,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }

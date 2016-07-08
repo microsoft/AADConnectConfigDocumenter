@@ -11,6 +11,7 @@
 namespace AzureADConnectConfigDocumenter
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
@@ -225,27 +226,6 @@ namespace AzureADConnectConfigDocumenter
                 this.FillMetaverseObjectTypeDataSet(false);
 
                 this.CreateMetaverseObjectTypeDiffGram();
-
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc4");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, this.currentObjectType, null, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h4");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, this.currentObjectType, null, "TOC");
-                this.ReportWriter.WriteEndTag("h4");
-
-                #endregion section
 
                 this.PrintMetaverseObjectType();
             }
@@ -574,23 +554,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
-
-                // Setup data relations
-                var column1 = this.DiffgramDataSet.Tables[0].Columns["Attribute"];
-
-                var column12 = this.DiffgramDataSet.Tables[1].Columns["Attribute"];
-                var column32 = this.DiffgramDataSet.Tables[1].Columns["Connector"];
-                var column42 = this.DiffgramDataSet.Tables[1].Columns["Inbound Sync Rule"];
-
-                var column13 = this.DiffgramDataSet.Tables[2].Columns["Attribute"];
-                var column23 = this.DiffgramDataSet.Tables[2].Columns["Connector"];
-                var column33 = this.DiffgramDataSet.Tables[2].Columns["Inbound Sync Rule"];
-
-                var dataRelation12 = new DataRelation("DataRelation12", new[] { column1 }, new[] { column12 }, false);
-                var dataRelation23 = new DataRelation("DataRelation23", new[] { column12, column32, column42 }, new[] { column13, column23, column33 }, false);
-
-                this.DiffgramDataSet.Relations.Add(dataRelation12);
-                this.DiffgramDataSet.Relations.Add(dataRelation23);
+                this.DiffgramDataSets.Add(this.DiffgramDataSet);
             }
             finally
             {
@@ -608,10 +572,36 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
+                var sectionTitle = this.currentObjectType;
+
+                #region toc
+
+                this.ReportToCWriter.WriteBeginTag("span");
+                this.ReportToCWriter.WriteAttribute("class", "toc4" + " " + this.GetCssVisibilityClass());
+                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
+                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
+                this.ReportToCWriter.WriteEndTag("span");
+                this.ReportToCWriter.WriteBeginTag("br");
+                this.ReportToCWriter.WriteAttribute("class", this.GetCssVisibilityClass());
+                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
+                this.ReportToCWriter.WriteLine();
+
+                #endregion toc
+
+                #region section
+
+                this.ReportWriter.WriteBeginTag("h4");
+                this.ReportWriter.WriteAttribute("class", this.GetCssVisibilityClass());
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
+                this.ReportWriter.WriteEndTag("h4");
+
+                #endregion section
+
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -761,6 +751,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -779,112 +770,17 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var sectionTitle = "Metaverse Object Deletion Rules Summary";
-
-                Logger.Instance.WriteInfo("Processing " + sectionTitle);
+                Logger.Instance.WriteInfo("Processing Metaverse Object Deletion Rules Summary");
 
                 const string XPath = "//mv-data//dsml:class";
-
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        #region head row
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Object Type");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "3");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Deletion Rules");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-
-                        #endregion head row
-
-                        #region head row
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Connector");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Synchronization Rule");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Link Type");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-
-                        #endregion head row
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
                 var pilot = this.PilotXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
                 var production = this.ProductionXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
 
                 // Sort by name
                 var pilotObjectTypes = from objectType in pilot
-                        let name = (string)objectType.Element(Documenter.DsmlNamespace + "name")
-                        orderby name
-                        select name;
+                                       let name = (string)objectType.Element(Documenter.DsmlNamespace + "name")
+                                       orderby name
+                                       select name;
 
                 foreach (var objectType in pilotObjectTypes)
                 {
@@ -893,9 +789,9 @@ namespace AzureADConnectConfigDocumenter
 
                 // Sort by name
                 var productionObjectTypes = from objectType in production
-                             let name = (string)objectType.Element(Documenter.DsmlNamespace + "name")
-                             orderby name
-                             select name;
+                                            let name = (string)objectType.Element(Documenter.DsmlNamespace + "name")
+                                            orderby name
+                                            select name;
 
                 productionObjectTypes = productionObjectTypes.Where(productionObjectType => !pilotObjectTypes.Contains(productionObjectType));
 
@@ -904,9 +800,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ProcessMetaverseObjectDeletionRule(objectType);
                 }
 
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.PrintMetaverseObjectDeletionRules();
             }
             finally
             {
@@ -935,8 +829,6 @@ namespace AzureADConnectConfigDocumenter
                 this.FillMetaverseObjectDeletionRuleDataSet(objectType, false);
 
                 this.CreateMetaverseObjectDeletionRuleDiffGram();
-
-                this.PrintMetaverseObjectDeletionRule();
             }
             finally
             {
@@ -1148,21 +1040,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
-
-                // Setup data relations
-                var column1 = this.DiffgramDataSet.Tables[0].Columns["Object Type"];
-
-                var column12 = this.DiffgramDataSet.Tables[1].Columns["Object Type"];
-                var column22 = this.DiffgramDataSet.Tables[1].Columns["Connector"];
-
-                var column13 = this.DiffgramDataSet.Tables[2].Columns["Object Type"];
-                var column23 = this.DiffgramDataSet.Tables[2].Columns["Connector"];
-
-                var dataRelation12 = new DataRelation("DataRelation12", new[] { column1 }, new[] { column12 }, false);
-                var dataRelation23 = new DataRelation("DataRelation23", new[] { column12, column22 }, new[] { column13, column23 }, false);
-
-                this.DiffgramDataSet.Relations.Add(dataRelation12);
-                this.DiffgramDataSet.Relations.Add(dataRelation23);
+                this.DiffgramDataSets.Add(this.DiffgramDataSet);
             }
             finally
             {
@@ -1174,20 +1052,123 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the metaverse object deletion rule.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintMetaverseObjectDeletionRule()
+        private void PrintMetaverseObjectDeletionRules()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
+                var sectionTitle = "Metaverse Object Deletion Rules Summary";
+
+                #region toc
+
+                this.ReportToCWriter.WriteBeginTag("span");
+                this.ReportToCWriter.WriteAttribute("class", "toc3");
+                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
+                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
+                this.ReportToCWriter.WriteEndTag("span");
+                this.ReportToCWriter.WriteBeginTag("br");
+                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
+                this.ReportToCWriter.WriteLine();
+
+                #endregion toc
+
+                #region section
+
+                this.ReportWriter.WriteFullBeginTag("h3");
+                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
+                this.ReportWriter.WriteEndTag("h3");
+
+                #endregion section
+
+                #region table
+
+                this.ReportWriter.WriteBeginTag("table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                {
+                    #region thead
+
+                    this.ReportWriter.WriteBeginTag("thead");
+                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                    {
+                        #region head row
+
+                        this.ReportWriter.WriteBeginTag("tr");
+                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                        {
+                            this.ReportWriter.WriteBeginTag("th");
+                            this.ReportWriter.WriteAttribute("class", "column-th");
+                            this.ReportWriter.WriteAttribute("rowspan", "2");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("Object Type");
+                            this.ReportWriter.WriteEndTag("th");
+
+                            this.ReportWriter.WriteBeginTag("th");
+                            this.ReportWriter.WriteAttribute("class", "column-th");
+                            this.ReportWriter.WriteAttribute("colspan", "3");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("Deletion Rules");
+                            this.ReportWriter.WriteEndTag("th");
+                        }
+
+                        this.ReportWriter.WriteEndTag("tr");
+                        this.ReportWriter.WriteLine();
+
+                        #endregion head row
+
+                        #region head row
+
+                        this.ReportWriter.WriteBeginTag("tr");
+                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                        {
+                            this.ReportWriter.WriteBeginTag("th");
+                            this.ReportWriter.WriteAttribute("class", "column-th");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("Connector");
+                            this.ReportWriter.WriteEndTag("th");
+
+                            this.ReportWriter.WriteBeginTag("th");
+                            this.ReportWriter.WriteAttribute("class", "column-th");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("Synchronization Rule");
+                            this.ReportWriter.WriteEndTag("th");
+
+                            this.ReportWriter.WriteBeginTag("th");
+                            this.ReportWriter.WriteAttribute("class", "column-th");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("Link Type");
+                            this.ReportWriter.WriteEndTag("th");
+                        }
+
+                        this.ReportWriter.WriteEndTag("tr");
+                        this.ReportWriter.WriteLine();
+
+                        #endregion head row
+                    }
+
+                    this.ReportWriter.WriteEndTag("thead");
+
+                    #endregion thead
+                }
+
                 #region rows
 
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
+                foreach (var dataSet in this.DiffgramDataSets)
+                {
+                    this.DiffgramDataSet = dataSet;
+                    this.WriteRows(dataSet.Tables[0].Rows);
+                } 
 
                 #endregion rows
+
+                this.ReportWriter.WriteEndTag("table");
+
+                #endregion table
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }

@@ -34,6 +34,21 @@ namespace AzureADConnectConfigDocumenter
         public const string RowStateColumn = "ROW-STATE";
 
         /// <summary>
+        /// The name of the column which stores the display visibility status of the row in a diffgram.
+        /// </summary>
+        public const string HtmlTableRowVisibilityStatusColumn = "HTML-TABLE-ROW-VISIBILITY-STATUS";
+
+        /// <summary>
+        /// The literal string to indicate visibility can be hidden
+        /// </summary>
+        public const string CanHide = "CanHide";
+
+        /// <summary>
+        /// The literal string to indicate visibility cannot be hidden
+        /// </summary>
+        public const string NoHide = "NoHide";
+
+        /// <summary>
         /// The prefix used for the name of the columns of old data row in a diffgram 
         /// </summary>
         public const string OldColumnPrefix = "OLD-";
@@ -89,6 +104,8 @@ namespace AzureADConnectConfigDocumenter
             {
                 // Set Logger call context items
                 Logger.FlushContextItems();
+                this.DiffgramDataSet = new DataSet() { Locale = CultureInfo.InvariantCulture };
+                this.DiffgramDataSets = new List<DataSet>();
             }
             finally
             {
@@ -214,6 +231,14 @@ namespace AzureADConnectConfigDocumenter
         /// The diffgram data set.
         /// </value>
         protected DataSet DiffgramDataSet { get; set; }
+
+        /// <summary>
+        /// Gets or sets the diffgram data sets of a single section.
+        /// </summary>
+        /// <value>
+        /// The diffgram data sets of a single section.
+        /// </value>
+        protected List<DataSet> DiffgramDataSets { get; set; }
 
         /// <summary>
         /// Gets or sets the main report writer.
@@ -418,6 +443,60 @@ namespace AzureADConnectConfigDocumenter
                 }
 
                 diffGramDataSet.Tables.Add(printTable.Copy());
+
+                // set up data relations
+                foreach (DataRelation dataRelation in pilotDataSet.Relations)
+                {
+                    var parentColumns = new List<DataColumn>();
+                    foreach (var parentColumn in dataRelation.ParentColumns)
+                    {
+                        var tableName = parentColumn.Table.TableName;
+                        var columnIndex = parentColumn.Ordinal;
+                        parentColumns.Add(diffGramDataSet.Tables[tableName].Columns[columnIndex]);
+                    }
+
+                    var childColumns = new List<DataColumn>();
+                    foreach (var childColumn in dataRelation.ChildColumns)
+                    {
+                        var tableName = childColumn.Table.TableName;
+                        var columnIndex = childColumn.Ordinal;
+                        childColumns.Add(diffGramDataSet.Tables[tableName].Columns[columnIndex]);
+                    }
+
+                    var dataRelationClone = new DataRelation(dataRelation.RelationName, parentColumns.ToArray(), childColumns.ToArray(), false);
+                    diffGramDataSet.Relations.Add(dataRelationClone);
+                }
+
+                diffGramDataSet.ExtendedProperties.Add(Documenter.CanHide, true);
+
+                // Loop all ignore last table which is PrintSetting table
+                for (var i = 0; i < diffGramDataSet.Tables.Count - 1; ++i) 
+                {
+                    diffGramDataSet.Tables[i].Columns.Add(Documenter.HtmlTableRowVisibilityStatusColumn);
+
+                    foreach (DataRow row in diffGramDataSet.Tables[i].Rows)
+                    {
+                        if (i == 0)
+                        {
+                            if (!Documenter.IsCumulativeRowStateChanged(row, i))
+                            {
+                                row[Documenter.HtmlTableRowVisibilityStatusColumn] = Documenter.CanHide;
+                            }
+                            else
+                            {
+                                diffGramDataSet.ExtendedProperties[Documenter.CanHide] = false;
+                            }
+                        }
+                        else if (!Documenter.IsCumulativeRowStateChanged(row, i))
+                        {
+                            var dataRelationName = string.Format(CultureInfo.InvariantCulture, "DataRelation{0}{1}", i, i + 1);
+                            var parentRow = row.GetParentRow(dataRelationName);
+                            row[Documenter.HtmlTableRowVisibilityStatusColumn] = parentRow[Documenter.HtmlTableRowVisibilityStatusColumn];
+                        }
+                    }
+
+                    diffGramDataSet.Tables[i].AcceptChanges();
+                }
 
                 return diffGramDataSet;
             }
@@ -794,6 +873,26 @@ namespace AzureADConnectConfigDocumenter
 
                 #endregion style
 
+                #region script
+
+                htmlWriter.WriteFullBeginTag("script");
+                htmlWriter.Write("function ToggleVisibility() {");
+                htmlWriter.Write("var x = document.getElementById(\"OnlyShowChanges\");");
+                htmlWriter.Write("var elements = document.getElementsByClassName(\"" + Documenter.CanHide + "\");");
+                htmlWriter.Write("for (var i = 0; i < elements.length; ++i) {");
+                htmlWriter.Write("if (x.checked == true) {");
+                htmlWriter.Write("elements[i].style.display = \"none\";");
+                htmlWriter.Write("}");
+                htmlWriter.Write("else {");
+                htmlWriter.Write("elements[i].style.display = \"\";");
+                htmlWriter.Write("}");
+                htmlWriter.Write("}");
+                htmlWriter.Write("}");
+                htmlWriter.WriteEndTag("script");
+                htmlWriter.WriteLine();
+
+                #endregion script
+
                 htmlWriter.WriteFullBeginTag("title");
                 htmlWriter.Write("AAD Connect Config Documenter Report");
                 htmlWriter.WriteEndTag("title");
@@ -821,6 +920,19 @@ namespace AzureADConnectConfigDocumenter
                 {
                     throw new ArgumentNullException("htmlWriter");
                 }
+
+                htmlWriter.WriteFullBeginTag("strong");
+                htmlWriter.Write("Only Show Changes:");
+                htmlWriter.WriteEndTag("strong");
+
+                htmlWriter.WriteBeginTag("input");
+                htmlWriter.WriteAttribute("type", "checkbox");
+                htmlWriter.WriteAttribute("id", "OnlyShowChanges");
+                htmlWriter.WriteAttribute("onclick", "ToggleVisibility();");
+                htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+
+                htmlWriter.WriteBeginTag("br");
+                htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
 
                 htmlWriter.WriteFullBeginTag("strong");
                 htmlWriter.Write("Legend:");
@@ -1038,6 +1150,80 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Determines whether the specified row or any child rows have changed.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <param name="currentTableIndex">Index of the current table.</param>
+        /// <returns>True if the specified row or any child rows have changed. Otherwise false.</returns>
+        protected static bool IsCumulativeRowStateChanged(DataRow row, int currentTableIndex)
+        {
+            Logger.Instance.WriteMethodEntry("Current Table Index: '{0}'.", currentTableIndex);
+
+            var rowStateChanged = false;
+
+            try
+            {
+                if (row == null)
+                {
+                    throw new ArgumentNullException("row");
+                }
+
+                var rowState = (string)row[Documenter.RowStateColumn];
+
+                if (!rowState.Equals(DataRowState.Unchanged.ToString()))
+                {
+                    rowStateChanged = true;
+                    return rowStateChanged;
+                }
+
+                var childTableIndex = currentTableIndex + 1;
+                var dataRelationName = string.Format(CultureInfo.InvariantCulture, "DataRelation{0}{1}", currentTableIndex + 1, childTableIndex + 1);
+                var childRows = row.GetChildRows(dataRelationName);
+                var childRowsCount = childRows.Count();
+                for (var i = 0; i < childRowsCount; ++i)
+                {
+                    var childRowState = (string)childRows[i][Documenter.RowStateColumn];
+
+                    if (!childRowState.Equals(DataRowState.Unchanged.ToString()))
+                    {
+                        rowStateChanged = true;
+                        return rowStateChanged;
+                    }
+
+                    if (Documenter.IsCumulativeRowStateChanged(childRows[i], currentTableIndex + 1))
+                    {
+                        rowStateChanged = true;
+                        return rowStateChanged;
+                    }
+                }
+
+                return rowStateChanged;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Current Table Index: '{0}'. RowStateChanged: '{1}'.", currentTableIndex, rowStateChanged);
+            }
+        }
+
+        /// <summary>
+        /// Resets the diffgram and prepares the variable for new report section.
+        /// </summary>
+        protected void ResetDiffgram()
+        {
+            this.DiffgramDataSet = new DataSet() { Locale = CultureInfo.InvariantCulture };
+            this.DiffgramDataSets = new List<DataSet>();
+        }
+
+        /// <summary>
+        /// Gets the CSS visibility class.
+        /// </summary>
+        /// <returns>The CSS visibility class, either CanHide or empty string</returns>
+        protected string GetCssVisibilityClass()
+        {
+            return this.DiffgramDataSets.Any(dataSet => !(bool)dataSet.ExtendedProperties[Documenter.CanHide]) ? string.Empty : Documenter.CanHide;
+        }
+
+        /// <summary>
         /// Writes the rows.
         /// </summary>
         /// <param name="rows">The rows.</param>
@@ -1094,7 +1280,15 @@ namespace AzureADConnectConfigDocumenter
                     {
                         // Start the new row
                         this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.WriteAttribute("class", cellClass);
+                        if (row[Documenter.HtmlTableRowVisibilityStatusColumn] as string == Documenter.CanHide)
+                        {
+                            this.ReportWriter.WriteAttribute("class", cellClass + " " + Documenter.CanHide);
+                        }
+                        else
+                        {
+                            this.ReportWriter.WriteAttribute("class", cellClass);
+                        }
+
                         this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                     }
 
@@ -1419,6 +1613,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
+                this.DiffgramDataSets.Add(this.DiffgramDataSet);
             }
             finally
             {
@@ -1532,6 +1727,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
+                this.DiffgramDataSets.Add(this.DiffgramDataSet);
             }
             finally
             {

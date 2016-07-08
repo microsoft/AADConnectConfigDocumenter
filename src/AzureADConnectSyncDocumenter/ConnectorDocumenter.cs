@@ -498,7 +498,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -543,6 +543,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -644,7 +645,11 @@ namespace AzureADConnectConfigDocumenter
                 if (this.DiffgramDataSet.Tables[0].Rows.Count == 0)
                 {
                     this.ReportWriter.WriteLine();
+                    this.ReportWriter.WriteBeginTag("p");
+                    this.ReportWriter.WriteAttribute("class", this.GetCssVisibilityClass());
+                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.WriteLine("The provisioning hierarchy is not enabled.");
+                    this.ReportWriter.WriteEndTag("p");
 
                     return;
                 }
@@ -652,7 +657,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -697,6 +702,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -797,7 +803,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -836,6 +842,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -959,7 +966,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -1016,6 +1023,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -1210,7 +1218,11 @@ namespace AzureADConnectConfigDocumenter
                 if (!sectionPrinted)
                 {
                     this.ReportWriter.WriteLine();
+                    this.ReportWriter.WriteBeginTag("p");
+                    this.ReportWriter.WriteAttribute("class", Documenter.CanHide);
+                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.WriteLine("There are no <b>" + direction.ToString() + " " + sectionTitle.Replace(" Summary", string.Empty) + "</b> configured.");
+                    this.ReportWriter.WriteEndTag("p");
                 }
             }
             finally
@@ -1329,15 +1341,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
-
-                // Setup data relations
-                var column1 = this.DiffgramDataSet.Tables[0].Columns["Step Number"];
-
-                var column12 = this.DiffgramDataSet.Tables[1].Columns["Step Number"];
-
-                var dataRelation12 = new DataRelation("DataRelation12", new[] { column1 }, new[] { column12 }, false);
-
-                this.DiffgramDataSet.Relations.Add(dataRelation12);
+                this.DiffgramDataSets.Add(this.DiffgramDataSet);
             }
             finally
             {
@@ -1358,7 +1362,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -1415,6 +1419,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
         }

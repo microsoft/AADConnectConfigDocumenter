@@ -176,8 +176,6 @@ namespace AzureADConnectConfigDocumenter
             {
                 this.syncRuleReportType = reportType;
 
-                this.WriteSyncRuleReportHeader();
-
                 this.ProcessConnectorSyncRuleDescription();
                 this.ProcessConnectorSyncRuleScopingFilter();
                 this.ProcessConnectorSyncRuleJoinRules();
@@ -185,6 +183,45 @@ namespace AzureADConnectConfigDocumenter
                 if (reportType == SyncRuleReportType.AllSections)
                 {
                     this.ProcessConnectorSyncRuleTransformations();
+                }
+
+                var noHide = this.DiffgramDataSets.Any(dataSet => !(bool)dataSet.ExtendedProperties[Documenter.CanHide]);
+
+                if (noHide)
+                {
+                    // Update HtmlTableRowVisibilityStatusColumn for all rows to NoHide 
+                    foreach (var dataSet in this.DiffgramDataSets)
+                    {
+                        dataSet.ExtendedProperties[Documenter.CanHide] = false;
+                        foreach (DataTable table in dataSet.Tables)
+                        {
+                            if (!table.TableName.Equals("PrintSettings", StringComparison.OrdinalIgnoreCase))
+                            {
+                                foreach (DataRow row in table.Rows)
+                                {
+                                    row[Documenter.HtmlTableRowVisibilityStatusColumn] = Documenter.NoHide;
+                                }
+                            }
+                        }
+
+                        dataSet.AcceptChanges();
+                    }
+                }
+                
+                try
+                {
+                    this.WriteSyncRuleReportHeader();
+                    this.PrintConnectorSyncRuleDescription();
+                    this.PrintConnectorSyncRuleScopingFilter();
+                    this.PrintConnectorSyncRuleJoinRules();
+                    if (reportType == SyncRuleReportType.AllSections)
+                    {
+                        this.PrintConnectorSyncRuleTransformations();
+                    }
+                }
+                finally
+                {
+                    this.ResetDiffgram(); // reset the diffgram variables
                 }
 
                 return base.GetReport();
@@ -225,11 +262,12 @@ namespace AzureADConnectConfigDocumenter
                 #region toc
 
                 this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc5");
+                this.ReportToCWriter.WriteAttribute("class", "toc5" + " " + this.GetCssVisibilityClass());
                 this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
                 Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, bookmark, this.SyncRuleName, this.SyncRuleGuid, "TOC");
                 this.ReportToCWriter.WriteEndTag("span");
                 this.ReportToCWriter.WriteBeginTag("br");
+                this.ReportToCWriter.WriteAttribute("class", " " + this.GetCssVisibilityClass());
                 this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
                 this.ReportToCWriter.WriteLine();
 
@@ -237,7 +275,9 @@ namespace AzureADConnectConfigDocumenter
 
                 #region section
 
-                this.ReportWriter.WriteFullBeginTag("h5");
+                this.ReportWriter.WriteBeginTag("h5");
+                this.ReportWriter.WriteAttribute("class", this.GetCssVisibilityClass());
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 Documenter.WriteBookmarkLocation(this.ReportWriter, bookmark, this.SyncRuleName, this.SyncRuleGuid, "TOC");
                 this.ReportWriter.WriteEndTag("h5");
 
@@ -306,8 +346,6 @@ namespace AzureADConnectConfigDocumenter
                 this.FillConnectorSyncRuleDescriptionDataSet(false);
 
                 this.CreateSimpleOrderedSettingsDiffgram();
-
-                this.PrintConnectorSyncRuleDescription();
             }
             finally
             {
@@ -418,7 +456,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -467,6 +505,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
+                this.DiffgramDataSet = this.DiffgramDataSets[0];
                 this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
@@ -502,8 +541,6 @@ namespace AzureADConnectConfigDocumenter
                 this.FillConnectorSyncRuleScopingFilterDataSet(false);
 
                 this.CreateSimpleOrderedSettingsDiffgram();
-
-                this.PrintConnectorSyncRuleScopingFilter();
             }
             finally
             {
@@ -577,7 +614,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -638,6 +675,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
+                this.DiffgramDataSet = this.DiffgramDataSets[1];
                 this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
@@ -673,8 +711,6 @@ namespace AzureADConnectConfigDocumenter
                 this.FillConnectorSyncRuleJoinRulesDataSet(false);
 
                 this.CreateSimpleOrderedSettingsDiffgram();
-
-                this.PrintConnectorSyncRuleJoinRules();
             }
             finally
             {
@@ -758,7 +794,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -819,6 +855,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
+                this.DiffgramDataSet = this.DiffgramDataSets[2];
                 this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
@@ -852,8 +889,6 @@ namespace AzureADConnectConfigDocumenter
                 this.FillConnectorSyncRuleTransformationsDataSet(false);
 
                 this.CreateSimpleSettingsDiffgram();
-
-                this.PrintConnectorSyncRuleTransformations();
             }
             finally
             {
@@ -943,7 +978,7 @@ namespace AzureADConnectConfigDocumenter
                 #region table
 
                 this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table");
+                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
                     #region thead
@@ -1010,6 +1045,7 @@ namespace AzureADConnectConfigDocumenter
 
                 #region rows
 
+                this.DiffgramDataSet = this.DiffgramDataSets[3];
                 this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
 
                 #endregion rows
