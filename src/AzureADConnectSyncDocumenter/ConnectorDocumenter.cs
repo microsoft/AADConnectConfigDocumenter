@@ -161,13 +161,13 @@ namespace AzureADConnectConfigDocumenter
                 switch (reportType)
                 {
                     case SyncRuleDocumenter.SyncRuleReportType.ProvisioningSection:
-                        xpath += " and linkType = 'Provision'";
+                        xpath += " and linkType = 'Provision' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
                         break;
                     case SyncRuleDocumenter.SyncRuleReportType.StickyJoinSection:
-                        xpath += " and linkType = 'StickyJoin'";
+                        xpath += " and linkType = 'StickyJoin' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
                         break;
                     case SyncRuleDocumenter.SyncRuleReportType.ConditionalJoinSection:
-                        xpath += " and linkType = 'Join'";
+                        xpath += " and linkType = 'Join' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
                         xpath += " and (count(synchronizationCriteria/conditions/scope) != 0 or  count(relationshipCriteria/conditions/condition) != 0)";
                         break;
                 }
@@ -903,8 +903,8 @@ namespace AzureADConnectConfigDocumenter
 
                         var attributeInfo = connector.XPathSelectElement("//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
 
-                        var inboundSyncRules = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound']/attribute-mappings/mapping/src[attr = '" + attributeName + "']");
-                        var outboundSyncRules = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound']/attribute-mappings/mapping[dest = '" + attributeName + "']");
+                        var inboundSyncRules = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1']/attribute-mappings/mapping/src[attr = '" + attributeName + "']");
+                        var outboundSyncRules = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1']/attribute-mappings/mapping[dest = '" + attributeName + "']");
 
                         var hasInboundFlows = inboundSyncRules.Count() != 0;
                         var hasOutboundFlows = outboundSyncRules.Count() != 0;

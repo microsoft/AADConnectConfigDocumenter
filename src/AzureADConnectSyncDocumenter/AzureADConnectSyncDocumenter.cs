@@ -246,7 +246,7 @@ namespace AzureADConnectConfigDocumenter
                     throw Logger.Instance.ReportError(new FileNotFoundException(error));
                 }
 
-                this.configReportFilePath = Documenter.ReportFolder + @"\" + (this.pilotConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_To_" + (this.productionConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AADConnectSync_report.html";
+                this.configReportFilePath = Documenter.ReportFolder + @"\" + (this.pilotConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AppliedTo_" + (this.productionConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AADConnectSync_report.html";
             }
             finally
             {

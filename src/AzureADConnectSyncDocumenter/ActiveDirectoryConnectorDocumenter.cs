@@ -920,17 +920,29 @@ namespace AzureADConnectConfigDocumenter
 
                         var inclusions = partition.XPathSelectElements("filter/containers/inclusions/inclusion");
 
-                        for (var index = 0; index < inclusions.Count(); ++index)
+                        // Sort by DN visual order
+                        var distingushedNames = from inclusion in inclusions
+                                               let dn = (string)inclusion
+                                               orderby new string(dn.Reverse().ToArray())
+                                               select dn;
+                        var index = 0;
+                        for (; index < distingushedNames.Count(); ++index)
                         {
-                            var inclusion = (string)inclusions.ElementAt(index);
+                            var inclusion = (string)distingushedNames.ElementAt(index);
                             Documenter.AddRow(table, new object[] { index, inclusion, "Include" });
                         }
 
                         var exclusions = partition.XPathSelectElements("filter/containers/exclusions/exclusion");
 
-                        for (var index = inclusions.Count(); index < exclusions.Count(); ++index)
+                        // Sort by DN visual order
+                        distingushedNames = from exclusion in exclusions
+                                            let dn = (string)exclusion
+                                            orderby new string(dn.Reverse().ToArray())
+                                            select dn;
+
+                        for (; index < distingushedNames.Count(); ++index)
                         {
-                            var exclusion = (string)exclusions.ElementAt(index);
+                            var exclusion = (string)distingushedNames.ElementAt(index);
                             Documenter.AddRow(table, new object[] { index, exclusion, "Exclude" });
                         }
 

@@ -467,7 +467,7 @@ namespace AzureADConnectConfigDocumenter
                     Logger.Instance.WriteVerbose("Processed Attribute Information.");
 
                     // Fetch Sync Rules
-                    var syncRules = config.XPathSelectElements("//synchronizationRule[targetObjectType = '" + this.currentObjectType + "'and direction = 'Inbound' and attribute-mappings/mapping/dest = '" + attributeName + "']");
+                    var syncRules = config.XPathSelectElements("//synchronizationRule[targetObjectType = '" + this.currentObjectType + "' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1' and attribute-mappings/mapping/dest = '" + attributeName + "']");
                     syncRules = from syncRule in syncRules
                                 let precedence = (int)syncRule.Element("precedence")
                                 orderby precedence
@@ -982,7 +982,7 @@ namespace AzureADConnectConfigDocumenter
 
                 Documenter.AddRow(table, new object[] { objectType });
 
-                var deletionRules = config.XPathSelectElements("//SynchronizationRules/synchronizationRule[direction = 'Inbound' and (linkType = 'Provision' or  linkType = 'StickyJoin') and targetObjectType = '" + objectType + "']");
+                var deletionRules = config.XPathSelectElements("//SynchronizationRules/synchronizationRule[direction = 'Inbound' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1' and (linkType = 'Provision' or  linkType = 'StickyJoin') and targetObjectType = '" + objectType + "']");
 
                 for (var deletionRuleIndex = 0; deletionRuleIndex < deletionRules.Count(); ++deletionRuleIndex)
                 {

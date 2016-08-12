@@ -307,13 +307,13 @@ namespace AzureADConnectConfigDocumenter
                 switch (this.syncRuleReportType)
                 {
                     case SyncRuleReportType.ProvisioningSection:
-                        xpath += " and linkType = 'Provision'";
+                        xpath += " and linkType = 'Provision' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
                         break;
                     case SyncRuleReportType.StickyJoinSection:
-                        xpath += " and linkType = 'StickyJoin'";
+                        xpath += " and linkType = 'StickyJoin' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
                         break;
                     case SyncRuleReportType.ConditionalJoinSection:
-                        xpath += " and linkType = 'Join'";
+                        xpath += " and linkType = 'Join' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
                         break;
                 }
 
