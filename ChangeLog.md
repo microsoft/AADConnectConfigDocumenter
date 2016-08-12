@@ -13,12 +13,11 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 #### Changed
 
-* Disabed Sync Rules are now not listed in the metaverse attribute precedence information or in the rules summary sections. They are only documented in the Details section.
+* Disabled Sync Rules are now not listed in the metaverse attribute precedence information or in the rules summary sections. They are only documented in the Details section.
 
 #### Fixed
 
-* Active Directoy connection showing false positives for inclusion / exclusion OUs in some cases.
- 
+* Active Directory connection showing false positives for inclusion / exclusion OUs in some cases. 
 ------------
 
 ### Version 1.16.0708.0
