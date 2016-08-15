@@ -500,14 +500,14 @@ namespace AzureADConnectConfigDocumenter
                 this.CreateSimpleSettingsDiffgram();
 
                 this.PrintActiveDirectoryContainerCredentialSettings();
-                
+
                 // Container Include / Exclude settings
-                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order, 2 = Container, 3 = Include / Exclude
+                this.CreateActiveDirectoryPartitionContainersDataSets();
 
                 this.FillActiveDirectoryPartitionContainersDataSet(partitionName, true);
                 this.FillActiveDirectoryPartitionContainersDataSet(partitionName, false);
 
-                this.CreateSimpleOrderedSettingsDiffgram();
+                this.CreateActiveDirectoryPartitionContainersDiffGram();
 
                 this.PrintActiveDirectoryPartitionContainers();
             }
@@ -516,6 +516,8 @@ namespace AzureADConnectConfigDocumenter
                 Logger.Instance.WriteMethodExit("Partition: '{0}'.", partitionName);
             }
         }
+
+        #region Partition Settings
 
         /// <summary>
         /// Creates the active directory partition settings data sets.
@@ -735,6 +737,10 @@ namespace AzureADConnectConfigDocumenter
             }
         }
 
+        #endregion Partition Settings
+
+        #region Connection Options
+
         /// <summary>
         /// Fills the active directory connection option data set.
         /// </summary>
@@ -789,6 +795,10 @@ namespace AzureADConnectConfigDocumenter
                 Logger.Instance.WriteMethodExit("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
             }
         }
+
+        #endregion Connection Options
+
+        #region Container Credential Settings
 
         /// <summary>
         /// Fills the active directory container credential settings data set.
@@ -894,6 +904,122 @@ namespace AzureADConnectConfigDocumenter
             }
         }
 
+        #endregion Container Credential Settings
+
+        #region Container Selections
+
+        /// <summary>
+        /// Creates the active directory partition containers data sets.
+        /// </summary>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
+        private void CreateActiveDirectoryPartitionContainersDataSets()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var table = new DataTable("Containers") { Locale = CultureInfo.InvariantCulture };
+
+                var column1 = new DataColumn("Container"); // Container
+                var column2 = new DataColumn("Setting"); // Include / Exclude
+                var column3 = new DataColumn("DNPart1"); // Sort Column 1
+                var column4 = new DataColumn("DNPart2"); // Sort Column 2
+                var column5 = new DataColumn("DNPart3"); // Sort Column 3
+                var column6 = new DataColumn("DNPart4"); // Sort Column 4
+                var column7 = new DataColumn("DNPart5"); // Sort Column 5
+                var column8 = new DataColumn("DNPart6"); // Sort Column 6
+                var column9 = new DataColumn("DNPart7"); // Sort Column 7
+                var column10 = new DataColumn("DNPart8"); // Sort Column 8
+                var column11 = new DataColumn("DNPart9"); // Sort Column 9
+                var column12 = new DataColumn("DNPart10"); // Sort Column 10
+
+                table.Columns.Add(column1);
+                table.Columns.Add(column2);
+                table.Columns.Add(column3);
+                table.Columns.Add(column4);
+                table.Columns.Add(column5);
+                table.Columns.Add(column6);
+                table.Columns.Add(column7);
+                table.Columns.Add(column8);
+                table.Columns.Add(column9);
+                table.Columns.Add(column10);
+                table.Columns.Add(column11);
+                table.Columns.Add(column12);
+                table.PrimaryKey = new[] { column1, column2 };
+
+                this.PilotDataSet = new DataSet("Containers") { Locale = CultureInfo.InvariantCulture };
+                this.PilotDataSet.Tables.Add(table);
+                this.ProductionDataSet = this.PilotDataSet.Clone();
+
+                var printTable = this.GetActiveDirectoryPartitionContainersPrintTable();
+                this.PilotDataSet.Tables.Add(printTable);
+                this.ProductionDataSet.Tables.Add(printTable.Copy());
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Gets the active directory partition containers print table.
+        /// </summary>
+        /// <returns>The active directory partition containers print table</returns>
+        private DataTable GetActiveDirectoryPartitionContainersPrintTable()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var printTable = Documenter.GetPrintTable();
+
+                // Table 1
+                // Container
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+
+                // Include / Exclude
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+
+                // Sort Column1
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 2 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column2
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column3
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 2 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column4
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", 3 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column5
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 6 }, { "Hidden", true }, { "SortOrder", 4 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column6
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 7 }, { "Hidden", true }, { "SortOrder", 5 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column7
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", 6 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column8
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", 7 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column9
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 10 }, { "Hidden", true }, { "SortOrder", 8 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                // Sort Column10
+                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 11 }, { "Hidden", true }, { "SortOrder", 9 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+
+                printTable.AcceptChanges();
+
+                return printTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
         /// <summary>
         /// Fills the active directory partition containers data set.
         /// </summary>
@@ -920,30 +1046,21 @@ namespace AzureADConnectConfigDocumenter
 
                         var inclusions = partition.XPathSelectElements("filter/containers/inclusions/inclusion");
 
-                        // Sort by DN visual order
-                        var distingushedNames = from inclusion in inclusions
-                                               let dn = (string)inclusion
-                                               orderby new string(dn.Reverse().ToArray())
-                                               select dn;
-                        var index = 0;
-                        for (; index < distingushedNames.Count(); ++index)
+                        var columnCount = table.Columns.Count;
+                        foreach (var inclusion in inclusions)
                         {
-                            var inclusion = (string)distingushedNames.ElementAt(index);
-                            Documenter.AddRow(table, new object[] { index, inclusion, "Include" });
+                            var distinguishedName = (string)inclusion;
+                            var row = this.GetContainerSelectionRow(distinguishedName, true, columnCount);
+                            Documenter.AddRow(table, row);
                         }
 
                         var exclusions = partition.XPathSelectElements("filter/containers/exclusions/exclusion");
 
-                        // Sort by DN visual order
-                        distingushedNames = from exclusion in exclusions
-                                            let dn = (string)exclusion
-                                            orderby new string(dn.Reverse().ToArray())
-                                            select dn;
-
-                        for (; index < distingushedNames.Count(); ++index)
+                        foreach (var exclusion in exclusions)
                         {
-                            var exclusion = (string)distingushedNames.ElementAt(index);
-                            Documenter.AddRow(table, new object[] { index, exclusion, "Exclude" });
+                            var distinguishedName = (string)exclusion;
+                            var row = this.GetContainerSelectionRow(distinguishedName, false, columnCount);
+                            Documenter.AddRow(table, row);
                         }
 
                         table.AcceptChanges();
@@ -953,6 +1070,72 @@ namespace AzureADConnectConfigDocumenter
             finally
             {
                 Logger.Instance.WriteMethodExit("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
+            }
+        }
+
+        /// <summary>
+        /// Gets the container selection row.
+        /// </summary>
+        /// <param name="distinguishedName">The distinguished name of the container.</param>
+        /// <param name="inclusion">True if the container is included.</param>
+        /// <param name="columnCount">The column count.</param>
+        /// <returns>The container selection row</returns>
+        private object[] GetContainerSelectionRow(string distinguishedName, bool inclusion, int columnCount)
+        {
+            Logger.Instance.WriteMethodEntry("Container: '{0}'. Included: '{1}'.", distinguishedName, inclusion);
+            
+            try
+            {
+                var row = new object[columnCount];
+                var distinguishedNameParts = distinguishedName.Split(new string[] { "OU=" }, StringSplitOptions.RemoveEmptyEntries);
+                var partsCount = distinguishedNameParts.Length;
+                row[0] = distinguishedName;
+                row[1] = inclusion ? "Include" : "Exclude";
+
+                if (partsCount > Documenter.MaxSortableColumns)
+                {
+                    Logger.Instance.WriteInfo("Container: '{0}' is deeper than '{1}' levels. Display sequence may be a little out-of-order.", distinguishedName, Documenter.MaxSortableColumns);
+                }
+
+                for (var i = 0; i < row.Length - 2 && i < Documenter.MaxSortableColumns; ++i)
+                {
+                    row[2 + i] = string.Empty;
+                    if (i < partsCount)
+                    {
+                        if (partsCount == 1)
+                        {
+                            row[2 + i] = " " + distinguishedNameParts[0]; // so that the domain root is always sorted first
+                        }
+                        else
+                        {
+                            row[2 + i] = distinguishedNameParts[partsCount - 1 - i];
+                        }
+                    }
+                }
+
+                return row;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Container: '{0}'. Included: '{1}'.", distinguishedName, inclusion);
+            }
+        }
+
+        /// <summary>
+        /// Creates the active directory partition containers diffgram.
+        /// </summary>
+        private void CreateActiveDirectoryPartitionContainersDiffGram()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
+                this.DiffgramDataSets.Add(this.DiffgramDataSet);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
             }
         }
 
@@ -1018,6 +1201,8 @@ namespace AzureADConnectConfigDocumenter
                 Logger.Instance.WriteMethodExit();
             }
         }
+
+        #endregion Container Selections
 
         #endregion AD Partitions
 

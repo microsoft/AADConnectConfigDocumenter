@@ -8,6 +8,14 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.16.0815.0
+
+#### Fixed
+
+* Active Directory connector showing false positives for inclusion / exclusion OUs in some cases. 
+
+------------
+
 ### Version 1.16.0812.0
 
 

@@ -70,6 +70,11 @@ namespace AzureADConnectConfigDocumenter
         public const string VanityRow = "~~VANITY_ROW~~";
 
         /// <summary>
+        /// The maximum number of sortable columns in a table
+        /// </summary>
+        public const int MaxSortableColumns = 10;
+
+        /// <summary>
         /// The namespace manager
         /// </summary>
         private static XmlNamespaceManager namespaceManager = new XmlNamespaceManager(new NameTable());
@@ -709,7 +714,6 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The sorted table.
         /// </returns>
-        /// <exception cref="Exception">Max sort is on 7 columns</exception>
         protected static DataTable SortTable(DataTable table, int[] columns)
         {
             Logger.Instance.WriteMethodEntry();
@@ -760,8 +764,23 @@ namespace AzureADConnectConfigDocumenter
                                orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]]
                                select row;
                         break;
+                    case 8:
+                        rows = from row in table.Rows.Cast<DataRow>()
+                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]], row[columns[7]]
+                               select row;
+                        break;
+                    case 9:
+                        rows = from row in table.Rows.Cast<DataRow>()
+                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]], row[columns[7]], row[columns[8]]
+                               select row;
+                        break;
+                    case 10:
+                        rows = from row in table.Rows.Cast<DataRow>()
+                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]], row[columns[7]], row[columns[8]], row[columns[9]]
+                               select row;
+                        break;
                     default:
-                        throw new ArgumentOutOfRangeException("columns", "Columns length must be between 1 and 7");
+                        throw new ArgumentOutOfRangeException("columns", string.Format(CultureInfo.InvariantCulture, "Columns length must be between {0} and {1}.", 1, Documenter.MaxSortableColumns));
                 }
 
                 foreach (var row in rows)
