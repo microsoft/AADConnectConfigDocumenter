@@ -301,19 +301,20 @@ namespace AzureADConnectConfigDocumenter
             Logger.Instance.WriteMethodEntry("Current Connector Guid: '{0}'.", currentConnectorGuid);
 
             var xpath = "//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and name = '" + this.SyncRuleName + "'";
+            var commonCriteria = "and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition;
 
             try
             {
                 switch (this.syncRuleReportType)
                 {
                     case SyncRuleReportType.ProvisioningSection:
-                        xpath += " and linkType = 'Provision' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
+                        xpath += " and linkType = 'Provision' " + commonCriteria;
                         break;
                     case SyncRuleReportType.StickyJoinSection:
-                        xpath += " and linkType = 'StickyJoin' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
+                        xpath += " and linkType = 'StickyJoin' " + commonCriteria;
                         break;
                     case SyncRuleReportType.ConditionalJoinSection:
-                        xpath += " and linkType = 'Join' and direction = 'Inbound' and disabled != 'True' and disabled != 'true' and disabled != '1'";
+                        xpath += " and linkType = 'Join' " + commonCriteria;
                         break;
                 }
 

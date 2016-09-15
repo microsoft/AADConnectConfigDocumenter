@@ -1087,7 +1087,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var row = new object[columnCount];
-                var distinguishedNameParts = distinguishedName.Split(new string[] { "OU=" }, StringSplitOptions.RemoveEmptyEntries);
+                var distinguishedNameParts = distinguishedName.Split(new string[] { "OU=" }, StringSplitOptions.None);
                 var partsCount = distinguishedNameParts.Length;
                 row[0] = distinguishedName;
                 row[1] = inclusion ? "Include" : "Exclude";

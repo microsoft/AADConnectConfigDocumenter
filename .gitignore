@@ -210,3 +210,5 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/src/SolutionOutput
+/src/AzureADConnectSyncDocumenter/Documenter - Copy.cs

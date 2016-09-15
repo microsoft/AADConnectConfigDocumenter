@@ -75,6 +75,11 @@ namespace AzureADConnectConfigDocumenter
         public const int MaxSortableColumns = 10;
 
         /// <summary>
+        /// The XPath condition for disabled synchronization rules
+        /// </summary>
+        public const string SyncRuleDisabledCondition = " and (count(disabled) = 0 or (disabled != 'True' and disabled != 'true' and disabled != '1')) ";
+
+        /// <summary>
         /// The namespace manager
         /// </summary>
         private static XmlNamespaceManager namespaceManager = new XmlNamespaceManager(new NameTable());
@@ -286,7 +291,7 @@ namespace AzureADConnectConfigDocumenter
         /// </returns>
         public static string GetTempFilePath(string fileName)
         {
-            fileName = Path.GetInvalidFileNameChars().Aggregate(fileName, (current, c) => current.Replace(c, '-'));
+            fileName = Path.GetInvalidFileNameChars().Aggregate(fileName + "_" + Guid.NewGuid().ToString("N"), (current, c) => current.Replace(c, '-'));
 
             return Path.GetTempPath() + @"\" + fileName;
         }
@@ -585,8 +590,7 @@ namespace AzureADConnectConfigDocumenter
                         newRow[column.ColumnName] = row[column.ColumnName];
                     }
 
-                    diffGramTable.Rows.Add(newRow);
-                    newRow.AcceptChanges();
+                    Documenter.AddRow(diffGramTable, newRow);
                 }
 
                 // Populate modified rows
@@ -612,8 +616,7 @@ namespace AzureADConnectConfigDocumenter
                         newRow[column.ColumnName] = row[column.ColumnName];
                     }
 
-                    diffGramTable.Rows.Add(newRow);
-                    newRow.AcceptChanges();
+                    Documenter.AddRow(diffGramTable, newRow);
                 }
 
                 // Populate added rows
@@ -626,8 +629,7 @@ namespace AzureADConnectConfigDocumenter
                         newRow[column.ColumnName] = row[column.ColumnName];
                     }
 
-                    diffGramTable.Rows.Add(newRow);
-                    newRow.AcceptChanges();
+                    Documenter.AddRow(diffGramTable, newRow);
                 }
 
                 // Populate deleted rows
@@ -653,8 +655,7 @@ namespace AzureADConnectConfigDocumenter
                         }
                     }
 
-                    diffGramTable.Rows.Add(newRow);
-                    newRow.AcceptChanges();
+                    Documenter.AddRow(diffGramTable, newRow);
                 }
 
                 return diffGramTable;
@@ -850,6 +851,8 @@ namespace AzureADConnectConfigDocumenter
                 {
                     dataRow.RowError = Documenter.VanityRow;
                 }
+
+                dataRow.AcceptChanges();
             }
             catch (DataException e)
             {
