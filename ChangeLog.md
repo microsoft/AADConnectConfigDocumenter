@@ -8,6 +8,19 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.16.0915.0
+
+#### Fixed
+
+* Corrected XPath condition for filtering out disabled sync rules so that it's backward compatible to the AADSync versions which did not have this capability.
+* Fixed the issue of Selected Attributes section not showing Import/Export status in the "Flows Configured?" column.
+
+#### Added
+
+* Support for allowing more than one instances running concurrently.
+
+------------
+
 ### Version 1.16.0815.0
 
 #### Fixed
