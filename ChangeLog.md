@@ -8,6 +8,14 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.16.0919.0
+
+#### Fixed
+
+* Fixed missing Outbound Sync Rule Summary sections.
+
+------------
+
 ### Version 1.16.0915.0
 
 #### Fixed
