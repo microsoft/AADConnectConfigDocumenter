@@ -15,7 +15,7 @@ Prerequisites:
 
 How to use the tool:
 
-* Download the latest release from the [releases](https://github.com/Microsoft/AADConnectConfigDocumenter/releases) tab under the Code tab tab, UNBLOCK the downloaded zip file and extract the zip file to an empty local folder on a machine which has .NET Framework 4.5 installed.
+* Download the latest release AzureADConnectSyncDocumenter.zip from the [releases](https://github.com/Microsoft/AADConnectConfigDocumenter/releases) tab under the Code tab tab, UNBLOCK the downloaded zip file and extract the zip file to an empty local folder on a machine which has .NET Framework 4.5 installed.
 	* This will extract the Documenter application binaries along with the sample data files for "Contoso".
 	* Make sure that the tool runs by double-clicking on the cmd file AzureADConnectSyncDocumenter.cmd.
 * Export the Server Configuration of your pilot / test Azure AD Connect sync server by running Get-ADSyncServerConfiguration cmdlet defined in ADSync module shipped with Azure AD Connect.
