@@ -7,4 +7,14 @@
       <Value>hashtable</Value>
     </CollectionProperty>
   </GlobalSettings>
+  <Analyzers>
+    <Analyzer AnalyzerId="StyleCop.CSharp.NamingRules">
+      <AnalyzerSettings>
+        <CollectionProperty Name="Hungarian">
+          <Value>cs</Value>
+          <Value>mv</Value>
+        </CollectionProperty>
+      </AnalyzerSettings>
+    </Analyzer>
+  </Analyzers>
 </StyleCopSettings>

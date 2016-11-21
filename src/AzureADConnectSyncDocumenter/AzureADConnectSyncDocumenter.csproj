@@ -87,6 +87,9 @@
     <None Include="..\Documenter.snk">
       <Link>Documenter.snk</Link>
     </None>
+    <None Include="..\Settings.StyleCop">
+      <Link>Settings.StyleCop</Link>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

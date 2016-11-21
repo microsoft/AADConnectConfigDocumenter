@@ -59,6 +59,9 @@
     <None Include="..\Documenter.snk">
       <Link>Documenter.snk</Link>
     </None>
+    <None Include="..\Settings.StyleCop">
+      <Link>Settings.StyleCop</Link>
+    </None>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>

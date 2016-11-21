@@ -15,6 +15,7 @@ namespace AzureADConnectConfigDocumenter
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Web.UI;
     using System.Xml.Linq;
     using System.Xml.XPath;
@@ -57,7 +58,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="syncRuleName">Name of the synchronize rule.</param>
         /// <param name="syncRuleGuid">The synchronize rule unique identifier.</param>
         /// <param name="connectorName">The connector name.</param>
-        /// <param name="productionOnly">if set to <c>true</c> [production only].</param>
+        /// <param name="productionOnly">If set to <c>true</c>, indicates the sync rule is present in production only.</param>
         public SyncRuleDocumenter(XElement pilotXml, XElement productionXml, string syncRuleName, string syncRuleGuid, string connectorName, bool productionOnly)
             : base(pilotXml, productionXml, connectorName, productionOnly)
         {
@@ -207,7 +208,7 @@ namespace AzureADConnectConfigDocumenter
                         dataSet.AcceptChanges();
                     }
                 }
-                
+
                 try
                 {
                     this.WriteSyncRuleReportHeader();
@@ -217,6 +218,10 @@ namespace AzureADConnectConfigDocumenter
                     if (reportType == SyncRuleReportType.AllSections)
                     {
                         this.PrintConnectorSyncRuleTransformations();
+                        if (noHide)
+                        {
+                            this.CreateConnectorSyncRuleInstallationScript();
+                        }
                     }
                 }
                 finally
@@ -757,16 +762,16 @@ namespace AzureADConnectConfigDocumenter
                             var conditions = joinRule.Elements("condition");
                             foreach (var condition in conditions)
                             {
-                                var scopeAttribute = (string)condition.Element("csAttribute") ?? " ";
-                                var scopeOperator = (string)condition.Element("ilmAttribute") ?? " ";
-                                var scopeValue = (string)condition.Element("caseSensitive") ?? " ";
+                                var csAttribute = (string)condition.Element("csAttribute") ?? " ";
+                                var mvAttribute = (string)condition.Element("ilmAttribute") ?? " ";
+                                var caseSensitive = (string)condition.Element("caseSensitive") ?? " ";
                                 if (this.syncRuleDirection == SyncRuleDirection.Inbound)
                                 {
-                                    Documenter.AddRow(table, new object[] { joinRuleIndex + 1, joinRuleIndex + 1, scopeAttribute, scopeOperator, scopeValue });
+                                    Documenter.AddRow(table, new object[] { joinRuleIndex + 1, joinRuleIndex + 1, csAttribute, mvAttribute, caseSensitive });
                                 }
                                 else
                                 {
-                                    Documenter.AddRow(table, new object[] { joinRuleIndex + 1, joinRuleIndex + 1, scopeOperator, scopeAttribute, scopeValue });
+                                    Documenter.AddRow(table, new object[] { joinRuleIndex + 1, joinRuleIndex + 1, mvAttribute, csAttribute, caseSensitive });
                                 }
                             }
                         }
@@ -1061,5 +1066,547 @@ namespace AzureADConnectConfigDocumenter
         }
 
         #endregion Sync Rule Transformations
+
+        #region Sync Rule Script Generation
+        /// <summary>
+        /// Creates Connector Sync Rule Installation Script
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        protected void CreateConnectorSyncRuleInstallationScript()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                Logger.Instance.WriteInfo("Creating installation script for sync rule. Name = '{0}'. Id = '{1}'.", this.SyncRuleName, this.SyncRuleGuid);
+
+                var config = !this.ProductionOnly ? this.PilotXml : this.ProductionXml;
+                var syncRule = config.XPathSelectElement("//synchronizationRule[id = '" + this.SyncRuleGuid + "']");
+                var script = string.Empty;
+
+                // if the sync rule is part of the default config (starts with tag "Microsoft.")
+                // we'll igonre any changes, except for the supported change i.e. to the Disabled or Enable Password Sync settings.
+                // else for any custom rule we'll create the complete script
+                var immutableTag = (string)syncRule.Element("immutable-tag");
+                if (!string.IsNullOrEmpty(immutableTag) && immutableTag.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (this.ProductionOnly)
+                    {
+                        script = this.CreateDefaultSyncRuleUpdateWarningScript(syncRule);
+                    }
+                    else
+                    {
+                        var enablePasswordSyncPilot = (string)syncRule.Element("EnablePasswordSync");
+                        var disabledPilot = (string)syncRule.Element("disabled");
+                        var syncRuleProduction = this.ProductionXml.XPathSelectElement("//synchronizationRule[name = '" + this.SyncRuleName + "']");
+                        var enablePasswordSyncProduction = (string)syncRuleProduction.Element("EnablePasswordSync");
+                        var disabledProduction = (string)syncRuleProduction.Element("disabled");
+
+                        if (disabledPilot != disabledProduction || enablePasswordSyncPilot != enablePasswordSyncProduction)
+                        {
+                            bool? disable = null;
+                            if (disabledPilot != disabledProduction)
+                            {
+                                disable = string.IsNullOrEmpty(disabledPilot) ? false : Convert.ToBoolean(disabledPilot);
+                            }
+
+                            bool? enablePasswordSync = null;
+                            if (enablePasswordSyncPilot != enablePasswordSyncProduction)
+                            {
+                                enablePasswordSync = string.IsNullOrEmpty(enablePasswordSyncPilot) ? false : Convert.ToBoolean(enablePasswordSyncPilot);
+                            }
+
+                            script = this.CreateSyncRuleUpdateScript(syncRuleProduction, disable, enablePasswordSync);
+                        }
+                        else
+                        {
+                            script = this.CreateDefaultSyncRuleUpdateWarningScript(syncRuleProduction);
+                        }
+                    }
+                }
+                else
+                {
+                    if (this.ProductionOnly)
+                    {
+                        script = this.CreateRemoveADSyncRuleScript(syncRule);
+                    }
+                    else
+                    {
+                        script = this.CreateNewADSyncRuleScript(syncRule);
+                    }
+                }
+
+                #region div
+
+                this.ReportWriter.WriteBeginTag("div");
+                this.ReportWriter.WriteAttribute("class", "PowerShellScript");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportWriter.WriteLine(script);
+                this.ReportWriter.WriteEndTag("div");
+
+                #endregion div
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Creates a Warning Script if unsupported changes are made to a default sync rule
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <returns>The Synchronization Rule script.</returns>
+        private string CreateDefaultSyncRuleUpdateWarningScript(XElement syncRule)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                var syncRuleName = (string)syncRule.Element("name");
+
+                if (this.ProductionOnly)
+                {
+                    // Pilot and Production have different selection of features ??
+                    syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' only exists in the exports supplied as the `\"production`\" config.\" -f $connectorName, $syncRuleName)");
+                    syncRuleScript.AppendLine("Write-Warning (\"This may be due to different versions or feature set selection between production and pilot config.\")");
+                    syncRuleScript.AppendLine();
+                }
+                else
+                {
+                    // Unsupported changes to the default rule ??
+                    syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' has unsupported chanages detected.\" -f $connectorName, $syncRuleName)");
+                    syncRuleScript.AppendLine("Write-Warning (\"Only supported changes to the default rules are to the `\"Disabled`\" and `\"Enabled Password Sync`\" settings.\")");
+                    syncRuleScript.AppendLine();
+                }
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+            }
+        }
+
+        /// <summary>
+        /// Creates a Update Script for supported changes made to a default sync rule
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <param name="disable">Indicates if the Synchronization Rule is to be disabled.</param>
+        /// <param name="enablePasswordSync">Indicates if the Synchronization Rule is to be enabled for password sync.</param>
+        /// <returns>The Synchronization Rule script.</returns>
+        private string CreateSyncRuleUpdateScript(XElement syncRule, bool? disable, bool? enablePasswordSync)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                var syncRuleName = (string)syncRule.Element("name");
+                var syncRuleId = ((string)syncRule.Element("id")).TrimStart('{').TrimEnd('}'); // This format is universally acceptable across all ADSync cmdlets
+
+                syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$connectorName = '{0}' # For informational use. The script is based on sync rule id.", this.ConnectorName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}' # For informational use. The script is based on sync rule id.", syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleId = '{0}'", syncRuleId);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("Write-Host \"Processing Sync Rule '$syncRuleName' for Connector '$connectorName'\"");
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendLine("$syncRule = Get-ADSyncRule -Identifier $syncRuleId");
+
+                if (enablePasswordSync != null)
+                {
+                    syncRuleScript.AppendFormat("$syncRule.EnablePasswordSync =  ${0}", enablePasswordSync);
+                    syncRuleScript.AppendLine();
+                }
+
+                if (disable != null)
+                {
+                    syncRuleScript.AppendFormat("$syncRule.Disabled =  ${0}", disable);
+                    syncRuleScript.AppendLine();
+                }
+
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("Add-ADSyncRule -SynchronizationRule $syncRule | Out-Null");
+                syncRuleScript.AppendLine();
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+            }
+        }
+
+        /// <summary>
+        /// Creates Remove-ADSyncRule Script
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <returns>The Synchronization Rule script.</returns>
+        private string CreateRemoveADSyncRuleScript(XElement syncRule)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                var syncRuleName = (string)syncRule.Element("name");
+                var syncRuleId = ((string)syncRule.Element("id")).TrimStart('{').TrimEnd('}');
+
+                syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$connectorName = '{0}' # For informational use. The script is based on sync rule id.", this.ConnectorName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}' # For informational use. The script is based on sync rule id.", syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleId = '{0}'", syncRuleId);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("Write-Host \"Processing Sync Rule '$syncRuleName' for Connector '$connectorName'\"");
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendLine("$syncRule = Get-ADSyncRule -Identifier $syncRuleId");
+                syncRuleScript.AppendLine("Remove-ADSyncRule -SynchronizationRule $syncRule | Out-Null");
+                syncRuleScript.AppendLine();
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+            }
+        }
+
+        /// <summary>
+        /// Creates New-ADSyncRule Script
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <returns>The Synchronization Rule script.</returns>
+        private string CreateNewADSyncRuleScript(XElement syncRule)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                var syncRuleName = (string)syncRule.Element("name");
+                var syncRuleId = ((string)syncRule.Element("id")).TrimStart('{').TrimEnd('}');
+
+                syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("$connectorId = [string](Get-ADSyncConnector -Name $connectorName).Identifier");
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}' # For informational use. The script is based on sync rule id.", syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("Write-Host \"Processing Sync Rule '$syncRuleName' for Connector '$connectorName'\"");
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendLine("New-ADSyncRule `");
+
+                syncRuleScript.AppendLine("-Name @'");
+                syncRuleScript.AppendLine(syncRuleName);
+                syncRuleScript.AppendLine("'@ `");
+
+                syncRuleScript.AppendFormat("-Identifier '{0}' `", syncRuleId);
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendLine("-Description @'");
+                syncRuleScript.AppendLine((string)syncRule.Element("description"));
+                syncRuleScript.AppendLine("'@ `");
+
+                syncRuleScript.AppendFormat("-Direction '{0}' `", (string)syncRule.Element("direction"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendFormat("-Precedence '{0}' `", (string)syncRule.Element("precedence"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendFormat("-PrecedenceAfter '{0}' `", (string)syncRule.Element("precedence-after"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendFormat("-PrecedenceBefore '{0}' `", (string)syncRule.Element("precedence-before"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendFormat("-SourceObjectType '{0}' `", (string)syncRule.Element("sourceObjectType"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendFormat("-TargetObjectType '{0}' `", (string)syncRule.Element("targetObjectType"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendLine("-Connector $connectorId `");
+
+                syncRuleScript.AppendFormat("-LinkType '{0}' `", (string)syncRule.Element("linkType"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendFormat("-SoftDeleteExpiryInterval '{0}' `", (string)syncRule.Element("softDeleteExpiryInterval"));
+                syncRuleScript.AppendLine();
+
+                syncRuleScript.AppendFormat("-ImmutableTag '{0}' `", (string)syncRule.Element("immutable-tag"));
+                syncRuleScript.AppendLine();
+
+                var enablePasswordSync = (string)syncRule.Element("EnablePasswordSync");
+                if (!string.IsNullOrEmpty(enablePasswordSync) && enablePasswordSync.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    syncRuleScript.AppendLine("-EnablePasswordSync `");
+                }
+
+                var disabled = (string)syncRule.Element("disabled");
+                if (!string.IsNullOrEmpty(disabled) && disabled.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    syncRuleScript.AppendLine("-Disabled `");
+                }
+
+                syncRuleScript.AppendLine("-OutVariable syncRule | Out-Null");
+                syncRuleScript.AppendLine();
+
+                var addADSyncAttributeFlowMapping = this.CreateAddADSyncAttributeFlowMappingScript(syncRule);
+                var addADSyncADSyncScopeConditionGroup = this.CreateAddADSyncADSyncScopeConditionGroupScript(syncRule);
+                var addADSyncADSyncJoinConditionGroup = this.CreateAddADSyncADSyncJoinConditionGroupScript(syncRule);
+
+                syncRuleScript.AppendLine(addADSyncAttributeFlowMapping);
+                syncRuleScript.AppendLine(addADSyncADSyncScopeConditionGroup);
+                syncRuleScript.AppendLine(addADSyncADSyncJoinConditionGroup);
+
+                syncRuleScript.AppendLine("Add-ADSyncRule -SynchronizationRule $syncRule[0] | Out-Null");
+                syncRuleScript.AppendLine();
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+            }
+        }
+
+        /// <summary>
+        /// Creates Add-ADSyncAttributeFlowMapping Script
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <returns>The Synchronization Rule Attribute Flow Mapping script.</returns>
+        private string CreateAddADSyncAttributeFlowMappingScript(XElement syncRule)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                var direction = (string)syncRule.Element("direction");
+                var transformations = from transformation in syncRule.XPathSelectElements("attribute-mappings/mapping")
+                                      let target = (string)transformation.Element("dest")
+                                      orderby target
+                                      select transformation;
+
+                foreach (var transformation in transformations)
+                {
+                    var targetAttribute = (string)transformation.Element("dest");
+                    var expression = (string)transformation.Element("expression");
+                    var valueMergeType = (string)transformation.Element("valueMergeType");
+                    var applyOnce = (string)transformation.Attribute("execute-once");
+                    var sourceAttributes = transformation.XPathSelectElements("src/attr");
+                    string flowType = !string.IsNullOrEmpty(expression) ? "Expression" : sourceAttributes.Any() ? "Direct" : "Constant";
+
+                    syncRuleScript.AppendLine("Add-ADSyncAttributeFlowMapping `");
+                    syncRuleScript.AppendLine("-SynchronizationRule $syncRule[0] `");
+
+                    var source = string.Empty;
+                    switch (flowType)
+                    {
+                        case "Expression":
+                            {
+                                foreach (var sourceAttribute in sourceAttributes)
+                                {
+                                    source = "'" + (string)sourceAttribute + "',";
+                                }
+
+                                source = source.TrimEnd(',');
+                            }
+
+                            break;
+
+                        case "Direct":
+                        case "Constant":
+                            {
+                                source = "'" + (string)transformation.Element("src") + "'";
+                            }
+
+                            break;
+                    }
+
+                    // Souce may be null e.g. RemoveDuplicates(Trim(ImportedValue("proxyAddresses")))
+                    if (!string.IsNullOrEmpty(source))
+                    {
+                        syncRuleScript.AppendFormat("-Source @({0}) `", source);
+                        syncRuleScript.AppendLine();
+                    }
+
+                    syncRuleScript.AppendFormat("-Destination '{0}' `", targetAttribute);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("-FlowType '{0}' `", flowType);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("-ValueMergeType '{0}' `", valueMergeType);
+                    syncRuleScript.AppendLine();
+
+                    if (!string.IsNullOrEmpty(applyOnce) && applyOnce.Equals("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        syncRuleScript.AppendLine("-ExecuteOnce `");
+                    }
+
+                    if (!string.IsNullOrEmpty(expression))
+                    {
+                        syncRuleScript.AppendFormat("-Expression '{0}' `", expression);
+                        syncRuleScript.AppendLine();
+                    }
+
+                    syncRuleScript.AppendLine("-OutVariable syncRule | Out-Null");
+                    syncRuleScript.AppendLine();
+                }
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+            }
+        }
+
+        /// <summary>
+        /// Creates Add-ADSyncScopeConditionGroup Script
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <returns>The Synchronization Rule ScopeCondition Group script.</returns>
+        private string CreateAddADSyncADSyncScopeConditionGroupScript(XElement syncRule)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                foreach (var condition in syncRule.XPathSelectElements("synchronizationCriteria/conditions"))
+                {
+                    var scopes = condition.Elements("scope");
+
+                    var conditionVariables = "-ScopeConditions @(";
+                    for (var scopeIndex = 0; scopeIndex < scopes.Count(); ++scopeIndex)
+                    {
+                        var scope = scopes.ElementAt(scopeIndex);
+                        var scopeAttribute = (string)scope.Element("csAttribute");
+                        var scopeOperator = (string)scope.Element("csOperator");
+                        var scopeValue = (string)scope.Element("csValue");
+
+                        conditionVariables += "$condition" + scopeIndex + "[0],";
+
+                        syncRuleScript.AppendLine("New-Object `");
+                        syncRuleScript.AppendLine("-TypeName 'Microsoft.IdentityManagement.PowerShell.ObjectModel.ScopeCondition' `");
+                        syncRuleScript.AppendFormat("-ArgumentList '{0}', '{1}', '{2}' `", scopeAttribute, scopeValue, scopeOperator);
+                        syncRuleScript.AppendLine();
+                        syncRuleScript.AppendFormat("-OutVariable condition{0} | Out-Null", scopeIndex);
+                        syncRuleScript.AppendLine();
+                        syncRuleScript.AppendLine();
+                    }
+
+                    conditionVariables = conditionVariables.TrimEnd(',') + ") `";
+
+                    syncRuleScript.AppendLine("Add-ADSyncScopeConditionGroup `");
+                    syncRuleScript.AppendLine("-SynchronizationRule $syncRule[0] `");
+                    syncRuleScript.AppendLine(conditionVariables);
+                    syncRuleScript.AppendLine("-OutVariable syncRule | Out-Null");
+                    syncRuleScript.AppendLine();
+                }
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+            }
+        }
+
+        /// <summary>
+        /// Creates Add-ADSyncJoinConditionGroup Script
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <returns>The Synchronization Rule JoinCondition Group script.</returns>
+        private string CreateAddADSyncADSyncJoinConditionGroupScript(XElement syncRule)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                this.syncRuleDirection = (SyncRuleDirection)Enum.Parse(typeof(SyncRuleDirection), (string)syncRule.Element("direction"), true);
+
+                foreach (var joinRule in syncRule.XPathSelectElements("relationshipCriteria/conditions"))
+                {
+                    var conditions = joinRule.Elements("condition");
+
+                    var conditionVariables = "-JoinConditions @(";
+                    for (var conditionIndex = 0; conditionIndex < conditions.Count(); ++conditionIndex)
+                    {
+                        var condition = conditions.ElementAt(conditionIndex);
+                        var csAttribute = (string)condition.Element("csAttribute");
+                        var mvAttribute = (string)condition.Element("ilmAttribute");
+                        var caseSensitive = (string)condition.Element("caseSensitive");
+                        caseSensitive = string.IsNullOrEmpty(caseSensitive) || caseSensitive.Equals("False", StringComparison.OrdinalIgnoreCase) ? "$false" : "$true";
+
+                        conditionVariables += "$condition" + conditionIndex + "[0],";
+
+                        syncRuleScript.AppendLine("New-Object `");
+                        syncRuleScript.AppendLine("-TypeName 'Microsoft.IdentityManagement.PowerShell.ObjectModel.JoinCondition' `");
+
+                        syncRuleScript.AppendFormat("-ArgumentList '{0}', '{1}', {2} `", csAttribute, mvAttribute, caseSensitive);
+
+                        syncRuleScript.AppendLine();
+                        syncRuleScript.AppendFormat("-OutVariable condition{0} | Out-Null", conditionIndex);
+                        syncRuleScript.AppendLine();
+                        syncRuleScript.AppendLine();
+                    }
+
+                    conditionVariables = conditionVariables.TrimEnd(',') + ") `";
+
+                    syncRuleScript.AppendLine("Add-ADSyncJoinConditionGroup `");
+                    syncRuleScript.AppendLine("-SynchronizationRule $syncRule[0] `");
+                    syncRuleScript.AppendLine(conditionVariables);
+                    syncRuleScript.AppendLine("-OutVariable syncRule | Out-Null");
+                    syncRuleScript.AppendLine();
+                }
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+            }
+        }
+
+        #endregion Sync Rule Script Generation
     }
 }

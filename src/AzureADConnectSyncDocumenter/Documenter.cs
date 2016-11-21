@@ -227,6 +227,11 @@ namespace AzureADConnectConfigDocumenter
         protected DataSet PilotDataSet { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the config element is present in production only.
+        /// </summary>
+        protected bool ProductionOnly { get; set; }
+
+        /// <summary>
         /// Gets or sets the production data set.
         /// </summary>
         /// <value>
@@ -422,6 +427,8 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
+                Logger.Instance.WriteInfo("Processing changes. This may take a few minutes...");
+
                 if (pilotDataSet == null)
                 {
                     throw new ArgumentNullException("pilotDataSet");
@@ -878,6 +885,15 @@ namespace AzureADConnectConfigDocumenter
 
                 htmlWriter.WriteFullBeginTag("head");
 
+                #region meta
+
+                htmlWriter.WriteBeginTag("meta");
+                htmlWriter.WriteAttribute("http-equiv", "Content-Type");
+                htmlWriter.WriteAttribute("content", "text/html; charset=UTF-8");
+                htmlWriter.WriteLine(XhtmlTextWriter.SelfClosingTagEnd);
+
+                #endregion meta
+
                 #region style
 
                 ////htmlWriter.WriteBeginTag("link");
@@ -898,18 +914,34 @@ namespace AzureADConnectConfigDocumenter
                 #region script
 
                 htmlWriter.WriteFullBeginTag("script");
-                htmlWriter.Write("function ToggleVisibility() {");
-                htmlWriter.Write("var x = document.getElementById(\"OnlyShowChanges\");");
-                htmlWriter.Write("var elements = document.getElementsByClassName(\"" + Documenter.CanHide + "\");");
-                htmlWriter.Write("for (var i = 0; i < elements.length; ++i) {");
-                htmlWriter.Write("if (x.checked == true) {");
-                htmlWriter.Write("elements[i].style.display = \"none\";");
-                htmlWriter.Write("}");
-                htmlWriter.Write("else {");
-                htmlWriter.Write("elements[i].style.display = \"\";");
-                htmlWriter.Write("}");
-                htmlWriter.Write("}");
-                htmlWriter.Write("}");
+                htmlWriter.WriteLine("function ToggleVisibility() {");
+                htmlWriter.WriteLine("var x = document.getElementById(\"OnlyShowChanges\");");
+                htmlWriter.WriteLine("var elements = document.getElementsByClassName(\"" + Documenter.CanHide + "\");");
+                htmlWriter.WriteLine("for (var i = 0; i < elements.length; ++i) {");
+                htmlWriter.WriteLine("if (x.checked == true) {");
+                htmlWriter.WriteLine("elements[i].style.display = \"none\";");
+                htmlWriter.WriteLine("}");
+                htmlWriter.WriteLine("else {");
+                htmlWriter.WriteLine("elements[i].style.display = \"\";");
+                htmlWriter.WriteLine("}");
+                htmlWriter.WriteLine("}");
+                htmlWriter.WriteLine("var downloadLink = document.getElementById(\"DownloadLink\");");
+                htmlWriter.WriteLine("if (x.checked == true) {");
+                htmlWriter.WriteLine("var scripts = document.getElementsByClassName(\"PowerShellScript\");");
+                htmlWriter.WriteLine("var data = `" + DocumenterResources.PowerShellScriptHeader + Environment.NewLine + Environment.NewLine + "`;");
+                htmlWriter.WriteLine("for (var i = 0; i < scripts.length; ++i) {");
+                htmlWriter.WriteLine("data += scripts[i].innerText;");
+                htmlWriter.WriteLine("}");
+                htmlWriter.WriteLine("var file = new Blob([data.replace(/([^\\r])\\n/g, \"$1\\r\\n\")], {type: \"text/plain\"});");
+                htmlWriter.WriteLine("var href = URL.createObjectURL(file);");
+                htmlWriter.WriteLine("downloadLink.href = href;");
+                htmlWriter.WriteLine("downloadLink.style.display = \"\";");
+                htmlWriter.WriteLine("}");
+                htmlWriter.WriteLine("else {");
+                htmlWriter.WriteLine("downloadLink.style.display = \"none\";");
+                htmlWriter.WriteLine("}");
+                htmlWriter.WriteLine("}");
+                htmlWriter.WriteLine();
                 htmlWriter.WriteEndTag("script");
                 htmlWriter.WriteLine();
 
@@ -952,6 +984,15 @@ namespace AzureADConnectConfigDocumenter
                 htmlWriter.WriteAttribute("id", "OnlyShowChanges");
                 htmlWriter.WriteAttribute("onclick", "ToggleVisibility();");
                 htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+
+                htmlWriter.WriteBeginTag("a");
+                htmlWriter.WriteAttribute("style", "display: none;");
+                htmlWriter.WriteAttribute("href", "#");
+                htmlWriter.WriteAttribute("download", "SyncRuleChanges.ps1");
+                htmlWriter.WriteAttribute("id", "DownloadLink");
+                htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                htmlWriter.Write("Download Sync Rule Changes Script");
+                htmlWriter.WriteEndTag("a");
 
                 htmlWriter.WriteBeginTag("br");
                 htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);

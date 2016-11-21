@@ -31,7 +31,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="pilotXml">The pilot configuration XML.</param>
         /// <param name="productionXml">The production configuration XML.</param>
         /// <param name="connectorName">The connector name.</param>
-        /// <param name="productionOnly">if set to <c>true</c> [production only].</param>
+        /// <param name="productionOnly">If set to <c>true</c>, indicates the connector is present in production only.</param>
         public Extensible2ConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, bool productionOnly)
             : base(pilotXml, productionXml, connectorName, productionOnly)
         {

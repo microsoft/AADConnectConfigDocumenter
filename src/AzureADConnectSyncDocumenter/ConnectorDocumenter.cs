@@ -47,7 +47,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="pilotXml">The pilot configuration XML.</param>
         /// <param name="productionXml">The production configuration XML.</param>
         /// <param name="connectorName">The connector name.</param>
-        /// <param name="productionOnly">if set to <c>true</c> [production only].</param>
+        /// <param name="productionOnly">If set to <c>true</c>, indicates the the config element (connector, sync rule, etc.) is present in production only.</param>
         protected ConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, bool productionOnly)
         {
             Logger.Instance.WriteMethodEntry("Connector Name: '{0}'. Production Only: '{1}'.", connectorName, productionOnly);
@@ -57,9 +57,10 @@ namespace AzureADConnectConfigDocumenter
                 this.PilotXml = pilotXml;
                 this.ProductionXml = productionXml;
                 this.ConnectorName = connectorName;
+                this.ProductionOnly = productionOnly;
 
                 string xpath = "//ma-data[name ='" + this.ConnectorName + "']";
-                var connector = productionOnly ? this.ProductionXml.XPathSelectElement(xpath, Documenter.NamespaceManager) : this.PilotXml.XPathSelectElement(xpath, Documenter.NamespaceManager);
+                var connector = this.ProductionOnly ? this.ProductionXml.XPathSelectElement(xpath, Documenter.NamespaceManager) : this.PilotXml.XPathSelectElement(xpath, Documenter.NamespaceManager);
 
                 this.ConnectorGuid = (string)connector.Element("id");
                 this.ConnectorCategory = (string)connector.Element("category");
