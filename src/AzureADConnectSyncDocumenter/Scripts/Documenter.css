@@ -1,0 +1,167 @@
+﻿body {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-family: Calibri,Tahoma;
+}
+
+table {
+    font-family: Calibri,Tahoma;
+    font-size: 10pt;
+    padding: 0;
+    border-collapse: collapse;
+    width: 100%;
+    white-space: pre-wrap;
+}
+
+    table.outer-table {
+        width: 600pt;
+    }
+
+th {
+    text-align: left;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+    th.column-th {
+        font-weight: bold;
+        font-size: 11pt;
+        background: #9CC2E5;
+        border: none;
+        border-top: 2px solid #999999;
+        border-bottom: 2px solid #999999;
+    }
+
+    th.column-th2 {
+        font-weight: bold;
+        background: #C6D9F1;
+        border: none;
+        border-bottom: 1px solid #999999;
+    }
+
+    th.column-th3 {
+        font-weight: bold;
+        background: #C6D9F1;
+        border: none;
+        border-bottom: 1px solid #999999;
+    }
+
+tr.Unchanged {
+}
+
+tr.Added {
+    color: green;
+}
+
+tr.Deleted {
+    color: red;
+    text-decoration: line-through;
+}
+
+tr.Modified {
+    color: blue;
+}
+
+
+td {
+    text-align: left;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-bottom: 1px solid #999999;
+}
+
+    td.Unchanged {
+    }
+
+    td.Added {
+        color: green;
+    }
+
+    td.Deleted {
+        color: red;
+        text-decoration: line-through;
+    }
+
+    td.Modified {
+        color: blue;
+    }
+
+
+span.Unchanged {
+}
+
+span.Added {
+    color: green;
+}
+
+span.Modified {
+    color: blue;
+}
+
+span.Deleted {
+    color: red;
+    text-decoration: line-through;
+}
+
+span.toc1 {
+    margin-left: 0;
+    font-size: 16pt;
+}
+
+span.toc2 {
+    margin-left: 16pt;
+    font-size: 14pt;
+}
+
+span.toc3 {
+    margin-left: 32pt;
+    font-size: 12pt;
+}
+
+span.toc4 {
+    margin-left: 48pt;
+    font-size: 10pt;
+}
+
+span.toc5 {
+    margin-left: 64pt;
+    font-size: 9pt;
+}
+
+a {
+    text-decoration: none;
+    font-weight: normal;
+}
+
+    a.Added {
+        color: green;
+    }
+
+    a.Modified {
+        color: blue;
+    }
+
+    a.Deleted {
+        color: red;
+        text-decoration: line-through;
+    }
+
+    a.Unchanged {
+        color: black;
+    }
+
+    a.TOC {
+        color: #5B9BD5;
+        font-weight: bold;
+    }
+
+h1, h2, h3, h4, h5, h6 {
+    color: #5B9BD5;
+}
+
+div.PowerShellScript {
+    display: none;
+    white-space: pre;
+}

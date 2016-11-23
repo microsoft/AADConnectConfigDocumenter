@@ -11,8 +11,10 @@
 namespace AzureADConnectConfigDocumenter
 {
     using System;
+    using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -58,7 +60,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="syncRuleName">Name of the synchronize rule.</param>
         /// <param name="syncRuleGuid">The synchronize rule unique identifier.</param>
         /// <param name="connectorName">The connector name.</param>
-        /// <param name="productionOnly">If set to <c>true</c>, indicates the sync rule is present in production only.</param>
+        /// <param name="productionOnly">If set to <c>true</c>, indicates the sync rule is present in production only. If set to <c>false</c>, does NOT indicate the sync rule is present in pilot only.</param>
         public SyncRuleDocumenter(XElement pilotXml, XElement productionXml, string syncRuleName, string syncRuleGuid, string connectorName, bool productionOnly)
             : base(pilotXml, productionXml, connectorName, productionOnly)
         {
@@ -1071,6 +1073,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates Connector Sync Rule Installation Script
         /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Reviewed.")]
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void CreateConnectorSyncRuleInstallationScript()
         {
@@ -1092,35 +1095,43 @@ namespace AzureADConnectConfigDocumenter
                 {
                     if (this.ProductionOnly)
                     {
-                        script = this.CreateDefaultSyncRuleUpdateWarningScript(syncRule);
+                        // This sync rule is present only in the Production config. Give a warning.
+                        script = this.CreateMissingDefaultSyncRuleWarningScript(syncRule, true);
                     }
                     else
                     {
-                        var enablePasswordSyncPilot = (string)syncRule.Element("EnablePasswordSync");
-                        var disabledPilot = (string)syncRule.Element("disabled");
-                        var syncRuleProduction = this.ProductionXml.XPathSelectElement("//synchronizationRule[name = '" + this.SyncRuleName + "']");
-                        var enablePasswordSyncProduction = (string)syncRuleProduction.Element("EnablePasswordSync");
-                        var disabledProduction = (string)syncRuleProduction.Element("disabled");
-
-                        if (disabledPilot != disabledProduction || enablePasswordSyncPilot != enablePasswordSyncProduction)
+                        // This sync rule may be present only in the Pilot config OR in the Pilot as well as Production config.
+                        var connectorProduction = this.ProductionXml.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                        if (connectorProduction == null)
                         {
-                            bool? disable = null;
-                            if (disabledPilot != disabledProduction)
-                            {
-                                disable = string.IsNullOrEmpty(disabledPilot) ? false : Convert.ToBoolean(disabledPilot);
-                            }
-
-                            bool? enablePasswordSync = null;
-                            if (enablePasswordSyncPilot != enablePasswordSyncProduction)
-                            {
-                                enablePasswordSync = string.IsNullOrEmpty(enablePasswordSyncPilot) ? false : Convert.ToBoolean(enablePasswordSyncPilot);
-                            }
-
-                            script = this.CreateSyncRuleUpdateScript(syncRuleProduction, disable, enablePasswordSync);
+                            // This sync rule is present only in the Pilot config. Give a warning.
+                            script = this.CreateMissingDefaultSyncRuleWarningScript(syncRule, false);
                         }
                         else
                         {
-                            script = this.CreateDefaultSyncRuleUpdateWarningScript(syncRuleProduction);
+                            var connectorGuidProduction = ((string)connectorProduction.Element("id") ?? string.Empty).ToUpperInvariant();
+                            var syncRuleProduction = this.ProductionXml.XPathSelectElement(this.GetSyncRuleXPath(connectorGuidProduction));
+                            if (syncRuleProduction == null)
+                            {
+                                // This sync rule is present only in the Pilot config. Give a warning.
+                                script = this.CreateMissingDefaultSyncRuleWarningScript(syncRule, false);
+                            }
+                            else
+                            {
+                                var disabledPilot = (string)syncRule.Element("disabled");
+                                var disabledProduction = (string)syncRuleProduction.Element("disabled");
+
+                                if (disabledPilot != disabledProduction)
+                                {
+                                    var disable = string.IsNullOrEmpty(disabledPilot) ? false : Convert.ToBoolean(disabledPilot, CultureInfo.InvariantCulture);
+
+                                    script = this.CreateDefaultSyncRuleUpdateScript(syncRuleProduction, disable);
+                                }
+                                else
+                                {
+                                    script = this.CreateDefaultSyncRuleUpdateWarningScript(syncRuleProduction);
+                                }
+                            }
                         }
                     }
                 }
@@ -1146,9 +1157,81 @@ namespace AzureADConnectConfigDocumenter
 
                 #endregion div
             }
+            catch (Exception e)
+            {
+                Logger.Instance.WriteError(e.ToString());
+
+                try
+                {
+                    #region div
+
+                    var syncRuleScript = new StringBuilder();
+
+                    syncRuleScript.AppendFormat(CultureInfo.InvariantCulture, Documenter.GetEmbeddedScriptResource("PowerShellScriptSectionHeader.ps1"), this.ConnectorName, this.SyncRuleName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendFormat("$syncRuleName = '{0}'", this.SyncRuleName);
+                    syncRuleScript.AppendLine();
+                    syncRuleScript.AppendLine("$errMsg = @'");
+                    syncRuleScript.AppendLine(e.ToString());
+                    syncRuleScript.AppendLine("'@");
+                    syncRuleScript.AppendLine("Write-Error $errMsg");
+
+                    this.ReportWriter.WriteBeginTag("div");
+                    this.ReportWriter.WriteAttribute("class", "PowerShellScript");
+                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.WriteLine(syncRuleScript.ToString());
+                    this.ReportWriter.WriteEndTag("div");
+
+                    #endregion div
+                }
+                catch (Exception)
+                {
+                    // Do nothing. Already reported
+                }
+            }
             finally
             {
                 Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Creates a Warning Script if unsupported changes are made to a default sync rule
+        /// </summary>
+        /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <param name="productionConfig">If set to <c>true</c>, indicates the sync rule is missing from production config. Otherwise from pilot config.</param>
+        /// <returns>The Synchronization Rule script.</returns>
+        private string CreateMissingDefaultSyncRuleWarningScript(XElement syncRule, bool productionConfig)
+        {
+            Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
+
+            var syncRuleScript = new StringBuilder();
+
+            try
+            {
+                var syncRuleName = (string)syncRule.Element("name");
+
+                syncRuleScript.AppendFormat(CultureInfo.InvariantCulture, Documenter.GetEmbeddedScriptResource("PowerShellScriptSectionHeader.ps1"), this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' only exists in the config supplied as the `\"" + (productionConfig ? "production" : "pilot") + "`\" config.\" -f $syncRuleName, $connectorName)");
+                syncRuleScript.AppendLine("Write-Warning (\"This sync rule is inferred as a part of the out-of-box default rule set and will be skipped.\")");
+                syncRuleScript.AppendLine("Write-Warning (\"This may be due to different versions or feature set selection between the production and pilot config.\")");
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
+
+                return syncRuleScript.ToString();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
             }
         }
 
@@ -1167,34 +1250,17 @@ namespace AzureADConnectConfigDocumenter
             {
                 var syncRuleName = (string)syncRule.Element("name");
 
-                if (this.ProductionOnly)
-                {
-                    // Pilot and Production have different selection of features ??
-                    syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' only exists in the exports supplied as the `\"production`\" config.\" -f $connectorName, $syncRuleName)");
-                    syncRuleScript.AppendLine("Write-Warning (\"This may be due to different versions or feature set selection between production and pilot config.\")");
-                    syncRuleScript.AppendLine();
-                }
-                else
-                {
-                    // Unsupported changes to the default rule ??
-                    syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
-                    syncRuleScript.AppendLine();
-                    syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' has unsupported chanages detected.\" -f $connectorName, $syncRuleName)");
-                    syncRuleScript.AppendLine("Write-Warning (\"Only supported changes to the default rules are to the `\"Disabled`\" and `\"Enabled Password Sync`\" settings.\")");
-                    syncRuleScript.AppendLine();
-                }
+                syncRuleScript.AppendFormat(CultureInfo.InvariantCulture, Documenter.GetEmbeddedScriptResource("PowerShellScriptSectionHeader.ps1"), this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' has unsupported chanages detected.\" -f $syncRuleName, $connectorName)");
+                syncRuleScript.AppendLine("Write-Warning (\"Only supported change to an out-of-box default rule is to make it `\"Disabled`\".\")");
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
 
                 return syncRuleScript.ToString();
             }
@@ -1209,9 +1275,8 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
         /// <param name="disable">Indicates if the Synchronization Rule is to be disabled.</param>
-        /// <param name="enablePasswordSync">Indicates if the Synchronization Rule is to be enabled for password sync.</param>
         /// <returns>The Synchronization Rule script.</returns>
-        private string CreateSyncRuleUpdateScript(XElement syncRule, bool? disable, bool? enablePasswordSync)
+        private string CreateDefaultSyncRuleUpdateScript(XElement syncRule, bool disable)
         {
             Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
 
@@ -1220,36 +1285,29 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var syncRuleName = (string)syncRule.Element("name");
-                var syncRuleId = ((string)syncRule.Element("id")).TrimStart('{').TrimEnd('}'); // This format is universally acceptable across all ADSync cmdlets
 
-                syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendFormat(CultureInfo.InvariantCulture, Documenter.GetEmbeddedScriptResource("PowerShellScriptSectionHeader.ps1"), this.ConnectorName, syncRuleName);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine();
-                syncRuleScript.AppendFormat("$connectorName = '{0}' # For informational use. The script is based on sync rule id.", this.ConnectorName);
+                syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
                 syncRuleScript.AppendLine();
-                syncRuleScript.AppendFormat("$syncRuleName = '{0}' # For informational use. The script is based on sync rule id.", syncRuleName);
-                syncRuleScript.AppendLine();
-                syncRuleScript.AppendFormat("$syncRuleId = '{0}'", syncRuleId);
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine("Write-Host \"Processing Sync Rule '$syncRuleName' for Connector '$connectorName'\"");
                 syncRuleScript.AppendLine();
-
-                syncRuleScript.AppendLine("$syncRule = Get-ADSyncRule -Identifier $syncRuleId");
-
-                if (enablePasswordSync != null)
-                {
-                    syncRuleScript.AppendFormat("$syncRule.EnablePasswordSync =  ${0}", enablePasswordSync);
-                    syncRuleScript.AppendLine();
-                }
-
-                if (disable != null)
-                {
-                    syncRuleScript.AppendFormat("$syncRule.Disabled =  ${0}", disable);
-                    syncRuleScript.AppendLine();
-                }
-
+                syncRuleScript.AppendLine("$connectorId = [string](Get-ADSyncConnector -Name $connectorName).Identifier");
+                syncRuleScript.AppendLine("$syncRule = Get-ADSyncRule | Where { $_.Name -eq $syncRuleName -and $_.Connector -eq  $connectorId }");
+                syncRuleScript.AppendLine("if ($syncRule.Count -eq 1)");
+                syncRuleScript.AppendLine("{");
+                syncRuleScript.AppendFormat("    $syncRule.Disabled =  ${0}", disable);
                 syncRuleScript.AppendLine();
-                syncRuleScript.AppendLine("Add-ADSyncRule -SynchronizationRule $syncRule | Out-Null");
+                syncRuleScript.AppendLine("    $syncRule | Add-ADSyncRule | Out-Null");
+                syncRuleScript.AppendLine("}");
+                syncRuleScript.AppendLine("elseif ($syncRule.Count -gt 1)");
+                syncRuleScript.AppendLine("{");
+                syncRuleScript.AppendLine("    Write-Error \"Error processing Sync Rule '$syncRuleName' for Connector '$connectorName'. More than one sync rules found.\"");
+                syncRuleScript.AppendLine("}");
+                syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine();
 
                 return syncRuleScript.ToString();
@@ -1274,22 +1332,27 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var syncRuleName = (string)syncRule.Element("name");
-                var syncRuleId = ((string)syncRule.Element("id")).TrimStart('{').TrimEnd('}');
 
-                syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendFormat(CultureInfo.InvariantCulture, Documenter.GetEmbeddedScriptResource("PowerShellScriptSectionHeader.ps1"), this.ConnectorName, syncRuleName);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine();
-                syncRuleScript.AppendFormat("$connectorName = '{0}' # For informational use. The script is based on sync rule id.", this.ConnectorName);
+                syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
                 syncRuleScript.AppendLine();
-                syncRuleScript.AppendFormat("$syncRuleName = '{0}' # For informational use. The script is based on sync rule id.", syncRuleName);
-                syncRuleScript.AppendLine();
-                syncRuleScript.AppendFormat("$syncRuleId = '{0}'", syncRuleId);
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine("Write-Host \"Processing Sync Rule '$syncRuleName' for Connector '$connectorName'\"");
                 syncRuleScript.AppendLine();
-
-                syncRuleScript.AppendLine("$syncRule = Get-ADSyncRule -Identifier $syncRuleId");
-                syncRuleScript.AppendLine("Remove-ADSyncRule -SynchronizationRule $syncRule | Out-Null");
+                syncRuleScript.AppendLine("$connectorId = [string](Get-ADSyncConnector -Name $connectorName).Identifier");
+                syncRuleScript.AppendLine("$syncRule = Get-ADSyncRule | Where { $_.Name -eq $syncRuleName -and $_.Connector -eq  $connectorId }");
+                syncRuleScript.AppendLine("if ($syncRule.Count -eq 1)");
+                syncRuleScript.AppendLine("{");
+                syncRuleScript.AppendLine("    $syncRule | Remove-ADSyncRule | Out-Null");
+                syncRuleScript.AppendLine("}");
+                syncRuleScript.AppendLine("elseif ($syncRule.Count -gt 1)");
+                syncRuleScript.AppendLine("{");
+                syncRuleScript.AppendLine("    Write-Error \"Error processing Sync Rule '$syncRuleName' for Connector '$connectorName'. More than one sync rules found.\"");
+                syncRuleScript.AppendLine("}");
+                syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine();
 
                 return syncRuleScript.ToString();
@@ -1316,16 +1379,29 @@ namespace AzureADConnectConfigDocumenter
                 var syncRuleName = (string)syncRule.Element("name");
                 var syncRuleId = ((string)syncRule.Element("id")).TrimStart('{').TrimEnd('}');
 
-                syncRuleScript.AppendFormat(DocumenterResources.PowerShellScriptSectionHeader, this.ConnectorName, syncRuleName);
+                syncRuleScript.AppendFormat(CultureInfo.InvariantCulture, Documenter.GetEmbeddedScriptResource("PowerShellScriptSectionHeader.ps1"), this.ConnectorName, syncRuleName);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
                 syncRuleScript.AppendLine();
-                syncRuleScript.AppendLine("$connectorId = [string](Get-ADSyncConnector -Name $connectorName).Identifier");
-                syncRuleScript.AppendLine();
-                syncRuleScript.AppendFormat("$syncRuleName = '{0}' # For informational use. The script is based on sync rule id.", syncRuleName);
+                syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine("Write-Host \"Processing Sync Rule '$syncRuleName' for Connector '$connectorName'\"");
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("$connectorId = [string](Get-ADSyncConnector -Name $connectorName).Identifier");
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("# First clean-up any existing old rule in case it was created using editor UI and hence has a different guid.");
+                syncRuleScript.AppendLine("$syncRule = Get-ADSyncRule | Where { $_.Name -eq $syncRuleName -and $_.Connector -eq  $connectorId }");
+                syncRuleScript.AppendLine("if ($syncRule.Count -eq 1)");
+                syncRuleScript.AppendLine("{");
+                syncRuleScript.AppendLine("    $syncRule | Remove-ADSyncRule | Out-Null");
+                syncRuleScript.AppendLine("}");
+                syncRuleScript.AppendLine("elseif ($syncRule.Count -gt 1)");
+                syncRuleScript.AppendLine("{");
+                syncRuleScript.AppendLine("    Write-Error \"Error processing Sync Rule '$syncRuleName' for Connector '$connectorName'. More than one sync rules found.\"");
+                syncRuleScript.AppendLine("}");
+                syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine();
 
                 syncRuleScript.AppendLine("New-ADSyncRule `");
@@ -1395,6 +1471,7 @@ namespace AzureADConnectConfigDocumenter
 
                 syncRuleScript.AppendLine("Add-ADSyncRule -SynchronizationRule $syncRule[0] | Out-Null");
                 syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine();
 
                 return syncRuleScript.ToString();
             }
@@ -1417,7 +1494,6 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var direction = (string)syncRule.Element("direction");
                 var transformations = from transformation in syncRule.XPathSelectElements("attribute-mappings/mapping")
                                       let target = (string)transformation.Element("dest")
                                       orderby target
@@ -1459,7 +1535,7 @@ namespace AzureADConnectConfigDocumenter
                             break;
                     }
 
-                    // Souce may be null e.g. RemoveDuplicates(Trim(ImportedValue("proxyAddresses")))
+                    // Source may be null e.g. RemoveDuplicates(Trim(ImportedValue("proxyAddresses")))
                     if (!string.IsNullOrEmpty(source))
                     {
                         syncRuleScript.AppendFormat("-Source @({0}) `", source);

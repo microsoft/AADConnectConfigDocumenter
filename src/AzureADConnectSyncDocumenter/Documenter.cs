@@ -18,6 +18,7 @@ namespace AzureADConnectConfigDocumenter
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Web.UI;
     using System.Xml;
     using System.Xml.Linq;
@@ -228,6 +229,7 @@ namespace AzureADConnectConfigDocumenter
 
         /// <summary>
         /// Gets or sets a value indicating whether the config element is present in production only.
+        /// If the values is <c>true</c>, indicates the sync rule is present in production only. If the values is <c>false</c>, does NOT indicate the sync rule is present in pilot only.
         /// </summary>
         protected bool ProductionOnly { get; set; }
 
@@ -487,7 +489,7 @@ namespace AzureADConnectConfigDocumenter
                 diffGramDataSet.ExtendedProperties.Add(Documenter.CanHide, true);
 
                 // Loop all ignore last table which is PrintSetting table
-                for (var i = 0; i < diffGramDataSet.Tables.Count - 1; ++i) 
+                for (var i = 0; i < diffGramDataSet.Tables.Count - 1; ++i)
                 {
                     diffGramDataSet.Tables[i].Columns.Add(Documenter.HtmlTableRowVisibilityStatusColumn);
 
@@ -905,7 +907,7 @@ namespace AzureADConnectConfigDocumenter
                 htmlWriter.WriteBeginTag("style");
                 htmlWriter.WriteAttribute("type", "text/css");
                 htmlWriter.Write(HtmlTextWriter.TagRightChar);
-                htmlWriter.Write(DocumenterResources.StyleSheet);
+                htmlWriter.Write(GetEmbeddedScriptResource("Documenter.css"));
                 htmlWriter.WriteEndTag("style");
                 htmlWriter.WriteLine();
 
@@ -914,34 +916,8 @@ namespace AzureADConnectConfigDocumenter
                 #region script
 
                 htmlWriter.WriteFullBeginTag("script");
-                htmlWriter.WriteLine("function ToggleVisibility() {");
-                htmlWriter.WriteLine("var x = document.getElementById(\"OnlyShowChanges\");");
-                htmlWriter.WriteLine("var elements = document.getElementsByClassName(\"" + Documenter.CanHide + "\");");
-                htmlWriter.WriteLine("for (var i = 0; i < elements.length; ++i) {");
-                htmlWriter.WriteLine("if (x.checked == true) {");
-                htmlWriter.WriteLine("elements[i].style.display = \"none\";");
-                htmlWriter.WriteLine("}");
-                htmlWriter.WriteLine("else {");
-                htmlWriter.WriteLine("elements[i].style.display = \"\";");
-                htmlWriter.WriteLine("}");
-                htmlWriter.WriteLine("}");
-                htmlWriter.WriteLine("var downloadLink = document.getElementById(\"DownloadLink\");");
-                htmlWriter.WriteLine("if (x.checked == true) {");
-                htmlWriter.WriteLine("var scripts = document.getElementsByClassName(\"PowerShellScript\");");
-                htmlWriter.WriteLine("var data = `" + DocumenterResources.PowerShellScriptHeader + Environment.NewLine + Environment.NewLine + "`;");
-                htmlWriter.WriteLine("for (var i = 0; i < scripts.length; ++i) {");
-                htmlWriter.WriteLine("data += scripts[i].innerText;");
-                htmlWriter.WriteLine("}");
-                htmlWriter.WriteLine("var file = new Blob([data.replace(/([^\\r])\\n/g, \"$1\\r\\n\")], {type: \"text/plain\"});");
-                htmlWriter.WriteLine("var href = URL.createObjectURL(file);");
-                htmlWriter.WriteLine("downloadLink.href = href;");
-                htmlWriter.WriteLine("downloadLink.style.display = \"\";");
-                htmlWriter.WriteLine("}");
-                htmlWriter.WriteLine("else {");
-                htmlWriter.WriteLine("downloadLink.style.display = \"none\";");
-                htmlWriter.WriteLine("}");
-                htmlWriter.WriteLine("}");
                 htmlWriter.WriteLine();
+                htmlWriter.WriteLine(GetEmbeddedScriptResource("Documenter.js"));
                 htmlWriter.WriteEndTag("script");
                 htmlWriter.WriteLine();
 
@@ -953,6 +929,29 @@ namespace AzureADConnectConfigDocumenter
 
                 htmlWriter.WriteEndTag("head");
                 htmlWriter.WriteLine();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Gets the embedded script resource
+        /// </summary>
+        /// <param name="resourceName">Name of the embedded script resource</param>
+        /// <returns>The script resource</returns>
+        protected static string GetEmbeddedScriptResource(string resourceName)
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var qualifiedResource = "AzureADConnectConfigDocumenter.Scripts." + resourceName;
+                using (StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(qualifiedResource)))
+                {
+                    return reader.ReadToEnd();
+                }
             }
             finally
             {
@@ -988,9 +987,9 @@ namespace AzureADConnectConfigDocumenter
                 htmlWriter.WriteBeginTag("a");
                 htmlWriter.WriteAttribute("style", "display: none;");
                 htmlWriter.WriteAttribute("href", "#");
-                htmlWriter.WriteAttribute("download", "SyncRuleChanges.ps1");
                 htmlWriter.WriteAttribute("id", "DownloadLink");
-                htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                htmlWriter.WriteAttribute("onclick", "return DownloadScript();");
+                htmlWriter.Write(HtmlTextWriter.TagRightChar);
                 htmlWriter.Write("Download Sync Rule Changes Script");
                 htmlWriter.WriteEndTag("a");
 
@@ -1053,6 +1052,13 @@ namespace AzureADConnectConfigDocumenter
                     htmlWriter.WriteBeginTag("br");
                     htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
                 }
+
+                htmlWriter.WriteBeginTag("div");
+                htmlWriter.WriteAttribute("class", "PowerShellScript");
+                htmlWriter.Write(HtmlTextWriter.TagRightChar);
+                htmlWriter.WriteLine(Documenter.GetEmbeddedScriptResource("PowerShellScriptHeader.ps1"));
+                htmlWriter.WriteLine();
+                htmlWriter.WriteEndTag("div");
 
                 htmlWriter.WriteLine();
             }

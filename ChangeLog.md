@@ -8,6 +8,14 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.16.1123.0
+
+#### Added
+
+* Implemented capability to generate PowerShell scripts for deploying synchronisation rule changes.
+
+------------
+
 ### Version 1.16.0919.0
 
 #### Fixed
