@@ -14,4 +14,6 @@ function Get-CurrentLine {
     $Myinvocation.ScriptlineNumber
 }
 
+$Error.Clear()
 Clear-Host
+

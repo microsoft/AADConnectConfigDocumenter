@@ -1087,8 +1087,8 @@ namespace AzureADConnectConfigDocumenter
                 var syncRule = config.XPathSelectElement("//synchronizationRule[id = '" + this.SyncRuleGuid + "']");
                 var script = string.Empty;
 
-                // if the sync rule is part of the default config (starts with tag "Microsoft.")
-                // we'll igonre any changes, except for the supported change i.e. to the Disabled or Enable Password Sync settings.
+                // if the sync rule is part of the default config (i.e. starts with tag "Microsoft.")
+                // we'll igonre any changes, except for the supported change i.e. to the Disabled settings.
                 // else for any custom rule we'll create the complete script
                 var immutableTag = (string)syncRule.Element("immutable-tag");
                 if (!string.IsNullOrEmpty(immutableTag) && immutableTag.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))

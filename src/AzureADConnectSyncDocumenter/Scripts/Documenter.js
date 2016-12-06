@@ -23,10 +23,33 @@
 function DownloadScript(downloadLink) {
     var scripts = document.getElementsByClassName("PowerShellScript");
     var data = "";
+
     for (var i = 0; i < scripts.length; ++i) {
         data += scripts[i].innerText;
     }
 
+    data += "\r\n#############################################################################################################################################"
+    data += "\r\n### Footer Script"
+    data += "\r\n#############################################################################################################################################"
+    data += "\r\n"
+
+    if (scripts.length == 1) {
+        data += "\r\nWrite-Host \"There are no changes detected in the sync rule configuration of the servers.\" -ForegroundColor Green"
+        data += "\r\nWrite-Host \"Please review the report manually to confim.\" -ForegroundColor Green\r\n"
+    }
+    else {
+        data += "\r\nif ($Error.Count) {"
+        data += "\r\n    Write-Host \"There were errors while executing the script.\" -ForegroundColor Red"
+        data += "\r\n    Write-Host \"Please review the console output.\" -ForegroundColor Red"
+        data += "\r\n}"
+        data += "\r\nelse {"
+        data += "\r\n    Write-Host \"Script execution completed sucessfully.\" -ForegroundColor Green"
+        data += "\r\n    Write-Host \"Please regenerate the report with the latest config exports to confirm.\" -ForegroundColor Green"
+        data += "\r\n    Write-Host \"Once confirmed, it is recommended you run Full Synchronization run profile all connectors.\" -ForegroundColor Green"
+        data += "\r\n}"
+        data += "\r\n"
+    }
+    
     var file = new Blob([data.replace(/([^\r])\n/g, "$1\r\n")], { type: "text/plain; charset=utf-8" });
     if (downloadLink == null && navigator.msSaveOrOpenBlob != null) {
         navigator.msSaveOrOpenBlob(file, "SyncRuleChanges.ps1.txt");
