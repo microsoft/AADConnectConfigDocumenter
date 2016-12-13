@@ -7,7 +7,12 @@ The goal of this project is to:
 * To enable quick understanding of the synchronization configuration and "how it happens"!
 * To build confidence in getting things right when making changes to the default configuration!!
 * To know what was changed when you applied a new build / configuration of Azure AD Connect or added/updated custom sync rules!!!
-* **NEW!** To generate the PowerShell script to migrate the sync rule differences or customisations from your "Pilot" server to "Production" server!!!!
+ 
+The current capabilities of the tool include:
+
+* Documentation of the complete configuration of Azure AD Connect sync.
+* Documentation of any changes in the configuration of two Azure AD Connect sync servers or changes from a given configuration baseline.
+* **!!NEW!!** Generation of the PowerShell deployment script to migrate the sync rule differences or customisations from one server to another.
 
 Prerequisites:
 
