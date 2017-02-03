@@ -25,7 +25,7 @@ function DownloadScript(downloadLink) {
     var data = "";
 
     for (var i = 0; i < scripts.length; ++i) {
-        data += scripts[i].innerText;
+        data += scripts[i].innerText + "\r\n";
     }
 
     data += "\r\n#############################################################################################################################################"
@@ -53,11 +53,13 @@ function DownloadScript(downloadLink) {
     var file = new Blob([data.replace(/([^\r])\n/g, "$1\r\n")], { type: "text/plain; charset=utf-8" });
     if (downloadLink == null && navigator.msSaveOrOpenBlob != null) {
         navigator.msSaveOrOpenBlob(file, "SyncRuleChanges.ps1.txt");
-        return false;
+    }
+    else {
+        var downloadLink = document.getElementById("DownloadLink");
+        var href = URL.createObjectURL(file);
+        downloadLink.href = href;
+        downloadLink.download = "SyncRuleChanges.ps1.txt"
     }
 
-    var downloadLink = document.getElementById("DownloadLink");
-    var href = URL.createObjectURL(file);
-    downloadLink.href = href;
-    downloadLink.download = "SyncRuleChanges.ps1.txt"
+    return false;
 }
