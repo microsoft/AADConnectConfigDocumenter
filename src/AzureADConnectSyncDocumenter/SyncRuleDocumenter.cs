@@ -1518,7 +1518,7 @@ namespace AzureADConnectConfigDocumenter
                             {
                                 foreach (var sourceAttribute in sourceAttributes)
                                 {
-                                    source = "'" + (string)sourceAttribute + "',";
+                                    source += "'" + (string)sourceAttribute + "',";
                                 }
 
                                 source = source.TrimEnd(',');
