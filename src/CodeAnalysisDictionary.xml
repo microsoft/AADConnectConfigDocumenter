@@ -34,6 +34,7 @@ Add exceptions to the acronym casing rules to the Dictionary/Acronyms/CasingExce
   <Acronyms>
     <CasingExceptions>
       <Acronym>AAD</Acronym>
+      <Acronym>TOC</Acronym>
     </CasingExceptions>
   </Acronyms>
 </Dictionary>

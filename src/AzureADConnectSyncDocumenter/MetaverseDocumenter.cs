@@ -84,46 +84,12 @@ namespace AzureADConnectConfigDocumenter
 
                 Logger.Instance.WriteInfo("Processing " + sectionTitle + ".");
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc2");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h2");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
-                this.ReportWriter.WriteEndTag("h2");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 2);
 
                 this.ProcessMetaverseObjectTypes();
                 this.ProcessMetaverseObjectDeletionRules();
 
-                this.ReportWriter.Close();
-                this.ReportToCWriter.Close();
-
-                string report;
-                string toc;
-
-                using (var reportReader = new StreamReader(this.ReportFileName))
-                {
-                    report = reportReader.ReadToEnd();
-                    using (var tocReader = new StreamReader(this.ReportToCFileName))
-                    {
-                        toc = tocReader.ReadToEnd();
-                    }
-                }
-
-                return new Tuple<string, string>(report, toc);
+                return this.GetReportTuple();
             }
             finally
             {
@@ -149,26 +115,7 @@ namespace AzureADConnectConfigDocumenter
 
                 const string XPath = "//mv-data//dsml:class";
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 3);
 
                 var pilot = this.PilotXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
                 var production = this.ProductionXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
@@ -563,6 +510,70 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Gets the metaverse object type header table.
+        /// </summary>
+        /// <returns>The metaverse object type header table.</returns>
+        private DataTable GetMetaverseObjectTypeHeaderTable()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var headerTable = Documenter.GetHeaderTable();
+
+                // Header Row 1
+                // Attribute
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Attribute" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Type
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Type" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Multi-valued
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 2 }, { "ColumnName", "Multi-valued" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Indexed
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 3 }, { "ColumnName", "Indexed" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Precedence
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 4 }, { "ColumnName", "Precedence" }, { "RowSpan", 1 }, { "ColSpan", 7 } }).Values.Cast<object>().ToArray());
+
+                // Header Row 2
+                // Precedence Display - Rank or Manual or Equal
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Rank" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Connector
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Connector" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Inbound Sync Rule
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Source
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Source" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Scoping Condition
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 3 } }).Values.Cast<object>().ToArray());
+
+                // Header Row 3
+                // CS Attribute
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 0 }, { "ColumnName", "CS Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Operator
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 1 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Value
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 2 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                headerTable.AcceptChanges();
+
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
         /// Prints the type of the metaverse object.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
@@ -574,180 +585,10 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = this.currentObjectType;
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 4);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc4" + " " + this.GetCssVisibilityClass());
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.WriteAttribute("class", this.GetCssVisibilityClass());
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteBeginTag("h4");
-                this.ReportWriter.WriteAttribute("class", this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
-                this.ReportWriter.WriteEndTag("h4");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        #region head row
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "3");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Attribute");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "3");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Type");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "3");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Multi-valued");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "3");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Indexed");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "7");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Precedence");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-
-                        #endregion head row
-
-                        #region head row
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        {
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Rank");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Connector");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Inbound Sync Rule");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Source");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "3");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Scoping Condition");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-
-                        #endregion head row
-
-                        #region head row
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("CS Attribute");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Operator");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Value");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-
-                        #endregion head row
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-                this.ReportWriter.WriteLine();
-                this.ReportWriter.Flush();
-
-                #endregion table
+                var headerTable = this.GetMetaverseObjectTypeHeaderTable();
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -1049,6 +890,45 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Gets the metaverse object deletion rules header table.
+        /// </summary>
+        /// <returns>The metaverse object deletion rules header table.</returns>
+        private DataTable GetMetaverseObjectDeletionRulesHeaderTable()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var headerTable = Documenter.GetHeaderTable();
+
+                // Header Row 1
+                // Object Type
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Object Type" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Deletion Rules
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Deletion Rules" }, { "RowSpan", 1 }, { "ColSpan", 3 } }).Values.Cast<object>().ToArray());
+
+                // Header Row 2
+                // Connector
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Synchronization Rule
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Synchronization Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Link Type
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Link Type" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                headerTable.AcceptChanges();
+
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
         /// Prints the metaverse object deletion rule.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
@@ -1060,26 +940,9 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Metaverse Object Deletion Rules Summary";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, null, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, null, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                var headerTable = this.GetMetaverseObjectDeletionRulesHeaderTable();
 
                 #region table
 
@@ -1089,65 +952,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     #region thead
 
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        #region head row
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("rowspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Object Type");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "3");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Deletion Rules");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-
-                        #endregion head row
-
-                        #region head row
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Connector");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Synchronization Rule");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Link Type");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-
-                        #endregion head row
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
+                    this.WriteTableHeader(headerTable);
 
                     #endregion thead
                 }
@@ -1158,7 +963,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     this.DiffgramDataSet = dataSet;
                     this.WriteRows(dataSet.Tables[0].Rows);
-                } 
+                }
 
                 #endregion rows
 

@@ -31,9 +31,9 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="pilotXml">The pilot configuration XML.</param>
         /// <param name="productionXml">The production configuration XML.</param>
         /// <param name="connectorName">The connector name.</param>
-        /// <param name="productionOnly">If set to <c>true</c>, indicates the connector is present in production only.</param>
-        public Extensible2ConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, bool productionOnly)
-            : base(pilotXml, productionXml, connectorName, productionOnly)
+        /// <param name="configEnvironment">The environment in which the config element exists.</param>
+        public Extensible2ConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, ConfigEnvironment configEnvironment)
+            : base(pilotXml, productionXml, connectorName, configEnvironment)
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -68,12 +68,9 @@ namespace AzureADConnectConfigDocumenter
                 this.ProcessExtensible2ExtensionInformation();
                 this.ProcessExtensible2ConnectivityInformation();
 
-                if (!this.ConnectorSubType.StartsWith("Windows Azure Active Directory", StringComparison.OrdinalIgnoreCase))
-                {
-                    // TODO: Capabilities
-                    this.ProcessExtensible2GlobalParameters();
-                    this.ProcessConnectorProvisioningHierarchyConfiguration();
-                }
+                // TODO: Capabilities
+                this.ProcessExtensible2GlobalParameters();
+                this.ProcessConnectorProvisioningHierarchyConfiguration();
 
                 this.ProcessExtensible2PartitionsAndHierarchiesConfiguration();
                 this.ProcessExtensible2AnchorConfigurations();
@@ -86,7 +83,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ProcessConnectorSyncRules();
                 this.ProcessExtensible2RunProfiles();
 
-                return base.GetReport();
+                return this.GetReportTuple();
             }
             finally
             {
@@ -104,7 +101,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the extensible2 extension information.
         /// </summary>
-        private void ProcessExtensible2ExtensionInformation()
+        protected void ProcessExtensible2ExtensionInformation()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -131,7 +128,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the extensible2 extension information data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillExtensible2ExtensionInformationDataSet(bool pilotConfig)
+        protected void FillExtensible2ExtensionInformationDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -180,7 +177,7 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the extensible2 extension information.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintExtensible2ExtensionInformation()
+        protected void PrintExtensible2ExtensionInformation()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -188,72 +185,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Extension Information";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Configuration");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -269,7 +205,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the extensible2 connectivity information.
         /// </summary>
-        private void ProcessExtensible2ConnectivityInformation()
+        protected void ProcessExtensible2ConnectivityInformation()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -296,7 +232,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the extensible2 connectivity information data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillExtensible2ConnectivityInformationDataSet(bool pilotConfig)
+        protected void FillExtensible2ConnectivityInformationDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -333,7 +269,7 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the extensible2 connectivity information.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintExtensible2ConnectivityInformation()
+        protected void PrintExtensible2ConnectivityInformation()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -341,78 +277,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Connectivity Information";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Configuration");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Encrypted?");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -428,7 +297,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the extensible2 global parameters.
         /// </summary>
-        private void ProcessExtensible2GlobalParameters()
+        protected void ProcessExtensible2GlobalParameters()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -455,7 +324,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the extensible2 global parameters data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillExtensible2GlobalParametersDataSet(bool pilotConfig)
+        protected void FillExtensible2GlobalParametersDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -492,7 +361,7 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the extensible2 global parameters.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintExtensible2GlobalParameters()
+        protected void PrintExtensible2GlobalParameters()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -500,78 +369,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Global Parameters";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Configuration");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Encrypted?");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -588,7 +390,7 @@ namespace AzureADConnectConfigDocumenter
         /// Processes the extensible2 partitions and hierarchies configuration.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void ProcessExtensible2PartitionsAndHierarchiesConfiguration()
+        protected void ProcessExtensible2PartitionsAndHierarchiesConfiguration()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -598,26 +400,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var sectionTitle = "Partitions and Hierarchies";
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 3);
 
                 // TODO: Extensible2 Partitions And Hierarchies
                 this.ReportWriter.WriteLine();
@@ -636,7 +419,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the extensible2 anchor configurations.
         /// </summary>
-        private void ProcessExtensible2AnchorConfigurations()
+        protected void ProcessExtensible2AnchorConfigurations()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -663,7 +446,7 @@ namespace AzureADConnectConfigDocumenter
         /// Creates the extensible2 anchor configurations data sets.
         /// </summary>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
-        private void CreateExtensible2AnchorConfigurationsDataSets()
+        protected void CreateExtensible2AnchorConfigurationsDataSets()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -713,7 +496,7 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The extensible2 anchor configurations print table.
         /// </returns>
-        private DataTable GetExtensible2AnchorConfigurationsPrintTable()
+        protected DataTable GetExtensible2AnchorConfigurationsPrintTable()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -749,7 +532,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the extensible2 anchor configurations data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillExtensible2AnchorConfigurationsDataSet(bool pilotConfig)
+        protected void FillExtensible2AnchorConfigurationsDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -797,7 +580,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates the extensible2 anchor configurations diffgram.
         /// </summary>
-        private void CreateExtensible2AnchorConfigurationsDiffgram()
+        protected void CreateExtensible2AnchorConfigurationsDiffgram()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -816,7 +599,7 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the extensible2 anchor configurations.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintExtensible2AnchorConfigurations()
+        protected void PrintExtensible2AnchorConfigurations()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -824,72 +607,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Anchors Configuration";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Object Type", "Anchor Attribute" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Object Type");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Anchor Attribute");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -906,7 +628,7 @@ namespace AzureADConnectConfigDocumenter
         /// Processes the connector run profiles.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void ProcessExtensible2RunProfiles()
+        protected void ProcessExtensible2RunProfiles()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -916,26 +638,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var sectionTitle = "Run Profiles";
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 3);
 
                 var xpath = "//ma-data[name ='" + this.ConnectorName + "']/ma-run-data/run-configuration";
 
@@ -977,32 +680,13 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="runProfileName">Name of the run profile.</param>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void ProcessExtensible2RunProfile(string runProfileName)
+        protected void ProcessExtensible2RunProfile(string runProfileName)
         {
             Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'.", runProfileName);
 
             try
             {
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc4");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, runProfileName, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h4");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, runProfileName, "Run Profile: " + runProfileName, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h4");
-
-                #endregion section
+                this.WriteSectionHeader("Run Profile: " + runProfileName, 4, runProfileName);
 
                 this.CreateConnectorRunProfileDataSets();
 
@@ -1024,7 +708,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="runProfileName">Name of the run profile.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillExtensible2RunProfileDataSet(string runProfileName, bool pilotConfig)
+        protected void FillExtensible2RunProfileDataSet(string runProfileName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'. Pilot Config: '{1}'.", runProfileName, pilotConfig);
 

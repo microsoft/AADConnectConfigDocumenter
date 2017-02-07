@@ -152,9 +152,20 @@ a {
         color: black;
     }
 
-    a.TOC {
+    a.toc {
         color: #5B9BD5;
         font-weight: bold;
+    }
+
+    a.toc-Added {
+        color: green;
+        font-weight: bold;
+    }
+
+    a.toc-Deleted {
+        color: red;
+        font-weight: bold;
+        text-decoration: line-through;
     }
 
 h1, h2, h3, h4, h5, h6 {

@@ -12,6 +12,7 @@ namespace AzureADConnectConfigDocumenter
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
@@ -60,9 +61,9 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="syncRuleName">Name of the synchronize rule.</param>
         /// <param name="syncRuleGuid">The synchronize rule unique identifier.</param>
         /// <param name="connectorName">The connector name.</param>
-        /// <param name="productionOnly">If set to <c>true</c>, indicates the sync rule is present in production only. If set to <c>false</c>, does NOT indicate the sync rule is present in pilot only.</param>
-        public SyncRuleDocumenter(XElement pilotXml, XElement productionXml, string syncRuleName, string syncRuleGuid, string connectorName, bool productionOnly)
-            : base(pilotXml, productionXml, connectorName, productionOnly)
+        /// <param name="configEnvironment">The environment in which the config element exists.</param>
+        public SyncRuleDocumenter(XElement pilotXml, XElement productionXml, string syncRuleName, string syncRuleGuid, string connectorName, ConfigEnvironment configEnvironment)
+            : base(pilotXml, productionXml, connectorName, configEnvironment)
         {
             Logger.Instance.WriteMethodEntry("Sync Rule Name: '{0}'. Sync Rule Name: '{1}'.", syncRuleName, syncRuleGuid);
 
@@ -231,7 +232,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ResetDiffgram(); // reset the diffgram variables
                 }
 
-                return base.GetReport();
+                return this.GetReportTuple();
             }
             finally
             {
@@ -249,7 +250,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed. XhtmlTextWriter takes care of disposting StreamWriter.")]
-        protected void WriteSyncRuleReportHeader()
+        private void WriteSyncRuleReportHeader()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -266,29 +267,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc5" + " " + this.GetCssVisibilityClass());
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, bookmark, this.SyncRuleName, this.SyncRuleGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.WriteAttribute("class", " " + this.GetCssVisibilityClass());
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteBeginTag("h5");
-                this.ReportWriter.WriteAttribute("class", this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteBookmarkLocation(this.ReportWriter, bookmark, this.SyncRuleName, this.SyncRuleGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h5");
-
-                #endregion section
+                this.WriteSectionHeader(this.SyncRuleName, 5, bookmark, this.SyncRuleGuid);
             }
             finally
             {
@@ -303,7 +282,7 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The sync rule xpath.
         /// </returns>
-        protected string GetSyncRuleXPath(string currentConnectorGuid)
+        private string GetSyncRuleXPath(string currentConnectorGuid)
         {
             Logger.Instance.WriteMethodEntry("Current Connector Guid: '{0}'.", currentConnectorGuid);
 
@@ -339,7 +318,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the connector synchronize rule description.
         /// </summary>
-        protected void ProcessConnectorSyncRuleDescription()
+        private void ProcessConnectorSyncRuleDescription()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -364,7 +343,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the connector synchronize rule description data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        protected void FillConnectorSyncRuleDescriptionDataSet(bool pilotConfig)
+        private void FillConnectorSyncRuleDescriptionDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -401,11 +380,8 @@ namespace AzureADConnectConfigDocumenter
                         setting = (string)syncRule.Element("direction");
                         Documenter.AddRow(table, new object[] { 2, "Direction", setting });
 
-                        if (this.syncRuleReportType == SyncRuleReportType.AllSections)
-                        {
-                            setting = this.ConnectorName;
-                            Documenter.AddRow(table, new object[] { 3, "Connected System", setting });
-                        }
+                        setting = this.ConnectorName;
+                        Documenter.AddRow(table, new object[] { 3, "Connected System", setting });
 
                         setting = this.syncRuleDirection == SyncRuleDirection.Inbound ? (string)syncRule.Element("sourceObjectType") : (string)syncRule.Element("targetObjectType");
                         Documenter.AddRow(table, new object[] { 4, "Connected System Object Type", setting });
@@ -451,75 +427,85 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Prints the connector synchronize rule description.
+        /// Gets the connector synchronize rule description header table.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void PrintConnectorSyncRuleDescription()
+        /// <returns>The connector synchronize rule description header table.</returns>
+        private DataTable GetConnectorSyncRuleDescriptionHeaderTable()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = Documenter.GetHeaderTable();
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                // Header Row 1
+                // Description
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", this.GetConnectorSyncRuleDescriptionHeader() }, { "RowSpan", 1 }, { "ColSpan", 2 } }).Values.Cast<object>().ToArray());
+
+                // Header Row 2
+                // Setting
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Setting" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                // Configuration
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Configuration" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+
+                headerTable.AcceptChanges();
+
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Gets the connector synchronize rule description column header.
+        /// </summary>
+        /// <returns>The connector synchronize rule description column header.</returns>
+        private string GetConnectorSyncRuleDescriptionHeader()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var descriptionHeader = "Description";
+
+                switch (this.syncRuleReportType)
                 {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Description");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteEndTag("tr");
-                            this.ReportWriter.WriteLine();
-
-                            this.ReportWriter.WriteBeginTag("tr");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            {
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Setting");
-                                this.ReportWriter.WriteEndTag("th");
-
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Configuration");
-                                this.ReportWriter.WriteEndTag("th");
-                            }
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
+                    case SyncRuleReportType.ProvisioningSection:
+                        descriptionHeader += " (Provisioning Rules Summary)";
+                        break;
+                    case SyncRuleReportType.StickyJoinSection:
+                        descriptionHeader += " (Sticky Join Rules Summary)";
+                        break;
+                    case SyncRuleReportType.ConditionalJoinSection:
+                        descriptionHeader += " (Conditional Join Rules Summary)";
+                        break;
                 }
 
-                #region rows
+                return descriptionHeader;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Prints the connector synchronize rule description.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        private void PrintConnectorSyncRuleDescription()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var headerTable = this.GetConnectorSyncRuleDescriptionHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[0];
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -534,7 +520,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the connector synchronize rule scoping filters.
         /// </summary>
-        protected void ProcessConnectorSyncRuleScopingFilter()
+        private void ProcessConnectorSyncRuleScopingFilter()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -559,7 +545,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the connector synchronize rule scoping filter data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        protected void FillConnectorSyncRuleScopingFilterDataSet(bool pilotConfig)
+        private void FillConnectorSyncRuleScopingFilterDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -609,87 +595,58 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Prints the connector synchronize rule scoping filter.
+        /// Gets the connector synchronize rule scoping filter header table.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void PrintConnectorSyncRuleScopingFilter()
+        /// <returns>The connector synchronize rule scoping filter header table.</returns>
+        private DataTable GetConnectorSyncRuleScopingFilterHeaderTable()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = Documenter.GetHeaderTable();
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
+                // Header Row 1
+                // Scoping Filter
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Scoping Filter" }, { "RowSpan", 1 }, { "ColSpan", 4 } }).Values.Cast<object>().ToArray());
 
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "4");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Scoping Filter");
-                            this.ReportWriter.WriteEndTag("th");
+                // Header Row 2
+                // Group#
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                            this.ReportWriter.WriteEndTag("tr");
-                            this.ReportWriter.WriteLine();
+                // Attribute
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                            this.ReportWriter.WriteBeginTag("tr");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            {
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Group#");
-                                this.ReportWriter.WriteEndTag("th");
+                // Operator
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Attribute");
-                                this.ReportWriter.WriteEndTag("th");
+                // Value
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Operator");
-                                this.ReportWriter.WriteEndTag("th");
+                headerTable.AcceptChanges();
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Value");
-                                this.ReportWriter.WriteEndTag("th");
-                            }
-                        }
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
 
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
+        /// <summary>
+        /// Prints the connector synchronize rule scoping filter.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        private void PrintConnectorSyncRuleScopingFilter()
+        {
+            Logger.Instance.WriteMethodEntry();
 
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
+            try
+            {
+                var headerTable = this.GetConnectorSyncRuleScopingFilterHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[1];
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -704,7 +661,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the connector synchronize rule join rules.
         /// </summary>
-        protected void ProcessConnectorSyncRuleJoinRules()
+        private void ProcessConnectorSyncRuleJoinRules()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -729,7 +686,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the connector synchronize rule join rules data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        protected void FillConnectorSyncRuleJoinRulesDataSet(bool pilotConfig)
+        private void FillConnectorSyncRuleJoinRulesDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -789,87 +746,58 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Prints the connector synchronize rule join rules.
+        /// Gets the connector synchronize rule join rules header table.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void PrintConnectorSyncRuleJoinRules()
+        /// <returns>The connector synchronize rule join rules header table.</returns>
+        private DataTable GetConnectorSyncRuleJoinRulesHeaderTable()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = Documenter.GetHeaderTable();
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
+                // Header Row 1
+                // Join Rules
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Join Rules" }, { "RowSpan", 1 }, { "ColSpan", 4 } }).Values.Cast<object>().ToArray());
 
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "4");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Join Rules");
-                            this.ReportWriter.WriteEndTag("th");
+                // Header Row 2
+                // Group#
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                            this.ReportWriter.WriteEndTag("tr");
-                            this.ReportWriter.WriteLine();
+                // Source Attribute
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                            this.ReportWriter.WriteBeginTag("tr");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            {
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Group#");
-                                this.ReportWriter.WriteEndTag("th");
+                // Target Attribute
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Target Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Source Attribute");
-                                this.ReportWriter.WriteEndTag("th");
+                // Case Sensitive
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Case Sensitive" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Target Attribute");
-                                this.ReportWriter.WriteEndTag("th");
+                headerTable.AcceptChanges();
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Case Sensitive");
-                                this.ReportWriter.WriteEndTag("th");
-                            }
-                        }
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
 
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
+        /// <summary>
+        /// Prints the connector synchronize rule join rules.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        private void PrintConnectorSyncRuleJoinRules()
+        {
+            Logger.Instance.WriteMethodEntry();
 
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
+            try
+            {
+                var headerTable = this.GetConnectorSyncRuleJoinRulesHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[2];
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -884,7 +812,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the connector synchronize rule transformations.
         /// </summary>
-        protected void ProcessConnectorSyncRuleTransformations()
+        private void ProcessConnectorSyncRuleTransformations()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -907,7 +835,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the connector synchronize rule transformations data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        protected void FillConnectorSyncRuleTransformationsDataSet(bool pilotConfig)
+        private void FillConnectorSyncRuleTransformationsDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -973,93 +901,61 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Prints the connector synchronize rule transformations.
+        /// Gets the connector synchronize rule transformations header table.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void PrintConnectorSyncRuleTransformations()
+        /// <returns>The connector synchronize rule transformations header table.</returns>
+        private DataTable GetConnectorSyncRuleTransformationsHeaderTable()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = Documenter.GetHeaderTable();
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
+                // Header Row 1
+                // Transformations
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Transformations" }, { "RowSpan", 1 }, { "ColSpan", 5 } }).Values.Cast<object>().ToArray());
 
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "5");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Transformations");
-                            this.ReportWriter.WriteEndTag("th");
+                // Header Row 2
+                // Target (MV) Attribute
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Target (MV) Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                            this.ReportWriter.WriteEndTag("tr");
-                            this.ReportWriter.WriteLine();
+                // Source
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                            this.ReportWriter.WriteBeginTag("tr");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            {
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write(this.syncRuleDirection == SyncRuleDirection.Inbound ? "Target (MV) Attribute" : "Target (CS) Attribute");
-                                this.ReportWriter.WriteEndTag("th");
+                // Flow Type
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Flow Type" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Source");
-                                this.ReportWriter.WriteEndTag("th");
+                // Apply Once
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Apply Once" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Flow Type");
-                                this.ReportWriter.WriteEndTag("th");
+                // Merge Type
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Merge Type" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Apply Once");
-                                this.ReportWriter.WriteEndTag("th");
+                headerTable.AcceptChanges();
 
-                                this.ReportWriter.WriteBeginTag("th");
-                                this.ReportWriter.WriteAttribute("class", "column-th");
-                                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                                this.ReportWriter.Write("Merge Type");
-                                this.ReportWriter.WriteEndTag("th");
-                            }
-                        }
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
 
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
+        /// <summary>
+        /// Prints the connector synchronize rule transformations.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        private void PrintConnectorSyncRuleTransformations()
+        {
+            Logger.Instance.WriteMethodEntry();
 
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
+            try
+            {
+                var headerTable = this.GetConnectorSyncRuleTransformationsHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[3];
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -1075,7 +971,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Reviewed.")]
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void CreateConnectorSyncRuleInstallationScript()
+        private void CreateConnectorSyncRuleInstallationScript()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -1083,7 +979,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Creating installation script for sync rule. Name = '{0}'. Id = '{1}'.", this.SyncRuleName, this.SyncRuleGuid);
 
-                var config = !this.ProductionOnly ? this.PilotXml : this.ProductionXml;
+                var config = this.Environment != ConfigEnvironment.ProductionOnly ? this.PilotXml : this.ProductionXml;
                 var syncRule = config.XPathSelectElement("//synchronizationRule[id = '" + this.SyncRuleGuid + "']");
                 var script = string.Empty;
 
@@ -1093,7 +989,7 @@ namespace AzureADConnectConfigDocumenter
                 var immutableTag = (string)syncRule.Element("immutable-tag");
                 if (!string.IsNullOrEmpty(immutableTag) && immutableTag.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (this.ProductionOnly)
+                    if (this.Environment == ConfigEnvironment.ProductionOnly)
                     {
                         // This sync rule is present only in the Production config. Give a warning.
                         script = this.CreateMissingDefaultSyncRuleWarningScript(syncRule, true);
@@ -1137,7 +1033,7 @@ namespace AzureADConnectConfigDocumenter
                 }
                 else
                 {
-                    if (this.ProductionOnly)
+                    if (this.Environment == ConfigEnvironment.ProductionOnly)
                     {
                         script = this.CreateRemoveADSyncRuleScript(syncRule);
                     }

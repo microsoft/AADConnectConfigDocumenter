@@ -150,6 +150,27 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Enumerator indicating whether the config element is present in pilot, production or both
+        /// </summary>
+        public enum ConfigEnvironment : int
+        {
+            /// <summary>
+            /// The config element exists in Pilot as well as Production
+            /// </summary>
+            PilotAndProduction = 0,
+
+            /// <summary>
+            /// The config element exists in only in the Pilot
+            /// </summary>
+            PilotOnly,
+
+            /// <summary>
+            /// The config element exists in only in the Production
+            /// </summary>
+            ProductionOnly
+        }
+
+        /// <summary>
         /// Gets the report folder.
         /// </summary>
         /// <value>
@@ -228,10 +249,9 @@ namespace AzureADConnectConfigDocumenter
         protected DataSet PilotDataSet { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the config element is present in production only.
-        /// If the values is <c>true</c>, indicates the sync rule is present in production only. If the values is <c>false</c>, does NOT indicate the sync rule is present in pilot only.
+        /// Gets or sets a value indicating which environment the config element is present.
         /// </summary>
-        protected bool ProductionOnly { get; set; }
+        protected ConfigEnvironment Environment { get; set; }
 
         /// <summary>
         /// Gets or sets the production data set.
@@ -717,6 +737,43 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Gets the header table for a configuration section.
+        /// </summary>
+        /// <returns>
+        /// The header table for a configuration section.
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "The method performs a time-consuming operation.")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
+        protected static DataTable GetHeaderTable()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var headerTable = new DataTable("HeaderTable") { Locale = CultureInfo.InvariantCulture };
+
+                var column1 = new DataColumn("RowIndex", typeof(int));
+                var column2 = new DataColumn("ColumnIndex", typeof(int));
+                var column3 = new DataColumn("ColumnName", typeof(string));
+                var column4 = new DataColumn("RowSpan", typeof(int));
+                var column5 = new DataColumn("ColSpan", typeof(int));
+
+                headerTable.Columns.Add(column1);
+                headerTable.Columns.Add(column2);
+                headerTable.Columns.Add(column3);
+                headerTable.Columns.Add(column4);
+                headerTable.Columns.Add(column5);
+                headerTable.PrimaryKey = new[] { column1, column2 };
+
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
         /// Sorts the table.
         /// </summary>
         /// <param name="table">The table.</param>
@@ -870,73 +927,6 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Writes the report header.
-        /// </summary>
-        /// <param name="htmlWriter">The HTML writer.</param>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected static void WriteReportHeader(HtmlTextWriter htmlWriter)
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                if (htmlWriter == null)
-                {
-                    throw new ArgumentNullException("htmlWriter");
-                }
-
-                htmlWriter.WriteFullBeginTag("head");
-
-                #region meta
-
-                htmlWriter.WriteBeginTag("meta");
-                htmlWriter.WriteAttribute("http-equiv", "Content-Type");
-                htmlWriter.WriteAttribute("content", "text/html; charset=UTF-8");
-                htmlWriter.WriteLine(XhtmlTextWriter.SelfClosingTagEnd);
-
-                #endregion meta
-
-                #region style
-
-                ////htmlWriter.WriteBeginTag("link");
-                ////htmlWriter.WriteAttribute("rel", "stylesheet");
-                ////htmlWriter.WriteAttribute("type", "text/css");
-                ////htmlWriter.WriteAttribute("href", "documenter.css");
-                ////htmlWriter.WriteLine(XhtmlTextWriter.SelfClosingTagEnd);
-
-                htmlWriter.WriteBeginTag("style");
-                htmlWriter.WriteAttribute("type", "text/css");
-                htmlWriter.Write(HtmlTextWriter.TagRightChar);
-                htmlWriter.Write(GetEmbeddedScriptResource("Documenter.css"));
-                htmlWriter.WriteEndTag("style");
-                htmlWriter.WriteLine();
-
-                #endregion style
-
-                #region script
-
-                htmlWriter.WriteFullBeginTag("script");
-                htmlWriter.WriteLine();
-                htmlWriter.WriteLine(GetEmbeddedScriptResource("Documenter.js"));
-                htmlWriter.WriteEndTag("script");
-                htmlWriter.WriteLine();
-
-                #endregion script
-
-                htmlWriter.WriteFullBeginTag("title");
-                htmlWriter.Write("AAD Connect Config Documenter Report");
-                htmlWriter.WriteEndTag("title");
-
-                htmlWriter.WriteEndTag("head");
-                htmlWriter.WriteLine();
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
         /// Gets the embedded script resource
         /// </summary>
         /// <param name="resourceName">Name of the embedded script resource</param>
@@ -956,221 +946,6 @@ namespace AzureADConnectConfigDocumenter
             finally
             {
                 Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Writes the documenter information.
-        /// </summary>
-        /// <param name="htmlWriter">The HTML writer.</param>
-        protected static void WriteDocumenterInfo(HtmlTextWriter htmlWriter)
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                if (htmlWriter == null)
-                {
-                    throw new ArgumentNullException("htmlWriter");
-                }
-
-                htmlWriter.WriteFullBeginTag("strong");
-                htmlWriter.Write("Only Show Changes:");
-                htmlWriter.WriteEndTag("strong");
-
-                htmlWriter.WriteBeginTag("input");
-                htmlWriter.WriteAttribute("type", "checkbox");
-                htmlWriter.WriteAttribute("id", "OnlyShowChanges");
-                htmlWriter.WriteAttribute("onclick", "ToggleVisibility();");
-                htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
-
-                htmlWriter.WriteBeginTag("a");
-                htmlWriter.WriteAttribute("style", "display: none;");
-                htmlWriter.WriteAttribute("href", "#");
-                htmlWriter.WriteAttribute("id", "DownloadLink");
-                htmlWriter.WriteAttribute("onclick", "return DownloadScript();");
-                htmlWriter.Write(HtmlTextWriter.TagRightChar);
-                htmlWriter.Write("Download Sync Rule Changes Script");
-                htmlWriter.WriteEndTag("a");
-
-                htmlWriter.WriteBeginTag("br");
-                htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
-
-                htmlWriter.WriteFullBeginTag("strong");
-                htmlWriter.Write("Legend:");
-                htmlWriter.WriteEndTag("strong");
-
-                {
-                    htmlWriter.WriteBeginTag("span");
-                    htmlWriter.WriteAttribute("class", "Added");
-                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    htmlWriter.Write("Create ");
-                    htmlWriter.WriteEndTag("span");
-
-                    htmlWriter.WriteBeginTag("span");
-                    htmlWriter.WriteAttribute("class", "Modified");
-                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    htmlWriter.Write("Update ");
-                    htmlWriter.WriteEndTag("span");
-
-                    htmlWriter.WriteBeginTag("span");
-                    htmlWriter.WriteAttribute("class", "Deleted");
-                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    htmlWriter.Write("Delete ");
-                    htmlWriter.WriteEndTag("span");
-
-                    htmlWriter.WriteBeginTag("br");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
-                }
-
-                htmlWriter.WriteFullBeginTag("strong");
-                htmlWriter.Write("Documenter Version:");
-                htmlWriter.WriteEndTag("strong");
-
-                {
-                    htmlWriter.WriteBeginTag("span");
-                    htmlWriter.WriteAttribute("class", "Unchanged");
-                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    htmlWriter.Write(VersionInfo.Version);
-                    htmlWriter.WriteEndTag("span");
-
-                    htmlWriter.WriteBeginTag("br");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
-                }
-
-                htmlWriter.WriteFullBeginTag("strong");
-                htmlWriter.Write("Report Date:");
-                htmlWriter.WriteEndTag("strong");
-
-                {
-                    htmlWriter.WriteBeginTag("span");
-                    htmlWriter.WriteAttribute("class", "Unchanged");
-                    htmlWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    htmlWriter.Write(DateTime.Now.ToString(CultureInfo.CurrentCulture));
-                    htmlWriter.WriteEndTag("span");
-
-                    htmlWriter.WriteBeginTag("br");
-                    htmlWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
-                }
-
-                htmlWriter.WriteBeginTag("div");
-                htmlWriter.WriteAttribute("class", "PowerShellScript");
-                htmlWriter.Write(HtmlTextWriter.TagRightChar);
-                htmlWriter.WriteLine(Documenter.GetEmbeddedScriptResource("PowerShellScriptHeader.ps1"));
-                htmlWriter.WriteLine();
-                htmlWriter.WriteEndTag("div");
-
-                htmlWriter.WriteLine();
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Writes the bookmark location.
-        /// </summary>
-        /// <param name="htmlWriter">The HTML writer.</param>
-        /// <param name="bookmark">The bookmark.</param>
-        /// <param name="sectionGuid">The section unique identifier.</param>
-        /// <param name="cellClass">The cell class.</param>
-        protected static void WriteBookmarkLocation(HtmlTextWriter htmlWriter, string bookmark, string sectionGuid, string cellClass)
-        {
-            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
-
-            try
-            {
-                Documenter.WriteBookmarkLocation(htmlWriter, bookmark, bookmark, sectionGuid, cellClass);
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
-            }
-        }
-
-        /// <summary>
-        /// Writes the bookmark location.
-        /// </summary>
-        /// <param name="htmlWriter">The HTML writer.</param>
-        /// <param name="bookmark">The bookmark.</param>
-        /// <param name="displayText">The display text.</param>
-        /// <param name="sectionGuid">The section unique identifier.</param>
-        /// <param name="cellClass">The cell class.</param>
-        protected static void WriteBookmarkLocation(HtmlTextWriter htmlWriter, string bookmark, string displayText, string sectionGuid, string cellClass)
-        {
-            Logger.Instance.WriteMethodEntry("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
-
-            try
-            {
-                if (htmlWriter == null)
-                {
-                    throw new ArgumentNullException("htmlWriter");
-                }
-
-                htmlWriter.WriteBeginTag("a");
-                htmlWriter.WriteAttribute("class", cellClass);
-                htmlWriter.WriteAttribute("name", Documenter.GetBookmarkCode(bookmark, sectionGuid));
-                htmlWriter.Write(HtmlTextWriter.TagRightChar);
-                htmlWriter.Write(displayText);
-                htmlWriter.WriteEndTag("a");
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
-            }
-        }
-
-        /// <summary>
-        /// Writes the jump to bookmark location.
-        /// </summary>
-        /// <param name="htmlWriter">The HTML writer.</param>
-        /// <param name="bookmark">The bookmark.</param>
-        /// <param name="sectionGuid">The section unique identifier.</param>
-        /// <param name="cellClass">The cell class.</param>
-        protected static void WriteJumpToBookmarkLocation(HtmlTextWriter htmlWriter, string bookmark, string sectionGuid, string cellClass)
-        {
-            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
-
-            try
-            {
-                Documenter.WriteJumpToBookmarkLocation(htmlWriter, bookmark, bookmark, sectionGuid, cellClass);
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
-            }
-        }
-
-        /// <summary>
-        /// Writes the jump to bookmark location.
-        /// </summary>
-        /// <param name="htmlWriter">The HTML writer.</param>
-        /// <param name="bookmark">The bookmark.</param>
-        /// <param name="displayText">The display text.</param>
-        /// <param name="sectionGuid">The section unique identifier.</param>
-        /// <param name="cellClass">The cell class.</param>
-        protected static void WriteJumpToBookmarkLocation(HtmlTextWriter htmlWriter, string bookmark, string displayText, string sectionGuid, string cellClass)
-        {
-            Logger.Instance.WriteMethodEntry("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
-
-            try
-            {
-                if (htmlWriter == null)
-                {
-                    throw new ArgumentNullException("htmlWriter");
-                }
-
-                htmlWriter.WriteBeginTag("a");
-                htmlWriter.WriteAttribute("class", cellClass);
-                htmlWriter.WriteAttribute("href", "#" + Documenter.GetBookmarkCode(bookmark, sectionGuid));
-                htmlWriter.Write(HtmlTextWriter.TagRightChar);
-                htmlWriter.Write(displayText);
-                htmlWriter.WriteEndTag("a");
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
             }
         }
 
@@ -1224,6 +999,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="row">The row.</param>
         /// <param name="currentTableIndex">Index of the current table.</param>
         /// <returns>True if the specified row or any child rows have changed. Otherwise false.</returns>
+        [SuppressMessage("Microsoft.Usage", "CA2233:OperationsShouldNotOverflow", MessageId = "currentTableIndex+1", Justification = "Reviewed.")]
         protected static bool IsCumulativeRowStateChanged(DataRow row, int currentTableIndex)
         {
             Logger.Instance.WriteMethodEntry("Current Table Index: '{0}'.", currentTableIndex);
@@ -1275,6 +1051,353 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Gets the configuration report tuple.
+        /// </summary>
+        /// <returns>
+        /// The Tuple of configuration report and associated TOC
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Reviewed.")]
+        protected Tuple<string, string> GetReportTuple()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                this.ReportWriter.Close();
+                this.ReportToCWriter.Close();
+
+                string report;
+                string toc;
+
+                using (var reportReader = new StreamReader(this.ReportFileName))
+                {
+                    report = reportReader.ReadToEnd();
+                    using (var tocReader = new StreamReader(this.ReportToCFileName))
+                    {
+                        toc = tocReader.ReadToEnd();
+                    }
+                }
+
+                return new Tuple<string, string>(report, toc);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Writes the report header.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        protected void WriteReportHeader()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                this.ReportWriter.WriteFullBeginTag("head");
+
+                #region meta
+
+                this.ReportWriter.WriteBeginTag("meta");
+                this.ReportWriter.WriteAttribute("http-equiv", "Content-Type");
+                this.ReportWriter.WriteAttribute("content", "text/html; charset=UTF-8");
+                this.ReportWriter.WriteLine(XhtmlTextWriter.SelfClosingTagEnd);
+
+                #endregion meta
+
+                #region style
+
+                ////this.ReportWriter.WriteBeginTag("link");
+                ////this.ReportWriter.WriteAttribute("rel", "stylesheet");
+                ////this.ReportWriter.WriteAttribute("type", "text/css");
+                ////this.ReportWriter.WriteAttribute("href", "documenter.css");
+                ////this.ReportWriter.WriteLine(XhtmlTextWriter.SelfClosingTagEnd);
+
+                this.ReportWriter.WriteBeginTag("style");
+                this.ReportWriter.WriteAttribute("type", "text/css");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportWriter.Write(GetEmbeddedScriptResource("Documenter.css"));
+                this.ReportWriter.WriteEndTag("style");
+                this.ReportWriter.WriteLine();
+
+                #endregion style
+
+                #region script
+
+                this.ReportWriter.WriteFullBeginTag("script");
+                this.ReportWriter.WriteLine();
+                this.ReportWriter.WriteLine(GetEmbeddedScriptResource("Documenter.js"));
+                this.ReportWriter.WriteEndTag("script");
+                this.ReportWriter.WriteLine();
+
+                #endregion script
+
+                this.ReportWriter.WriteFullBeginTag("title");
+                this.ReportWriter.Write("AAD Connect Config Documenter Report");
+                this.ReportWriter.WriteEndTag("title");
+
+                this.ReportWriter.WriteEndTag("head");
+                this.ReportWriter.WriteLine();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Writes the documenter information.
+        /// </summary>
+        protected void WriteDocumenterInfo()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write("Only Show Changes:");
+                this.ReportWriter.WriteEndTag("strong");
+
+                this.ReportWriter.WriteBeginTag("input");
+                this.ReportWriter.WriteAttribute("type", "checkbox");
+                this.ReportWriter.WriteAttribute("id", "OnlyShowChanges");
+                this.ReportWriter.WriteAttribute("onclick", "ToggleVisibility();");
+                this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+
+                this.ReportWriter.WriteBeginTag("a");
+                this.ReportWriter.WriteAttribute("style", "display: none;");
+                this.ReportWriter.WriteAttribute("href", "#");
+                this.ReportWriter.WriteAttribute("id", "DownloadLink");
+                this.ReportWriter.WriteAttribute("onclick", "return DownloadScript();");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportWriter.Write("Download Sync Rule Changes Script");
+                this.ReportWriter.WriteEndTag("a");
+
+                this.ReportWriter.WriteBeginTag("br");
+                this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write("Legend:");
+                this.ReportWriter.WriteEndTag("strong");
+
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Added");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write("Create ");
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Modified");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write("Update ");
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Deleted");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write("Delete ");
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.ReportWriter.WriteBeginTag("br");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                }
+
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write("Documenter Version:");
+                this.ReportWriter.WriteEndTag("strong");
+
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write(VersionInfo.Version);
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.ReportWriter.WriteBeginTag("br");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                }
+
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write("Report Date:");
+                this.ReportWriter.WriteEndTag("strong");
+
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write(DateTime.Now.ToString(CultureInfo.CurrentCulture));
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.ReportWriter.WriteBeginTag("br");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                }
+
+                this.ReportWriter.WriteBeginTag("div");
+                this.ReportWriter.WriteAttribute("class", "PowerShellScript");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportWriter.WriteLine(Documenter.GetEmbeddedScriptResource("PowerShellScriptHeader.ps1"));
+                this.ReportWriter.WriteLine();
+                this.ReportWriter.WriteEndTag("div");
+
+                this.ReportWriter.WriteLine();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Writes the bookmark location.
+        /// </summary>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        /// <param name="anchorClass">The anchor style class.</param>
+        protected void WriteBookmarkLocation(string bookmark, string sectionGuid, string anchorClass)
+        {
+            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Anchor Class: '{2}'.", bookmark, sectionGuid, anchorClass);
+
+            try
+            {
+                this.WriteBookmarkLocation(bookmark, bookmark, sectionGuid, anchorClass);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Anchor Class: '{2}'.", bookmark, sectionGuid, anchorClass);
+            }
+        }
+
+        /// <summary>
+        /// Writes the bookmark location.
+        /// </summary>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="displayText">The display text.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        /// <param name="anchorClass">The anchor style class.</param>
+        protected void WriteBookmarkLocation(string bookmark, string displayText, string sectionGuid, string anchorClass)
+        {
+            Logger.Instance.WriteMethodEntry("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Anchor Class: '{3}'.", bookmark, displayText, sectionGuid, anchorClass);
+
+            try
+            {
+                this.ReportWriter.WriteBeginTag("a");
+                this.ReportWriter.WriteAttribute("class", anchorClass);
+                this.ReportWriter.WriteAttribute("name", Documenter.GetBookmarkCode(bookmark, sectionGuid));
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportWriter.Write(displayText);
+                this.ReportWriter.WriteEndTag("a");
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Anchor Class: '{3}'.", bookmark, displayText, sectionGuid, anchorClass);
+            }
+        }
+
+        /// <summary>
+        /// Writes the jump to bookmark location.
+        /// </summary>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        /// <param name="cellClass">The cell class.</param>
+        protected void WriteJumpToBookmarkLocation(string bookmark, string sectionGuid, string cellClass)
+        {
+            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
+
+            try
+            {
+                this.WriteJumpToBookmarkLocation(bookmark, bookmark, sectionGuid, cellClass);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
+            }
+        }
+
+        /// <summary>
+        /// Writes the jump to bookmark location in TOC.
+        /// </summary>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        protected void WriteJumpToBookmarkLocationInTOC(string bookmark, string sectionGuid)
+        {
+            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid);
+
+            try
+            {
+                this.WriteJumpToBookmarkLocationInTOC(bookmark, bookmark, sectionGuid);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid);
+            }
+        }
+
+        /// <summary>
+        /// Writes the jump to bookmark location.
+        /// </summary>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="displayText">The display text.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        /// <param name="cellClass">The cell class.</param>
+        protected void WriteJumpToBookmarkLocation(string bookmark, string displayText, string sectionGuid, string cellClass)
+        {
+            Logger.Instance.WriteMethodEntry("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
+
+            try
+            {
+                this.ReportWriter.WriteBeginTag("a");
+                this.ReportWriter.WriteAttribute("class", cellClass);
+                this.ReportWriter.WriteAttribute("href", "#" + Documenter.GetBookmarkCode(bookmark, sectionGuid));
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportWriter.Write(displayText);
+                this.ReportWriter.WriteEndTag("a");
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
+            }
+        }
+
+        /// <summary>
+        /// Writes the jump to bookmark location.
+        /// </summary>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="displayText">The display text.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        protected void WriteJumpToBookmarkLocationInTOC(string bookmark, string displayText, string sectionGuid)
+        {
+            Logger.Instance.WriteMethodEntry("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'.", bookmark, displayText, sectionGuid);
+
+            try
+            {
+                this.ReportToCWriter.WriteBeginTag("a");
+                this.ReportToCWriter.WriteAttribute("class", this.GetAnchorClassForTOC());
+                this.ReportToCWriter.WriteAttribute("href", "#" + Documenter.GetBookmarkCode(bookmark, sectionGuid));
+                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportToCWriter.Write(displayText);
+                this.ReportToCWriter.WriteEndTag("a");
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'.", bookmark, displayText, sectionGuid);
+            }
+        }
+
+        /// <summary>
+        /// Gets the anchor style class for TOC
+        /// </summary>
+        /// <returns>The anchor style class for TOC</returns>
+        protected string GetAnchorClassForTOC()
+        {
+            var anchorClass = "toc";
+
+            return this.Environment == ConfigEnvironment.ProductionOnly ? anchorClass + "-Deleted" : this.Environment == ConfigEnvironment.PilotOnly ? anchorClass + "-Added" : anchorClass;
+        }
+
+        /// <summary>
         /// Resets the diffgram and prepares the variable for new report section.
         /// </summary>
         protected void ResetDiffgram()
@@ -1287,9 +1410,10 @@ namespace AzureADConnectConfigDocumenter
         /// Gets the CSS visibility class.
         /// </summary>
         /// <returns>The CSS visibility class, either CanHide or empty string</returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Reviewed.")]
         protected string GetCssVisibilityClass()
         {
-            return this.DiffgramDataSets.Any(dataSet => !(bool)dataSet.ExtendedProperties[Documenter.CanHide]) ? string.Empty : Documenter.CanHide;
+            return this.DiffgramDataSets.Count == 0 || this.DiffgramDataSets.Any(dataSet => !(bool)dataSet.ExtendedProperties[Documenter.CanHide]) ? string.Empty : Documenter.CanHide;
         }
 
         /// <summary>
@@ -1323,6 +1447,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="rows">The rows.</param>
         /// <param name="currentTableIndex">Index of the current table.</param>
         /// <param name="currentCellIndex">Index of the current cell.</param>
+        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "2#", Justification = "Reviewed.")]
         [SuppressMessage("Microsoft.Usage", "CA2233:OperationsShouldNotOverflow", MessageId = "currentTableIndex+1", Justification = "Reviewed.")]
         protected void WriteRows(DataRow[] rows, int currentTableIndex, ref int currentCellIndex)
         {
@@ -1490,11 +1615,11 @@ namespace AzureADConnectConfigDocumenter
                     var text = Convert.ToString(row[column.ColumnName], CultureInfo.InvariantCulture);
                     if (bookmarkIndex != null)
                     {
-                        Documenter.WriteBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                        this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                     }
                     else if (jumpToBookmarkIndex != null)
                     {
-                        Documenter.WriteJumpToBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                        this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                     }
                     else
                     {
@@ -1521,11 +1646,11 @@ namespace AzureADConnectConfigDocumenter
 
                                     if (bookmarkIndex != null)
                                     {
-                                        Documenter.WriteBookmarkLocation(this.ReportWriter, oldText, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                        this.WriteBookmarkLocation(oldText, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                     }
                                     else if (jumpToBookmarkIndex != null)
                                     {
-                                        Documenter.WriteJumpToBookmarkLocation(this.ReportWriter, oldText, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                        this.WriteJumpToBookmarkLocation(oldText, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                     }
                                     else
                                     {
@@ -1541,11 +1666,11 @@ namespace AzureADConnectConfigDocumenter
 
                                 if (bookmarkIndex != null)
                                 {
-                                    Documenter.WriteBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                    this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                 }
                                 else if (jumpToBookmarkIndex != null)
                                 {
-                                    Documenter.WriteJumpToBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                    this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                 }
                                 else
                                 {
@@ -1562,11 +1687,11 @@ namespace AzureADConnectConfigDocumenter
                                 var text = Convert.ToString(row[Documenter.OldColumnPrefix + column.ColumnName], CultureInfo.InvariantCulture);
                                 if (bookmarkIndex != null)
                                 {
-                                    Documenter.WriteBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                    this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                 }
                                 else if (jumpToBookmarkIndex != null)
                                 {
-                                    Documenter.WriteJumpToBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                    this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                 }
                                 else
                                 {
@@ -1581,11 +1706,11 @@ namespace AzureADConnectConfigDocumenter
                                 var text = Convert.ToString(row[column.ColumnName], CultureInfo.InvariantCulture);
                                 if (bookmarkIndex != null)
                                 {
-                                    Documenter.WriteBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                    this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                 }
                                 else if (jumpToBookmarkIndex != null)
                                 {
-                                    Documenter.WriteJumpToBookmarkLocation(this.ReportWriter, text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
+                                    this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
                                 }
                                 else
                                 {
@@ -1603,6 +1728,163 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteMethodExit("Row Span: '{0}'. Table Index: '{1}'.", rowSpan, tableIndex);
             }
+        }
+
+        /// <summary>
+        /// Writes the section header
+        /// </summary>
+        /// <param name="title">The section title</param>
+        /// <param name="level">The section header level</param>
+        protected virtual void WriteSectionHeader(string title, int level)
+        {
+            this.WriteSectionHeader(title, level, null);
+        }
+
+        /// <summary>
+        /// Writes the section header
+        /// </summary>
+        /// <param name="title">The section title</param>
+        /// <param name="level">The section header level</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        protected void WriteSectionHeader(string title, int level, string sectionGuid)
+        {
+            this.WriteSectionHeader(title, level, title, sectionGuid);
+        }
+
+        /// <summary>
+        /// Writes the section header
+        /// </summary>
+        /// <param name="title">The section title</param>
+        /// <param name="level">The section header level</param>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        protected void WriteSectionHeader(string title, int level, string bookmark, string sectionGuid)
+        {
+            this.WriteToCEntry(title, level, bookmark, sectionGuid);
+
+            this.ReportWriter.WriteBeginTag("h" + level);
+            this.ReportWriter.WriteAttribute("class", this.GetCssVisibilityClass());
+            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+
+            this.WriteBookmarkLocation(bookmark, title, sectionGuid, this.GetAnchorClassForTOC());
+            this.ReportWriter.WriteEndTag("h" + level);
+            this.ReportWriter.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the ToC Entry
+        /// </summary>
+        /// <param name="entryText">The ToC entry text</param>
+        /// <param name="level">The ToC item level</param>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        protected void WriteToCEntry(string entryText, int level, string bookmark, string sectionGuid)
+        {
+            this.ReportToCWriter.WriteBeginTag("span");
+            this.ReportToCWriter.WriteAttribute("class", "toc" + level + " " + this.GetCssVisibilityClass());
+            this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
+            this.WriteJumpToBookmarkLocationInTOC(bookmark, entryText, sectionGuid);
+            this.ReportToCWriter.WriteEndTag("span");
+            this.ReportToCWriter.WriteBeginTag("br");
+            this.ReportToCWriter.WriteAttribute("class", this.GetCssVisibilityClass());
+            this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
+            this.ReportToCWriter.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the table header cell
+        /// </summary>
+        /// <param name="cellText">The cell text</param>
+        /// <param name="rowSpan">The row span of the cell</param>
+        /// <param name="columnSpan">The column span of the cell</param>
+        protected void WriteTableHeaderCell(string cellText, int rowSpan, int columnSpan)
+        {
+            this.ReportWriter.WriteBeginTag("th");
+            this.ReportWriter.WriteAttribute("class", "column-th");
+            this.ReportWriter.WriteAttribute("rowspan", rowSpan.ToString(CultureInfo.InvariantCulture));
+            this.ReportWriter.WriteAttribute("colspan", columnSpan.ToString(CultureInfo.InvariantCulture));
+            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+            this.ReportWriter.Write(cellText);
+            this.ReportWriter.WriteEndTag("th");
+        }
+
+        /// <summary>
+        /// Writes the section data table
+        /// </summary>
+        /// <param name="dataTable">The section data table</param>
+        /// <param name="headerTable">The section data header table</param>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        protected void WriteTable(DataTable dataTable, DataTable headerTable)
+        {
+            #region table
+
+            this.ReportWriter.WriteBeginTag("table");
+            this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
+            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+            {
+                this.WriteTableHeader(headerTable);
+            }
+
+            #region rows
+
+            this.WriteRows(dataTable.Rows);
+
+            #endregion rows
+
+            this.ReportWriter.WriteEndTag("table");
+            this.ReportWriter.WriteLine();
+            this.ReportWriter.Flush();
+
+            #endregion table
+        }
+
+        /// <summary>
+        /// Writes the section data table header
+        /// </summary>
+        /// <param name="headerTable">The section data header table</param>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        protected void WriteTableHeader(DataTable headerTable)
+        {
+            #region thead
+
+            this.ReportWriter.WriteBeginTag("thead");
+            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+            {
+                #region head row(s)
+
+                var rows = from row in headerTable.Rows.Cast<DataRow>()
+                           orderby row[0], row[1]
+                           select row;
+
+                var currentRowIndex = -1;
+                foreach (var row in rows)
+                {
+                    if ((int)row[0] != currentRowIndex)
+                    {
+                        if (currentRowIndex != -1)
+                        {
+                            this.ReportWriter.WriteEndTag("tr");
+                            this.ReportWriter.WriteLine();
+                        }
+
+                        currentRowIndex = (int)row[0];
+
+                        this.ReportWriter.WriteBeginTag("tr");
+                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                    }
+
+                    this.WriteTableHeaderCell(row[2] as string, (int)row[3], (int)row[4]);
+                }
+
+                this.ReportWriter.WriteEndTag("tr");
+                this.ReportWriter.WriteLine();
+
+                #endregion head row(s)
+            }
+
+            this.ReportWriter.WriteEndTag("thead");
+
+            #endregion thead
         }
 
         #region Simple Settings Sections
@@ -1669,6 +1951,58 @@ namespace AzureADConnectConfigDocumenter
             finally
             {
                 Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnCount);
+            }
+        }
+
+        /// <summary>
+        /// Gets the simple settings header table.
+        /// </summary>
+        /// <param name="columnNames">The column names of the table header.</param>
+        /// <returns>
+        /// The simple settings header table.
+        /// </returns>
+        protected DataTable GetSimpleSettingsHeaderTable(string[] columnNames)
+        {
+            Logger.Instance.WriteMethodEntry("Column Count: '{0}'.", columnNames.Length);
+
+            try
+            {
+                var headerTable = Documenter.GetHeaderTable();
+                for (var i = 0; i < columnNames.Length; ++i)
+                {
+                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", i }, { "ColumnName", columnNames[i] }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                }
+
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnNames.Length);
+            }
+        }
+
+        /// <summary>
+        /// Gets the simple settings header table.
+        /// </summary>
+        /// <param name="columnName">The column name of the table header.</param>
+        /// <returns>
+        /// The simple settings header table.
+        /// </returns>
+        protected DataTable GetSimpleSettingsHeaderTable(string columnName)
+        {
+            Logger.Instance.WriteMethodEntry("Column Count: '{0}'.", columnName);
+
+            try
+            {
+                var headerTable = Documenter.GetHeaderTable();
+
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", 2 } }).Values.Cast<object>().ToArray());
+
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnName);
             }
         }
 

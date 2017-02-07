@@ -42,25 +42,30 @@ namespace AzureADConnectConfigDocumenter
         protected const string LoggerContextItemConnectorCategory = "Connector Category";
 
         /// <summary>
+        /// The logger context item connector sub type
+        /// </summary>
+        protected const string LoggerContextItemConnectorSubType = "Connector SubType";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ConnectorDocumenter" /> class.
         /// </summary>
         /// <param name="pilotXml">The pilot configuration XML.</param>
         /// <param name="productionXml">The production configuration XML.</param>
         /// <param name="connectorName">The connector name.</param>
-        /// <param name="productionOnly">If set to <c>true</c>, indicates the the config element (connector, sync rule, etc.) is present in production only.</param>
-        protected ConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, bool productionOnly)
+        /// <param name="configEnvironment">The environment in which the config element exists.</param>
+        protected ConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, ConfigEnvironment configEnvironment)
         {
-            Logger.Instance.WriteMethodEntry("Connector Name: '{0}'. Production Only: '{1}'.", connectorName, productionOnly);
+            Logger.Instance.WriteMethodEntry("Connector Name: '{0}'. Config Environment: '{1}'.", connectorName, configEnvironment);
 
             try
             {
                 this.PilotXml = pilotXml;
                 this.ProductionXml = productionXml;
                 this.ConnectorName = connectorName;
-                this.ProductionOnly = productionOnly;
+                this.Environment = configEnvironment;
 
                 string xpath = "//ma-data[name ='" + this.ConnectorName + "']";
-                var connector = this.ProductionOnly ? this.ProductionXml.XPathSelectElement(xpath, Documenter.NamespaceManager) : this.PilotXml.XPathSelectElement(xpath, Documenter.NamespaceManager);
+                var connector = configEnvironment == ConfigEnvironment.ProductionOnly ? this.ProductionXml.XPathSelectElement(xpath, Documenter.NamespaceManager) : this.PilotXml.XPathSelectElement(xpath, Documenter.NamespaceManager);
 
                 this.ConnectorGuid = (string)connector.Element("id");
                 this.ConnectorCategory = (string)connector.Element("category");
@@ -70,10 +75,11 @@ namespace AzureADConnectConfigDocumenter
                 Logger.SetContextItem(ConnectorDocumenter.LoggerContextItemConnectorName, this.ConnectorName);
                 Logger.SetContextItem(ConnectorDocumenter.LoggerContextItemConnectorGuid, this.ConnectorGuid);
                 Logger.SetContextItem(ConnectorDocumenter.LoggerContextItemConnectorCategory, this.ConnectorCategory);
+                Logger.SetContextItem(ConnectorDocumenter.LoggerContextItemConnectorSubType, this.ConnectorSubType);
             }
             finally
             {
-                Logger.Instance.WriteMethodExit();
+                Logger.Instance.WriteMethodExit("Connector Name: '{0}'. Config Environment: '{1}'.", connectorName, configEnvironment);
             }
         }
 
@@ -108,41 +114,6 @@ namespace AzureADConnectConfigDocumenter
         /// The type of the connector sub.
         /// </value>
         public string ConnectorSubType { get; private set; }
-
-        /// <summary>
-        /// Gets the connector configuration report.
-        /// </summary>
-        /// <returns>
-        /// The Tuple of configuration report and associated TOC
-        /// </returns>
-        public override Tuple<string, string> GetReport()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                this.ReportWriter.Close();
-                this.ReportToCWriter.Close();
-
-                string report;
-                string toc;
-
-                using (var reportReader = new StreamReader(this.ReportFileName))
-                {
-                    report = reportReader.ReadToEnd();
-                    using (var tocReader = new StreamReader(this.ReportToCFileName))
-                    {
-                        toc = tocReader.ReadToEnd();
-                    }
-                }
-
-                return new Tuple<string, string>(report, toc);
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
 
         /// <summary>
         /// Gets the sync rule xpath.
@@ -286,6 +257,51 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Writes the section header
+        /// </summary>
+        /// <param name="title">The section title</param>
+        /// <param name="level">The section header level</param>
+        protected override void WriteSectionHeader(string title, int level)
+        {
+            this.WriteSectionHeader(title, level, this.ConnectorGuid);
+        }
+
+        /// <summary>
+        /// Writes the section header
+        /// </summary>
+        /// <param name="title">The section title</param>
+        /// <param name="level">The section header level</param>
+        /// <param name="bookmark">The section bookmark</param>
+        protected new void WriteSectionHeader(string title, int level, string bookmark)
+        {
+            this.WriteSectionHeader(title, level, bookmark, this.ConnectorGuid);
+        }
+
+        /// <summary>
+        /// Writes the content paragraph
+        /// </summary>
+        /// <param name="content">The content text</param>
+        protected void WriteContentParagraph(string content)
+        {
+            this.WriteContentParagraph(content, this.GetCssVisibilityClass());
+        }
+
+        /// <summary>
+        /// Writes the content paragraph
+        /// </summary>
+        /// <param name="content">The content text</param>
+        /// <param name="cssClass">The paragraph style class</param>
+        protected void WriteContentParagraph(string content, string cssClass)
+        {
+            this.ReportWriter.WriteLine();
+            this.ReportWriter.WriteBeginTag("p");
+            this.ReportWriter.WriteAttribute("class", cssClass);
+            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+            this.ReportWriter.WriteLine(content);
+            this.ReportWriter.WriteEndTag("p");
+        }
+
+        /// <summary>
         /// Writes the connector report header.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
@@ -299,31 +315,11 @@ namespace AzureADConnectConfigDocumenter
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
 
-                var bookmarkCode = this.ConnectorName;
-                var bookmarkText = this.ConnectorName + " Connector Configuration";
+                var sectionTitle = this.ConnectorName + " Connector Configuration";
 
-                Logger.Instance.WriteInfo("Processing " + bookmarkText + ".");
+                Logger.Instance.WriteInfo("Processing " + sectionTitle + ".");
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc2");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, bookmarkCode, bookmarkText, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h2");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, bookmarkCode, bookmarkText, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h2");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 2, this.ConnectorName, this.ConnectorGuid);
             }
             finally
             {
@@ -346,26 +342,7 @@ namespace AzureADConnectConfigDocumenter
 
                 Logger.Instance.WriteInfo("Processing " + sectionTitle + ".");
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 3);
             }
             finally
             {
@@ -474,72 +451,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Connector Properties";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Configuration");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -621,84 +537,17 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Provisioning Hierarchy";
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 3);
 
                 if (this.DiffgramDataSet.Tables[0].Rows.Count == 0)
                 {
-                    this.ReportWriter.WriteLine();
-                    this.ReportWriter.WriteBeginTag("p");
-                    this.ReportWriter.WriteAttribute("class", this.GetCssVisibilityClass());
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    this.ReportWriter.WriteLine("The provisioning hierarchy is not enabled.");
-                    this.ReportWriter.WriteEndTag("p");
-
+                    this.WriteContentParagraph("The provisioning hierarchy is not enabled.");
                     return;
                 }
 
-                #region table
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "DN Component", "Object Class Mapping" });
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("DN Component");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Object Class Mapping");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -779,66 +628,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Selected Object Types";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Object Types" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Object Types");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -942,84 +736,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Selected Attributes";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Attribute Name", "Type", "Multi-valued", "Flows Configured?" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Attribute Name");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Type");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Multi-valued");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Flows Configured?");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -1143,26 +864,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = ConnectorDocumenter.GetSyncRuleSectionTitle(reportType);
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc4");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, direction.ToString() + sectionTitle, direction.ToString(), this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h4");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, direction.ToString() + sectionTitle, direction.ToString(), this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h4");
-
-                #endregion section
+                this.WriteSectionHeader(direction.ToString(), 4, direction.ToString() + sectionTitle, this.ConnectorGuid);
 
                 var sectionPrinted = false;
                 var pilotConnector = this.PilotXml.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
@@ -1180,23 +882,24 @@ namespace AzureADConnectConfigDocumenter
                                  orderby name
                                  select syncRule;
 
+                // Sort by name
+                productionSyncRules = from syncRule in productionSyncRules
+                                      let name = (string)syncRule.Element("name")
+                                      orderby name
+                                      select syncRule;
+
                 sectionPrinted = pilotSyncRules.Count() != 0;
 
                 foreach (var syncRule in pilotSyncRules)
                 {
                     var syncRuleName = (string)syncRule.Element("name");
                     var syncRuleGuid = (string)syncRule.Element("id");
-                    var connectorDocumenter = new SyncRuleDocumenter(this.PilotXml, this.ProductionXml, syncRuleName, syncRuleGuid, this.ConnectorName, false);
+                    var configEnvironment = productionSyncRules.Any(productionSyncRule => (string)productionSyncRule.Element("name") == (string)syncRule.Element("name")) ? ConfigEnvironment.PilotAndProduction : ConfigEnvironment.PilotOnly;
+                    var connectorDocumenter = new SyncRuleDocumenter(this.PilotXml, this.ProductionXml, syncRuleName, syncRuleGuid, this.ConnectorName, configEnvironment);
                     var report = connectorDocumenter.GetReport(reportType);
                     this.ReportWriter.Write(report.Item1);
                     this.ReportToCWriter.Write(report.Item2);
                 }
-
-                // Sort by name
-                productionSyncRules = from syncRule in productionSyncRules
-                                      let name = (string)syncRule.Element("name")
-                                      orderby name
-                                      select syncRule;
 
                 var pilotSyncRulesNames = from syncRule in pilotSyncRules
                                           select (string)syncRule.Element("name");
@@ -1209,7 +912,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     var syncRuleName = (string)syncRule.Element("name");
                     var syncRuleGuid = (string)syncRule.Element("id");
-                    var connectorDocumenter = new SyncRuleDocumenter(this.PilotXml, this.ProductionXml, syncRuleName, syncRuleGuid, this.ConnectorName, true);
+                    var connectorDocumenter = new SyncRuleDocumenter(this.PilotXml, this.ProductionXml, syncRuleName, syncRuleGuid, this.ConnectorName, ConfigEnvironment.ProductionOnly);
                     var report = connectorDocumenter.GetReport(reportType);
                     this.ReportWriter.Write(report.Item1);
                     this.ReportToCWriter.Write(report.Item2);
@@ -1217,12 +920,7 @@ namespace AzureADConnectConfigDocumenter
 
                 if (!sectionPrinted)
                 {
-                    this.ReportWriter.WriteLine();
-                    this.ReportWriter.WriteBeginTag("p");
-                    this.ReportWriter.WriteAttribute("class", Documenter.CanHide);
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    this.ReportWriter.WriteLine("There are no <b>" + direction.ToString() + " " + sectionTitle.Replace(" Summary", string.Empty) + "</b> configured.");
-                    this.ReportWriter.WriteEndTag("p");
+                    this.WriteContentParagraph("There are no <b>" + direction.ToString() + " " + sectionTitle.Replace(" Summary", string.Empty) + "</b> configured.", Documenter.CanHide);
                 }
             }
             finally
@@ -1359,63 +1057,9 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                #region table
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Step#", "Step Name", "Setting", "Configuration" });
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Step#");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Step Name");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Configuration");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {

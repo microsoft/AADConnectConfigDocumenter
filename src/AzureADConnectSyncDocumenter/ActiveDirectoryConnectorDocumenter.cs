@@ -23,7 +23,7 @@ namespace AzureADConnectConfigDocumenter
     /// <summary>
     /// The ActiveDirectoryConnectorDocumenter documents the configuration of Active Directory connector.
     /// </summary>
-    internal sealed class ActiveDirectoryConnectorDocumenter : ConnectorDocumenter
+    internal class ActiveDirectoryConnectorDocumenter : ConnectorDocumenter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ActiveDirectoryConnectorDocumenter"/> class.
@@ -31,9 +31,9 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="pilotXml">The pilot configuration XML.</param>
         /// <param name="productionXml">The production configuration XML.</param>
         /// <param name="connectorName">The name.</param>
-        /// <param name="productionOnly">If set to <c>true</c>, indicates the connector is present in production only.</param>
-        public ActiveDirectoryConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, bool productionOnly)
-            : base(pilotXml, productionXml, connectorName, productionOnly)
+        /// <param name="configEnvironment">The environment in which the config element exists.</param>
+        public ActiveDirectoryConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, ConfigEnvironment configEnvironment)
+            : base(pilotXml, productionXml, connectorName, configEnvironment)
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -76,7 +76,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ProcessConnectorSyncRules();
                 this.ProcessActiveDirectoryRunProfiles();
 
-                return base.GetReport();
+                return this.GetReportTuple();
             }
             finally
             {
@@ -94,7 +94,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the active directory connection information.
         /// </summary>
-        private void ProcessActiveDirectoryConnectionInformation()
+        protected void ProcessActiveDirectoryConnectionInformation()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -134,7 +134,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the active directory connection information data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillActiveDirectoryConnectionInformationDataSet(bool pilotConfig)
+        protected void FillActiveDirectoryConnectionInformationDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -170,7 +170,7 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the active directory connection information.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintActiveDirectoryConnectionInformation()
+        protected void PrintActiveDirectoryConnectionInformation()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -178,72 +178,11 @@ namespace AzureADConnectConfigDocumenter
             {
                 var sectionTitle = "Forest Connection Information";
 
-                #region toc
+                this.WriteSectionHeader(sectionTitle, 3);
 
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
 
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Configuration");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -260,7 +199,7 @@ namespace AzureADConnectConfigDocumenter
         /// Fills the active directory connection option data set.
         /// </summary>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillActiveDirectoryConnectionOptionDataSet(bool pilotConfig)
+        protected void FillActiveDirectoryConnectionOptionDataSet(bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
@@ -309,52 +248,15 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the active directory connection option.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintActiveDirectoryConnectionOption()
+        protected void PrintActiveDirectoryConnectionOption()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = this.GetSimpleSettingsHeaderTable("Connection Options");
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Connection Options");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -373,7 +275,7 @@ namespace AzureADConnectConfigDocumenter
         /// Processes the metaverse object types.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void ProcessActiveDirectoryPartitions()
+        protected void ProcessActiveDirectoryPartitions()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -383,26 +285,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var sectionTitle = "Partitions Information";
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 3);
 
                 var xpath = "//ma-data[name ='" + this.ConnectorName + "']" + "//ma-partition-data/partition[selected = 1]";
 
@@ -444,32 +327,13 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="partitionName">Name of the partition.</param>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void ProcessActiveDirectoryPartition(string partitionName)
+        protected void ProcessActiveDirectoryPartition(string partitionName)
         {
             Logger.Instance.WriteMethodEntry("Partition: '{0}'.", partitionName);
 
             try
             {
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc4");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, partitionName, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h4");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, partitionName, "Partition: " + partitionName, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h4");
-
-                #endregion section
+                this.WriteSectionHeader("Partition: " + partitionName, 4, partitionName);
 
                 // Partion Settings
                 this.CreateActiveDirectoryPartitionSettingsDataSets();
@@ -523,7 +387,7 @@ namespace AzureADConnectConfigDocumenter
         /// Creates the active directory partition settings data sets.
         /// </summary>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
-        private void CreateActiveDirectoryPartitionSettingsDataSets()
+        protected void CreateActiveDirectoryPartitionSettingsDataSets()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -572,7 +436,7 @@ namespace AzureADConnectConfigDocumenter
         /// Gets the active directory partition settings print table.
         /// </summary>
         /// <returns>The active directory partition settings print table</returns>
-        private DataTable GetActiveDirectoryPartitionSettingsPrintTable()
+        protected DataTable GetActiveDirectoryPartitionSettingsPrintTable()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -612,7 +476,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="partitionName">Name of the partition.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillActiveDirectoryPartitionSettingsDataSet(string partitionName, bool pilotConfig)
+        protected void FillActiveDirectoryPartitionSettingsDataSet(string partitionName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
 
@@ -659,7 +523,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates the active directory partition settings diffgram.
         /// </summary>
-        private void CreateActiveDirectoryPartitionSettingsDiffGram()
+        protected void CreateActiveDirectoryPartitionSettingsDiffGram()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -678,57 +542,15 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the active directory partition settings.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintActiveDirectoryPartitionSettings()
+        protected void PrintActiveDirectoryPartitionSettings()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Setting");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Configuration");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -746,7 +568,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="partitionName">Name of the partition.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillActiveDirectoryConnectionOptionDataSet(string partitionName, bool pilotConfig)
+        protected void FillActiveDirectoryConnectionOptionDataSet(string partitionName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
 
@@ -805,7 +627,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="partitionName">Name of the partition.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillActiveDirectoryContainerCredentialSettingsDataSet(string partitionName, bool pilotConfig)
+        protected void FillActiveDirectoryContainerCredentialSettingsDataSet(string partitionName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
 
@@ -850,52 +672,15 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the active directory container credential settings.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintActiveDirectoryContainerCredentialSettings()
+        protected void PrintActiveDirectoryContainerCredentialSettings()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = this.GetSimpleSettingsHeaderTable("Credentials");
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.WriteAttribute("colspan", "2");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Credentials");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -912,7 +697,7 @@ namespace AzureADConnectConfigDocumenter
         /// Creates the active directory partition containers data sets.
         /// </summary>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
-        private void CreateActiveDirectoryPartitionContainersDataSets()
+        protected void CreateActiveDirectoryPartitionContainersDataSets()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -965,7 +750,7 @@ namespace AzureADConnectConfigDocumenter
         /// Gets the active directory partition containers print table.
         /// </summary>
         /// <returns>The active directory partition containers print table</returns>
-        private DataTable GetActiveDirectoryPartitionContainersPrintTable()
+        protected DataTable GetActiveDirectoryPartitionContainersPrintTable()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -1025,7 +810,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="partitionName">Name of the partition.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillActiveDirectoryPartitionContainersDataSet(string partitionName, bool pilotConfig)
+        protected void FillActiveDirectoryPartitionContainersDataSet(string partitionName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
 
@@ -1080,7 +865,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="inclusion">True if the container is included.</param>
         /// <param name="columnCount">The column count.</param>
         /// <returns>The container selection row</returns>
-        private object[] GetContainerSelectionRow(string distinguishedName, bool inclusion, int columnCount)
+        protected object[] GetContainerSelectionRow(string distinguishedName, bool inclusion, int columnCount)
         {
             Logger.Instance.WriteMethodEntry("Container: '{0}'. Included: '{1}'.", distinguishedName, inclusion);
             
@@ -1124,7 +909,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates the active directory partition containers diffgram.
         /// </summary>
-        private void CreateActiveDirectoryPartitionContainersDiffGram()
+        protected void CreateActiveDirectoryPartitionContainersDiffGram()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -1143,57 +928,15 @@ namespace AzureADConnectConfigDocumenter
         /// Prints the active directory partition containers.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void PrintActiveDirectoryPartitionContainers()
+        protected void PrintActiveDirectoryPartitionContainers()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                #region table
+                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Container", "Include / Exclude" });
 
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                {
-                    #region thead
-
-                    this.ReportWriter.WriteBeginTag("thead");
-                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    {
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        {
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Container");
-                            this.ReportWriter.WriteEndTag("th");
-
-                            this.ReportWriter.WriteBeginTag("th");
-                            this.ReportWriter.WriteAttribute("class", "column-th");
-                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                            this.ReportWriter.Write("Include / Exclude");
-                            this.ReportWriter.WriteEndTag("th");
-                        }
-
-                        this.ReportWriter.WriteEndTag("tr");
-                        this.ReportWriter.WriteLine();
-                    }
-
-                    this.ReportWriter.WriteEndTag("thead");
-
-                    #endregion thead
-                }
-
-                #region rows
-
-                this.WriteRows(this.DiffgramDataSet.Tables[0].Rows);
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
             finally
             {
@@ -1212,7 +955,7 @@ namespace AzureADConnectConfigDocumenter
         /// Processes the connector run profiles.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void ProcessActiveDirectoryRunProfiles()
+        protected void ProcessActiveDirectoryRunProfiles()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -1222,26 +965,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var sectionTitle = "Run Profiles";
 
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc3");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h3");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, sectionTitle, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h3");
-
-                #endregion section
+                this.WriteSectionHeader(sectionTitle, 3);
 
                 var xpath = "//ma-data[name ='" + this.ConnectorName + "']/ma-run-data/run-configuration";
 
@@ -1283,32 +1007,13 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="runProfileName">Name of the run profile.</param>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        private void ProcessActiveDirectoryRunProfile(string runProfileName)
+        protected void ProcessActiveDirectoryRunProfile(string runProfileName)
         {
             Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'.", runProfileName);
 
             try
             {
-                #region toc
-
-                this.ReportToCWriter.WriteBeginTag("span");
-                this.ReportToCWriter.WriteAttribute("class", "toc4");
-                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
-                Documenter.WriteJumpToBookmarkLocation(this.ReportToCWriter, runProfileName, this.ConnectorGuid, "TOC");
-                this.ReportToCWriter.WriteEndTag("span");
-                this.ReportToCWriter.WriteBeginTag("br");
-                this.ReportToCWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
-                this.ReportToCWriter.WriteLine();
-
-                #endregion toc
-
-                #region section
-
-                this.ReportWriter.WriteFullBeginTag("h4");
-                Documenter.WriteBookmarkLocation(this.ReportWriter, runProfileName, "Run Profile: " + runProfileName, this.ConnectorGuid, "TOC");
-                this.ReportWriter.WriteEndTag("h4");
-
-                #endregion section
+                this.WriteSectionHeader("Run Profile: " + runProfileName, 4, runProfileName);
 
                 this.CreateConnectorRunProfileDataSets();
 
@@ -1330,7 +1035,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="runProfileName">Name of the run profile.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        private void FillActiveDirectoryRunProfileDataSet(string runProfileName, bool pilotConfig)
+        protected void FillActiveDirectoryRunProfileDataSet(string runProfileName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'. Pilot Config: '{1}'.", runProfileName, pilotConfig);
 
