@@ -1390,6 +1390,7 @@ namespace AzureADConnectConfigDocumenter
         /// Gets the anchor style class for TOC
         /// </summary>
         /// <returns>The anchor style class for TOC</returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Reviewed.")]
         protected string GetAnchorClassForTOC()
         {
             var anchorClass = "toc";
@@ -1900,6 +1901,26 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
+                this.CreateSimpleSettingsDataSets(columnCount, 0);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnCount);
+            }
+        }
+
+        /// <summary>
+        /// Creates the simple settings data sets.
+        /// </summary>
+        /// <param name="columnCount">The column count.</param>
+        /// <param name="keyIndex">The zero-based index of the primary key column.</param>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
+        protected void CreateSimpleSettingsDataSets(int columnCount, int keyIndex)
+        {
+            Logger.Instance.WriteMethodEntry("Column Count: '{0}'. Key Index: '{1}'.", columnCount, keyIndex);
+
+            try
+            {
                 var table = new DataTable("SimpleSettings") { Locale = CultureInfo.InvariantCulture };
 
                 for (var i = 0; i < columnCount; ++i)
@@ -1907,20 +1928,20 @@ namespace AzureADConnectConfigDocumenter
                     table.Columns.Add(new DataColumn("Column" + (i + 1)));
                 }
 
-                table.PrimaryKey = new[] { table.Columns[0] };
+                table.PrimaryKey = new[] { table.Columns[keyIndex] };
 
                 this.PilotDataSet = new DataSet("SimpleSettings") { Locale = CultureInfo.InvariantCulture };
                 this.PilotDataSet.Tables.Add(table);
 
                 this.ProductionDataSet = this.PilotDataSet.Clone();
 
-                var printTable = this.GetSimpleSettingsPrintTable(columnCount);
+                var printTable = this.GetSimpleSettingsPrintTable(columnCount, keyIndex);
                 this.PilotDataSet.Tables.Add(printTable);
                 this.ProductionDataSet.Tables.Add(printTable.Copy());
             }
             finally
             {
-                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnCount);
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'. Key Index: '{1}'.", columnCount, keyIndex);
             }
         }
 
@@ -1937,11 +1958,33 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
+                return this.GetSimpleSettingsPrintTable(columnCount, 0);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnCount);
+            }
+        }
+
+        /// <summary>
+        /// Gets the simple settings print table.
+        /// </summary>
+        /// <param name="columnCount">The column count.</param>
+        /// <param name="keyIndex">The zero-based index of the primary key column.</param>
+        /// <returns>
+        /// The simple settings print table.
+        /// </returns>
+        protected DataTable GetSimpleSettingsPrintTable(int columnCount, int keyIndex)
+        {
+            Logger.Instance.WriteMethodEntry("Column Count: '{0}'. Key Index: '{1}'.", columnCount, keyIndex);
+
+            try
+            {
                 var printTable = Documenter.GetPrintTable();
 
                 for (var i = 0; i < columnCount; ++i)
                 {
-                    printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", i }, { "Hidden", false }, { "SortOrder", (i == 0) ? 0 : -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                    printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", i }, { "Hidden", false }, { "SortOrder", (i == keyIndex) ? 0 : -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
                 }
 
                 printTable.AcceptChanges();
@@ -1950,7 +1993,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
-                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnCount);
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'. Key Index: '{1}'.", columnCount, keyIndex);
             }
         }
 
@@ -2038,7 +2081,26 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                this.CreateSimpleOrderedSettingsDataSets(columnCount, 2);
+                this.CreateSimpleOrderedSettingsDataSets(columnCount, 2, false);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnCount);
+            }
+        }
+
+        /// <summary>
+        /// Creates the simple ordered settings data sets.
+        /// </summary>
+        /// <param name="columnCount">The column count.</param>
+        /// <param name="alphabeticOrder">if set to <c>true</c>, the rows are sorted alphabetically.</param>
+        protected void CreateSimpleOrderedSettingsDataSets(int columnCount, bool alphabeticOrder)
+        {
+            Logger.Instance.WriteMethodEntry("Column Count: '{0}'.", columnCount);
+
+            try
+            {
+                this.CreateSimpleOrderedSettingsDataSets(columnCount, 2, alphabeticOrder);
             }
             finally
             {
@@ -2051,8 +2113,9 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="columnCount">The column count.</param>
         /// <param name="keyCount">The key count.</param>
+        /// <param name="alphabeticOrder">if set to <c>true</c>, the rows are sorted alphabetically.</param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
-        protected void CreateSimpleOrderedSettingsDataSets(int columnCount, int keyCount)
+        protected void CreateSimpleOrderedSettingsDataSets(int columnCount, int keyCount, bool alphabeticOrder)
         {
             Logger.Instance.WriteMethodEntry("Column Count: '{0}'. Primary Key Count: '{1}'.", columnCount, keyCount);
 
@@ -2060,7 +2123,14 @@ namespace AzureADConnectConfigDocumenter
             {
                 var table = new DataTable("SimpleOrderedSettings") { Locale = CultureInfo.InvariantCulture };
 
-                table.Columns.Add(new DataColumn("Column1", typeof(int)));
+                if (alphabeticOrder)
+                {
+                    table.Columns.Add(new DataColumn("Column1", typeof(string)));
+                }
+                else
+                {
+                    table.Columns.Add(new DataColumn("Column1", typeof(int)));
+                }
 
                 for (var i = 1; i < columnCount; ++i)
                 {

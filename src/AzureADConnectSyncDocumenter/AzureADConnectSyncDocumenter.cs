@@ -426,15 +426,13 @@ namespace AzureADConnectConfigDocumenter
             {
                 var connectorName = (string)connector.Element("name");
                 var connectorCategory = (string)connector.Element("category");
+                ConnectorDocumenter connectorDocumenter;
 
                 switch (connectorCategory.ToUpperInvariant())
                 {
                     case "AD":
                         {
-                            var connectorDocumenter = new ActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
-                            var report = connectorDocumenter.GetReport();
-                            this.ReportWriter.Write(report.Item1);
-                            this.ReportToCWriter.Write(report.Item2);
+                            connectorDocumenter = new ActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                         }
 
                         break;
@@ -445,10 +443,7 @@ namespace AzureADConnectConfigDocumenter
                             {
                                 case "WINDOWS AZURE ACTIVE DIRECTORY (MICROSOFT)":
                                     {
-                                        var connectorDocumenter = new AzureActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
-                                        var report = connectorDocumenter.GetReport();
-                                        this.ReportWriter.Write(report.Item1);
-                                        this.ReportToCWriter.Write(report.Item2);
+                                        connectorDocumenter = new AzureActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                                     }
 
                                     break;
@@ -457,10 +452,7 @@ namespace AzureADConnectConfigDocumenter
                                 case "GENERIC SQL (MICROSOFT)":
                                 default:
                                     {
-                                        var connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
-                                        var report = connectorDocumenter.GetReport();
-                                        this.ReportWriter.Write(report.Item1);
-                                        this.ReportToCWriter.Write(report.Item2);
+                                        connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                                     }
 
                                     break;
@@ -470,14 +462,15 @@ namespace AzureADConnectConfigDocumenter
                         break;
                     default:
                         {
-                            var connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
-                            var report = connectorDocumenter.GetReport();
-                            this.ReportWriter.Write(report.Item1);
-                            this.ReportToCWriter.Write(report.Item2);
+                            connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                         }
 
                         break;
                 }
+
+                var report = connectorDocumenter.GetReport();
+                this.ReportWriter.Write(report.Item1);
+                this.ReportToCWriter.Write(report.Item2);
             }
             finally
             {

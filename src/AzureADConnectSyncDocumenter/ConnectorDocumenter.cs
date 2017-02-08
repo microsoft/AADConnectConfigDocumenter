@@ -263,7 +263,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="level">The section header level</param>
         protected override void WriteSectionHeader(string title, int level)
         {
-            this.WriteSectionHeader(title, level, this.ConnectorGuid);
+            this.WriteSectionHeader(title, level, title, this.ConnectorGuid);
         }
 
         /// <summary>
@@ -654,7 +654,7 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                Logger.Instance.WriteInfo("Processing Selected Attributes.");
+                Logger.Instance.WriteInfo("Processing Selected Attributes. This may take a few minutes...");
 
                 this.CreateSimpleSettingsDataSets(4);
 

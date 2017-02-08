@@ -113,10 +113,9 @@ namespace AzureADConnectConfigDocumenter
 
                 Logger.Instance.WriteInfo("Processing " + sectionTitle + ".");
 
-                const string XPath = "//mv-data//dsml:class";
-
                 this.WriteSectionHeader(sectionTitle, 3);
 
+                const string XPath = "//mv-data//dsml:class";
                 var pilot = this.PilotXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
                 var production = this.ProductionXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
 

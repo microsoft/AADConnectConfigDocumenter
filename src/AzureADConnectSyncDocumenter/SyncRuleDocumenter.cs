@@ -528,7 +528,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Sync Rule Scoping Filter.");
 
-                this.CreateSimpleOrderedSettingsDataSets(5, 5); // 1 = Display Order, 2 = Group #, 3 = Attribute, 4 = Operator, 5 = Value
+                this.CreateSimpleOrderedSettingsDataSets(5, 5, false); // 1 = Display Order, 2 = Group #, 3 = Attribute, 4 = Operator, 5 = Value
 
                 this.FillConnectorSyncRuleScopingFilterDataSet(true);
                 this.FillConnectorSyncRuleScopingFilterDataSet(false);
@@ -669,7 +669,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Sync Rule Join Rules");
 
-                this.CreateSimpleOrderedSettingsDataSets(5, 5); // 1 = Display Order, 2 = Group #, 3 = Source Attribute, 4 = Target Attribute, 5 = Case Sensitive?
+                this.CreateSimpleOrderedSettingsDataSets(5, 5, false); // 1 = Display Order, 2 = Group #, 3 = Source Attribute, 4 = Target Attribute, 5 = Case Sensitive?
 
                 this.FillConnectorSyncRuleJoinRulesDataSet(true);
                 this.FillConnectorSyncRuleJoinRulesDataSet(false);
