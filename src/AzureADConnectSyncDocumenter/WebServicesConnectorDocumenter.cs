@@ -1,10 +1,10 @@
 ﻿//------------------------------------------------------------------------------------------------------------------------------------------
-// <copyright file="AzureActiveDirectoryConnectorDocumenter.cs" company="Microsoft">
+// <copyright file="WebServicesConnectorDocumenter.cs" company="Microsoft">
 //      Copyright (c) Microsoft. All Rights Reserved.
 //      Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 // <summary>
-// Azure AD Connect Sync Configuration Documenter
+// Azure AD Connect Sync Configuration Documenter Utility
 // </summary>
 //------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -21,18 +21,18 @@ namespace AzureADConnectConfigDocumenter
     using System.Xml.XPath;
 
     /// <summary>
-    /// The AzureActiveDirectoryConnectorDocumenter documents the configuration of Active Directory connector.
+    /// The WebServicesConnectorDocumenter documents the configuration of a WebServices connector.
     /// </summary>
-    internal sealed class AzureActiveDirectoryConnectorDocumenter : Extensible2ConnectorDocumenter
+    internal class WebServicesConnectorDocumenter : Extensible2ConnectorDocumenter
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AzureActiveDirectoryConnectorDocumenter"/> class.
+        /// Initializes a new instance of the <see cref="WebServicesConnectorDocumenter"/> class.
         /// </summary>
         /// <param name="pilotXml">The pilot configuration XML.</param>
         /// <param name="productionXml">The production configuration XML.</param>
         /// <param name="connectorName">The name.</param>
         /// <param name="configEnvironment">The environment in which the config element exists.</param>
-        public AzureActiveDirectoryConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, ConfigEnvironment configEnvironment)
+        public WebServicesConnectorDocumenter(XElement pilotXml, XElement productionXml, string connectorName, ConfigEnvironment configEnvironment)
             : base(pilotXml, productionXml, connectorName, configEnvironment)
         {
             Logger.Instance.WriteMethodEntry();
@@ -49,7 +49,7 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Gets the active directory connector configuration report.
+        /// Gets the Generic SQL connector configuration report.
         /// </summary>
         /// <returns>
         /// The Tuple of configuration report and associated TOC
@@ -66,11 +66,13 @@ namespace AzureADConnectConfigDocumenter
 
                 ////this.ProcessExtensible2ExtensionInformation();
                 this.ProcessExtensible2ConnectivityInformation();
-                ////this.ProcessExtensible2PartitionsAndHierarchiesConfiguration();
+
+                this.ProcessExtensible2GlobalParameters();
+                this.ProcessExtensible2PartitionsAndHierarchiesConfiguration();
 
                 this.ProcessConnectorSelectedObjectTypes();
                 this.ProcessConnectorSelectedAttributes();
-                this.ProcessExtensible2AnchorConfigurations();
+                ////this.ProcessExtensible2AnchorConfigurations();
                 this.ProcessConnectorProvisioningSyncRules();
                 this.ProcessConnectorStickyJoinSyncRules();
                 this.ProcessConnectorNormalJoinSyncRules();

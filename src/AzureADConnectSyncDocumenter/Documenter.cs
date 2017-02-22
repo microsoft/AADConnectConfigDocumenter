@@ -107,6 +107,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Initializes a new instance of the <see cref="Documenter"/> class.
         /// </summary>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataSet.")]
         protected Documenter()
         {
             Logger.Instance.WriteMethodEntry();
@@ -324,6 +325,19 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Gets the report file's base name.
+        /// </summary>
+        /// <param name="pilotConfigRelativePath">The relative path of the pilot / test configuration directory.</param>
+        /// <param name="productionConfigRelativePath">The relative path of the production configuration directory.</param>
+        /// <returns>
+        /// The report file's base name.
+        /// </returns>
+        public static string GetReportFileBaseName(string pilotConfigRelativePath, string productionConfigRelativePath)
+        {
+            return (pilotConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AppliedTo_" + (productionConfigRelativePath ?? string.Empty).Replace(@"\", "_");
+        }
+
+        /// <summary>
         /// Gets the type of the attribute from it's DSML syntax.
         /// </summary>
         /// <param name="syntax">The DSML syntax of the attribute.</param>
@@ -435,6 +449,33 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Writes the jump to bookmark location.
+        /// </summary>
+        /// <param name="htmlWriter">The htmlWriter.</param>
+        /// <param name="bookmark">The bookmark.</param>
+        /// <param name="displayText">The display text.</param>
+        /// <param name="sectionGuid">The section unique identifier.</param>
+        /// <param name="cellClass">The cell class.</param>
+        protected static void WriteJumpToBookmarkLocation(HtmlTextWriter htmlWriter, string bookmark, string displayText, string sectionGuid, string cellClass)
+        {
+            Logger.Instance.WriteMethodEntry("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
+
+            try
+            {
+                htmlWriter.WriteBeginTag("a");
+                htmlWriter.WriteAttribute("class", cellClass);
+                htmlWriter.WriteAttribute("href", "#" + Documenter.GetBookmarkCode(bookmark, sectionGuid));
+                htmlWriter.Write(HtmlTextWriter.TagRightChar);
+                htmlWriter.Write(displayText);
+                htmlWriter.WriteEndTag("a");
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
+            }
+        }
+
+        /// <summary>
         /// Gets the diffgram.
         /// </summary>
         /// <param name="pilotDataSet">The pilot data set.</param>
@@ -461,7 +502,7 @@ namespace AzureADConnectConfigDocumenter
                     throw new ArgumentNullException("productionDataSet");
                 }
 
-                var diffGramDataSet = new DataSet(pilotDataSet.DataSetName) { Locale = CultureInfo.InvariantCulture };
+                var diffgramDataSet = new DataSet(pilotDataSet.DataSetName) { Locale = CultureInfo.InvariantCulture };
 
                 var printTable = pilotDataSet.Tables["PrintSettings"];
 
@@ -472,16 +513,14 @@ namespace AzureADConnectConfigDocumenter
                         continue;
                     }
 
-                    var sortOrder = printTable.Select("SortOrder <> -1 AND TableIndex = " + i, "SortOrder").Select(row => (int)row["ColumnIndex"]).ToArray();
                     var columnsIgnored = printTable.Select("ChangeIgnored = true AND TableIndex = " + i).Select(row => (int)row["ColumnIndex"]).ToArray();
+                    var diffgramTable = Documenter.GetDiffgram(pilotDataSet.Tables[i], productionDataSet.Tables[i], columnsIgnored);
 
-                    var diffGramTable = Documenter.GetDiffgram(pilotDataSet.Tables[i], productionDataSet.Tables[i], columnsIgnored);
-                    diffGramTable = Documenter.SortTable(diffGramTable, sortOrder);
-
-                    diffGramDataSet.Tables.Add(diffGramTable);
+                    diffgramDataSet.Tables.Add(diffgramTable);
                 }
 
-                diffGramDataSet.Tables.Add(printTable.Copy());
+                diffgramDataSet.Tables.Add(printTable.Copy());
+                diffgramDataSet = Documenter.SortDataSet(diffgramDataSet);
 
                 // set up data relations
                 foreach (DataRelation dataRelation in pilotDataSet.Relations)
@@ -491,7 +530,7 @@ namespace AzureADConnectConfigDocumenter
                     {
                         var tableName = parentColumn.Table.TableName;
                         var columnIndex = parentColumn.Ordinal;
-                        parentColumns.Add(diffGramDataSet.Tables[tableName].Columns[columnIndex]);
+                        parentColumns.Add(diffgramDataSet.Tables[tableName].Columns[columnIndex]);
                     }
 
                     var childColumns = new List<DataColumn>();
@@ -499,49 +538,58 @@ namespace AzureADConnectConfigDocumenter
                     {
                         var tableName = childColumn.Table.TableName;
                         var columnIndex = childColumn.Ordinal;
-                        childColumns.Add(diffGramDataSet.Tables[tableName].Columns[columnIndex]);
+                        childColumns.Add(diffgramDataSet.Tables[tableName].Columns[columnIndex]);
                     }
 
                     var dataRelationClone = new DataRelation(dataRelation.RelationName, parentColumns.ToArray(), childColumns.ToArray(), false);
-                    diffGramDataSet.Relations.Add(dataRelationClone);
+                    diffgramDataSet.Relations.Add(dataRelationClone);
                 }
 
-                diffGramDataSet.ExtendedProperties.Add(Documenter.CanHide, true);
+                Documenter.SetHtmlTableRowVisibilityStatus(diffgramDataSet);
 
-                // Loop all ignore last table which is PrintSetting table
-                for (var i = 0; i < diffGramDataSet.Tables.Count - 1; ++i)
-                {
-                    diffGramDataSet.Tables[i].Columns.Add(Documenter.HtmlTableRowVisibilityStatusColumn);
-
-                    foreach (DataRow row in diffGramDataSet.Tables[i].Rows)
-                    {
-                        if (i == 0)
-                        {
-                            if (!Documenter.IsCumulativeRowStateChanged(row, i))
-                            {
-                                row[Documenter.HtmlTableRowVisibilityStatusColumn] = Documenter.CanHide;
-                            }
-                            else
-                            {
-                                diffGramDataSet.ExtendedProperties[Documenter.CanHide] = false;
-                            }
-                        }
-                        else if (!Documenter.IsCumulativeRowStateChanged(row, i))
-                        {
-                            var dataRelationName = string.Format(CultureInfo.InvariantCulture, "DataRelation{0}{1}", i, i + 1);
-                            var parentRow = row.GetParentRow(dataRelationName);
-                            row[Documenter.HtmlTableRowVisibilityStatusColumn] = parentRow[Documenter.HtmlTableRowVisibilityStatusColumn];
-                        }
-                    }
-
-                    diffGramDataSet.Tables[i].AcceptChanges();
-                }
-
-                return diffGramDataSet;
+                return diffgramDataSet;
             }
             finally
             {
                 Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Sets the visibility status of each row of the html table based on the modification status of the row or it's children.
+        /// </summary>
+        /// <param name="diffgramDataSet">The diffgram data set.</param>
+        protected static void SetHtmlTableRowVisibilityStatus(DataSet diffgramDataSet)
+        {
+            diffgramDataSet.ExtendedProperties.Add(Documenter.CanHide, true);
+
+            // Loop all ignore last table which is PrintSetting table
+            for (var i = 0; i < diffgramDataSet.Tables.Count - 1; ++i)
+            {
+                diffgramDataSet.Tables[i].Columns.Add(Documenter.HtmlTableRowVisibilityStatusColumn);
+
+                foreach (DataRow row in diffgramDataSet.Tables[i].Rows)
+                {
+                    if (i == 0)
+                    {
+                        if (!Documenter.IsCumulativeRowStateChanged(row, i))
+                        {
+                            row[Documenter.HtmlTableRowVisibilityStatusColumn] = Documenter.CanHide;
+                        }
+                        else
+                        {
+                            diffgramDataSet.ExtendedProperties[Documenter.CanHide] = false;
+                        }
+                    }
+                    else if (!Documenter.IsCumulativeRowStateChanged(row, i))
+                    {
+                        var dataRelationName = string.Format(CultureInfo.InvariantCulture, "DataRelation{0}{1}", i, i + 1);
+                        var parentRow = row.GetParentRow(dataRelationName);
+                        row[Documenter.HtmlTableRowVisibilityStatusColumn] = parentRow[Documenter.HtmlTableRowVisibilityStatusColumn];
+                    }
+                }
+
+                diffgramDataSet.Tables[i].AcceptChanges();
             }
         }
 
@@ -554,9 +602,12 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// An <see cref="DataTable" /> object representing the diffgram of the two tables.
         /// </returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
         protected static DataTable GetDiffgram(DataTable pilotTable, DataTable productionTable, int[] columnsIgnored)
         {
             Logger.Instance.WriteMethodEntry();
+
+            DataTable diffgramTable = CreateDiffgramTable(pilotTable);
 
             try
             {
@@ -599,27 +650,17 @@ namespace AzureADConnectConfigDocumenter
                 // Deleted rows : rows in productionTable not modified AND not unchanged
                 var deletedRows = productionTable.AsEnumerable().Except(modifiedProductionRows, DataRowComparer.Default).Except(unchangedProductionRows, DataRowComparer.Default);
 
-                var diffGramTable = pilotTable.Clone();
-                diffGramTable.Columns.Add(Documenter.RowStateColumn);
-                foreach (DataColumn column in pilotTable.Columns)
-                {
-                    if (!pilotTable.PrimaryKey.Contains(column))
-                    {
-                        diffGramTable.Columns.Add(Documenter.OldColumnPrefix + column.ColumnName);
-                    }
-                }
-
                 // Populate unchanged rows
                 foreach (var row in unchangedPilotRows)
                 {
-                    var newRow = diffGramTable.NewRow();
+                    var newRow = diffgramTable.NewRow();
                     newRow[Documenter.RowStateColumn] = DataRowState.Unchanged;
                     foreach (DataColumn column in pilotTable.Columns)
                     {
                         newRow[column.ColumnName] = row[column.ColumnName];
                     }
 
-                    Documenter.AddRow(diffGramTable, newRow);
+                    Documenter.AddRow(diffgramTable, newRow);
                 }
 
                 // Populate modified rows
@@ -627,7 +668,7 @@ namespace AzureADConnectConfigDocumenter
                 {
                     // Match the unmodified version of the row via the PrimaryKey
                     var matchInProductionTable = modifiedProductionRows.Where(mondifiedProductionRow => productionTable.PrimaryKey.Aggregate(true, (match, keyColumn) => match && mondifiedProductionRow[keyColumn].Equals(row[keyColumn.Ordinal]))).First();
-                    var newRow = diffGramTable.NewRow();
+                    var newRow = diffgramTable.NewRow();
                     newRow[Documenter.RowStateColumn] = DataRowState.Modified;
 
                     // Set the row with the original values
@@ -645,20 +686,20 @@ namespace AzureADConnectConfigDocumenter
                         newRow[column.ColumnName] = row[column.ColumnName];
                     }
 
-                    Documenter.AddRow(diffGramTable, newRow);
+                    Documenter.AddRow(diffgramTable, newRow);
                 }
 
                 // Populate added rows
                 foreach (var row in addedRows)
                 {
-                    var newRow = diffGramTable.NewRow();
+                    var newRow = diffgramTable.NewRow();
                     newRow[Documenter.RowStateColumn] = DataRowState.Added;
                     foreach (DataColumn column in pilotTable.Columns)
                     {
                         newRow[column.ColumnName] = row[column.ColumnName];
                     }
 
-                    Documenter.AddRow(diffGramTable, newRow);
+                    Documenter.AddRow(diffgramTable, newRow);
                 }
 
                 // Populate deleted rows
@@ -669,7 +710,7 @@ namespace AzureADConnectConfigDocumenter
                         break;
                     }
 
-                    var newRow = diffGramTable.NewRow();
+                    var newRow = diffgramTable.NewRow();
                     newRow[Documenter.RowStateColumn] = DataRowState.Deleted;
                     foreach (DataColumn column in pilotTable.Columns)
                     {
@@ -684,15 +725,35 @@ namespace AzureADConnectConfigDocumenter
                         }
                     }
 
-                    Documenter.AddRow(diffGramTable, newRow);
+                    Documenter.AddRow(diffgramTable, newRow);
                 }
-
-                return diffGramTable;
             }
             finally
             {
                 Logger.Instance.WriteMethodExit();
             }
+
+            return diffgramTable;
+        }
+
+        /// <summary>
+        /// Creates the diffgram table structure based on input table.
+        /// </summary>
+        /// <param name="dataTable">The input table to base the diffgram table on.</param>
+        /// <returns>The diffgram table structure based on input table.</returns>
+        protected static DataTable CreateDiffgramTable(DataTable dataTable)
+        {
+            var diffgramTable = dataTable.Clone();
+            diffgramTable.Columns.Add(Documenter.RowStateColumn);
+            foreach (DataColumn column in dataTable.Columns)
+            {
+                if (!dataTable.PrimaryKey.Contains(column))
+                {
+                    diffgramTable.Columns.Add(Documenter.OldColumnPrefix + column.ColumnName);
+                }
+            }
+
+            return diffgramTable;
         }
 
         /// <summary>
@@ -774,90 +835,178 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Sorts the table.
+        /// Gets the simple settings header table with multiple columns.
         /// </summary>
-        /// <param name="table">The table.</param>
-        /// <param name="columns">The indexes of the columns on which to sort.</param>
+        /// <param name="columnNames">The column names of the table header.</param>
         /// <returns>
-        /// The sorted table.
+        /// The simple settings header table with multiple columns.
         /// </returns>
-        protected static DataTable SortTable(DataTable table, int[] columns)
+        protected static DataTable GetSimpleSettingsHeaderTable(string[] columnNames)
+        {
+            return Documenter.GetSimpleSettingsHeaderTable(null, columnNames);
+        }
+
+        /// <summary>
+        /// Gets the simple settings header table with the single header column spanning two columns.
+        /// </summary>
+        /// <param name="columnName">The column name of the table header.</param>
+        /// <returns>
+        /// The simple settings header table with the single header column spanning two columns.
+        /// </returns>
+        protected static DataTable GetSimpleSettingsHeaderTable(string columnName)
+        {
+            return Documenter.GetSimpleSettingsHeaderTable(columnName, null);
+        }
+
+        /// <summary>
+        /// Gets the simple settings header table with first header row having single column and second header row with multiple columns.
+        /// </summary>
+        /// <param name="columnName">The column name of the first row table header.</param>
+        /// <param name="columnNames">The column names of the second row table header.</param>
+        /// <returns>
+        /// The simple settings header table.
+        /// </returns>
+        protected static DataTable GetSimpleSettingsHeaderTable(string columnName, string[] columnNames)
+        {
+            Logger.Instance.WriteMethodEntry("Column Count: '{0}'.", columnName);
+
+            try
+            {
+                var headerTable = Documenter.GetHeaderTable();
+
+                if (!string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Length != 0)
+                {
+                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", columnNames.Length } }).Values.Cast<object>().ToArray());
+
+                    for (var i = 0; i < columnNames.Length; ++i)
+                    {
+                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", i }, { "ColumnName", columnNames[i] }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                    }
+                }
+                else if (string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Length != 0)
+                {
+                    for (var i = 0; i < columnNames.Length; ++i)
+                    {
+                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", i }, { "ColumnName", columnNames[i] }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                    }
+                }
+                else if (!string.IsNullOrEmpty(columnName))
+                {
+                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", 2 } }).Values.Cast<object>().ToArray());
+                }
+
+                return headerTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnName);
+            }
+        }
+
+        /// <summary>
+        /// Sorts a diffgram dataset.
+        /// </summary>
+        /// <param name="diffgramDataSet">The diffgram dataset.</param>
+        /// <returns>
+        /// The sorted diffgram dataset.
+        /// </returns>
+        protected static DataSet SortDataSet(DataSet diffgramDataSet)
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                if (table == null)
+                if (diffgramDataSet == null)
                 {
-                    throw new ArgumentNullException("table");
+                    throw new ArgumentNullException("diffgramDataSet");
                 }
 
-                var tableClone = table.Clone();
+                var sortedDiffgramDataSet = diffgramDataSet.Clone();
 
-                IOrderedEnumerable<DataRow> rows;
+                var printTable = diffgramDataSet.Tables["PrintSettings"];
+                sortedDiffgramDataSet.Tables["PrintSettings"].Merge(printTable);
 
-                switch (columns.Length)
+                for (var i = 0; i < diffgramDataSet.Tables.Count; ++i)
                 {
-                    case 1:
-                        rows = table.Rows.Cast<DataRow>().OrderBy(row => row[columns[0]]);
-                        break;
-                    case 2:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]]
-                               select row;
-                        break;
-                    case 3:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]]
-                               select row;
-                        break;
-                    case 4:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]]
-                               select row;
-                        break;
-                    case 5:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]]
-                               select row;
-                        break;
-                    case 6:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]]
-                               select row;
-                        break;
-                    case 7:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]]
-                               select row;
-                        break;
-                    case 8:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]], row[columns[7]]
-                               select row;
-                        break;
-                    case 9:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]], row[columns[7]], row[columns[8]]
-                               select row;
-                        break;
-                    case 10:
-                        rows = from row in table.Rows.Cast<DataRow>()
-                               orderby row[columns[0]], row[columns[1]], row[columns[2]], row[columns[3]], row[columns[4]], row[columns[5]], row[columns[6]], row[columns[7]], row[columns[8]], row[columns[9]]
-                               select row;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException("columns", string.Format(CultureInfo.InvariantCulture, "Columns length must be between {0} and {1}.", 1, Documenter.MaxSortableColumns));
+                    if (diffgramDataSet.Tables[i].TableName == "PrintSettings")
+                    {
+                        continue;
+                    }
+
+                    var table = diffgramDataSet.Tables[i];
+                    var sortColumns = printTable.Select("SortOrder <> -1 AND TableIndex = " + i, "SortOrder").Select(row => (int)row["ColumnIndex"]).ToArray();
+
+                    var tableClone = table.Clone();
+
+                    IOrderedEnumerable<DataRow> rows;
+
+                    switch (sortColumns.Length)
+                    {
+                        case 1:
+                            rows = table.Rows.Cast<DataRow>().OrderBy(row => row[sortColumns[0]]);
+                            break;
+                        case 2:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]]
+                                   select row;
+                            break;
+                        case 3:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]]
+                                   select row;
+                            break;
+                        case 4:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]], row[sortColumns[3]]
+                                   select row;
+                            break;
+                        case 5:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]], row[sortColumns[3]], row[sortColumns[4]]
+                                   select row;
+                            break;
+                        case 6:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]], row[sortColumns[3]], row[sortColumns[4]], row[sortColumns[5]]
+                                   select row;
+                            break;
+                        case 7:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]], row[sortColumns[3]], row[sortColumns[4]], row[sortColumns[5]], row[sortColumns[6]]
+                                   select row;
+                            break;
+                        case 8:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]], row[sortColumns[3]], row[sortColumns[4]], row[sortColumns[5]], row[sortColumns[6]], row[sortColumns[7]]
+                                   select row;
+                            break;
+                        case 9:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]], row[sortColumns[3]], row[sortColumns[4]], row[sortColumns[5]], row[sortColumns[6]], row[sortColumns[7]], row[sortColumns[8]]
+                                   select row;
+                            break;
+                        case 10:
+                            rows = from row in table.Rows.Cast<DataRow>()
+                                   orderby row[sortColumns[0]], row[sortColumns[1]], row[sortColumns[2]], row[sortColumns[3]], row[sortColumns[4]], row[sortColumns[5]], row[sortColumns[6]], row[sortColumns[7]], row[sortColumns[8]], row[sortColumns[9]]
+                                   select row;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException("columns", string.Format(CultureInfo.InvariantCulture, "Columns length must be between {0} and {1}.", 1, Documenter.MaxSortableColumns));
+                    }
+
+                    foreach (var row in rows)
+                    {
+                        tableClone.ImportRow(row);
+                    }
+
+                    tableClone.AcceptChanges();
+
+                    sortedDiffgramDataSet.Tables[i].Merge(tableClone);
                 }
 
-                foreach (var row in rows)
-                {
-                    tableClone.ImportRow(row);
-                }
+                sortedDiffgramDataSet.AcceptChanges();
 
-                tableClone.AcceptChanges();
-
-                return tableClone;
+                return sortedDiffgramDataSet;
             }
             finally
             {
@@ -946,50 +1095,6 @@ namespace AzureADConnectConfigDocumenter
             finally
             {
                 Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Merges the ADSync configuration exports.
-        /// </summary>
-        /// <param name="configDirectory">The configuration directory.</param>
-        /// <param name="pilotConfig">if set to <c>true</c>, indicates that this is a pilot configuration. Otherwise, this is a production configuration.</param>
-        /// <returns>
-        /// An <see cref="XElement" /> object representing the combined configuration XML object.
-        /// </returns>
-        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Xml.Linq.XElement.Parse(System.String)", Justification = "Template XML is not localizable.")]
-        protected static XElement MergeConfigurationExports(string configDirectory, bool pilotConfig)
-        {
-            Logger.Instance.WriteMethodEntry("Config Directory: '{0}'. Pilot Config: '{1}'.", configDirectory, pilotConfig);
-
-            try
-            {
-                var templateXml = string.Format(CultureInfo.InvariantCulture, "<Root><{0}><Connectors/><GlobalSettings/><SynchronizationRules/></{0}></Root>", pilotConfig ? "Pilot" : "Production");
-                var configXml = XElement.Parse(templateXml);
-
-                var connectors = configXml.XPathSelectElement("*//Connectors");
-                foreach (var file in Directory.EnumerateFiles(configDirectory + "/Connectors", "*.xml"))
-                {
-                    connectors.Add(XElement.Load(file));
-                }
-
-                var globalSettings = configXml.XPathSelectElement("*//GlobalSettings");
-                foreach (var file in Directory.EnumerateFiles(configDirectory + "/GlobalSettings", "*.xml"))
-                {
-                    globalSettings.Add(XElement.Load(file));
-                }
-
-                var synchronizationRules = configXml.XPathSelectElement("*//SynchronizationRules");
-                foreach (var file in Directory.EnumerateFiles(configDirectory + "/SynchronizationRules", "*.xml"))
-                {
-                    synchronizationRules.Add(XElement.Load(file));
-                }
-
-                return configXml;
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Config Directory: '{0}'. Pilot Config: '{1}'.", configDirectory, pilotConfig);
             }
         }
 
@@ -1258,16 +1363,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="anchorClass">The anchor style class.</param>
         protected void WriteBookmarkLocation(string bookmark, string sectionGuid, string anchorClass)
         {
-            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Anchor Class: '{2}'.", bookmark, sectionGuid, anchorClass);
-
-            try
-            {
-                this.WriteBookmarkLocation(bookmark, bookmark, sectionGuid, anchorClass);
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Anchor Class: '{2}'.", bookmark, sectionGuid, anchorClass);
-            }
+            this.WriteBookmarkLocation(bookmark, bookmark, sectionGuid, anchorClass);
         }
 
         /// <summary>
@@ -1304,16 +1400,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="cellClass">The cell class.</param>
         protected void WriteJumpToBookmarkLocation(string bookmark, string sectionGuid, string cellClass)
         {
-            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
-
-            try
-            {
-                this.WriteJumpToBookmarkLocation(bookmark, bookmark, sectionGuid, cellClass);
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid, cellClass);
-            }
+            this.WriteJumpToBookmarkLocation(bookmark, bookmark, sectionGuid, cellClass);
         }
 
         /// <summary>
@@ -1323,16 +1410,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="sectionGuid">The section unique identifier.</param>
         protected void WriteJumpToBookmarkLocationInTOC(string bookmark, string sectionGuid)
         {
-            Logger.Instance.WriteMethodEntry("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid);
-
-            try
-            {
-                this.WriteJumpToBookmarkLocationInTOC(bookmark, bookmark, sectionGuid);
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark: '{0}'. Section Guid: '{1}'. Cell Class: '{2}'.", bookmark, sectionGuid);
-            }
+            this.WriteJumpToBookmarkLocationInTOC(bookmark, bookmark, sectionGuid);
         }
 
         /// <summary>
@@ -1344,21 +1422,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="cellClass">The cell class.</param>
         protected void WriteJumpToBookmarkLocation(string bookmark, string displayText, string sectionGuid, string cellClass)
         {
-            Logger.Instance.WriteMethodEntry("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
-
-            try
-            {
-                this.ReportWriter.WriteBeginTag("a");
-                this.ReportWriter.WriteAttribute("class", cellClass);
-                this.ReportWriter.WriteAttribute("href", "#" + Documenter.GetBookmarkCode(bookmark, sectionGuid));
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                this.ReportWriter.Write(displayText);
-                this.ReportWriter.WriteEndTag("a");
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Bookmark Code: '{0}'. Bookmark Text: '{1}'. Section Guid: '{2}'. Cell Class: '{3}'.", bookmark, displayText, sectionGuid, cellClass);
-            }
+            Documenter.WriteJumpToBookmarkLocation(this.ReportWriter, bookmark, displayText, sectionGuid, cellClass);
         }
 
         /// <summary>
@@ -1401,6 +1465,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Resets the diffgram and prepares the variable for new report section.
         /// </summary>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataSet.")]
         protected void ResetDiffgram()
         {
             this.DiffgramDataSet = new DataSet() { Locale = CultureInfo.InvariantCulture };
@@ -1614,18 +1679,7 @@ namespace AzureADConnectConfigDocumenter
                 if (column.Table.PrimaryKey.Contains(column))
                 {
                     var text = Convert.ToString(row[column.ColumnName], CultureInfo.InvariantCulture);
-                    if (bookmarkIndex != null)
-                    {
-                        this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                    }
-                    else if (jumpToBookmarkIndex != null)
-                    {
-                        this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                    }
-                    else
-                    {
-                        this.ReportWriter.Write(text);
-                    }
+                    this.WriteCellText(text, (int?)bookmarkIndex, (int?)jumpToBookmarkIndex, row, cellClass);
                 }
                 else
                 {
@@ -1644,40 +1698,14 @@ namespace AzureADConnectConfigDocumenter
                                     this.ReportWriter.WriteBeginTag("span");
                                     this.ReportWriter.WriteAttribute("class", cellClass);
                                     this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-
-                                    if (bookmarkIndex != null)
-                                    {
-                                        this.WriteBookmarkLocation(oldText, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                    }
-                                    else if (jumpToBookmarkIndex != null)
-                                    {
-                                        this.WriteJumpToBookmarkLocation(oldText, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                    }
-                                    else
-                                    {
-                                        this.ReportWriter.Write(oldText);
-                                    }
-
+                                    this.WriteCellText(oldText, (int?)bookmarkIndex, (int?)jumpToBookmarkIndex, row, cellClass);
                                     this.ReportWriter.WriteEndTag("span");
                                 }
 
                                 this.ReportWriter.WriteBeginTag("span");
                                 this.ReportWriter.WriteAttribute("class", DataRowState.Modified.ToString());
                                 this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-
-                                if (bookmarkIndex != null)
-                                {
-                                    this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                }
-                                else if (jumpToBookmarkIndex != null)
-                                {
-                                    this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                }
-                                else
-                                {
-                                    this.ReportWriter.Write(text);
-                                }
-
+                                this.WriteCellText(text, (int?)bookmarkIndex, (int?)jumpToBookmarkIndex, row, cellClass);
                                 this.ReportWriter.WriteEndTag("span");
                                 break;
                             }
@@ -1686,38 +1714,14 @@ namespace AzureADConnectConfigDocumenter
                             {
                                 cellClass = DataRowState.Deleted.ToString();
                                 var text = Convert.ToString(row[Documenter.OldColumnPrefix + column.ColumnName], CultureInfo.InvariantCulture);
-                                if (bookmarkIndex != null)
-                                {
-                                    this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                }
-                                else if (jumpToBookmarkIndex != null)
-                                {
-                                    this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                }
-                                else
-                                {
-                                    this.ReportWriter.Write(text);
-                                }
-
+                                this.WriteCellText(text, (int?)bookmarkIndex, (int?)jumpToBookmarkIndex, row, cellClass);
                                 break;
                             }
 
                         default:
                             {
                                 var text = Convert.ToString(row[column.ColumnName], CultureInfo.InvariantCulture);
-                                if (bookmarkIndex != null)
-                                {
-                                    this.WriteBookmarkLocation(text, Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                }
-                                else if (jumpToBookmarkIndex != null)
-                                {
-                                    this.WriteJumpToBookmarkLocation(text, Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture), cellClass);
-                                }
-                                else
-                                {
-                                    this.ReportWriter.Write(text);
-                                }
-
+                                this.WriteCellText(text, (int?)bookmarkIndex, (int?)jumpToBookmarkIndex, row, cellClass);
                                 break;
                             }
                     }
@@ -1728,6 +1732,40 @@ namespace AzureADConnectConfigDocumenter
             finally
             {
                 Logger.Instance.WriteMethodExit("Row Span: '{0}'. Table Index: '{1}'.", rowSpan, tableIndex);
+            }
+        }
+
+        /// <summary>
+        /// Write the cell text or bookmark markup
+        /// </summary>
+        /// <param name="cellText">The cell text.</param>
+        /// <param name="bookmarkIndex">The bookmark column index.</param>
+        /// <param name="jumpToBookmarkIndex">The jump to bookmark column index.</param>
+        /// <param name="row">The row.</param>
+        /// <param name="cellClass">The cell class.</param>
+        protected void WriteCellText(string cellText, int? bookmarkIndex, int? jumpToBookmarkIndex, DataRow row, string cellClass)
+        {
+            var bookmark = bookmarkIndex != null ? Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture) : null;
+            var jumpToBookmark = jumpToBookmarkIndex != null ? Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture) : null;
+
+            if (bookmark != null)
+            {
+                this.WriteBookmarkLocation(cellText, bookmark, cellClass);
+            }
+            else if (jumpToBookmark != null)
+            {
+                if (!string.IsNullOrEmpty(jumpToBookmark))
+                {
+                    this.WriteJumpToBookmarkLocation(cellText, jumpToBookmark, cellClass);
+                }
+                else
+                {
+                    this.ReportWriter.Write(cellText);
+                }
+            }
+            else
+            {
+                this.ReportWriter.Write(cellText);
             }
         }
 
@@ -1888,6 +1926,30 @@ namespace AzureADConnectConfigDocumenter
             #endregion thead
         }
 
+        /// <summary>
+        /// Writes the content paragraph
+        /// </summary>
+        /// <param name="content">The content text</param>
+        protected void WriteContentParagraph(string content)
+        {
+            this.WriteContentParagraph(content, this.GetCssVisibilityClass());
+        }
+
+        /// <summary>
+        /// Writes the content paragraph
+        /// </summary>
+        /// <param name="content">The content text</param>
+        /// <param name="cssClass">The paragraph style class</param>
+        protected void WriteContentParagraph(string content, string cssClass)
+        {
+            this.ReportWriter.WriteLine();
+            this.ReportWriter.WriteBeginTag("p");
+            this.ReportWriter.WriteAttribute("class", cssClass);
+            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+            this.ReportWriter.WriteLine(content);
+            this.ReportWriter.WriteEndTag("p");
+        }
+
         #region Simple Settings Sections
 
         /// <summary>
@@ -1994,58 +2056,6 @@ namespace AzureADConnectConfigDocumenter
             finally
             {
                 Logger.Instance.WriteMethodExit("Column Count: '{0}'. Key Index: '{1}'.", columnCount, keyIndex);
-            }
-        }
-
-        /// <summary>
-        /// Gets the simple settings header table.
-        /// </summary>
-        /// <param name="columnNames">The column names of the table header.</param>
-        /// <returns>
-        /// The simple settings header table.
-        /// </returns>
-        protected DataTable GetSimpleSettingsHeaderTable(string[] columnNames)
-        {
-            Logger.Instance.WriteMethodEntry("Column Count: '{0}'.", columnNames.Length);
-
-            try
-            {
-                var headerTable = Documenter.GetHeaderTable();
-                for (var i = 0; i < columnNames.Length; ++i)
-                {
-                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", i }, { "ColumnName", columnNames[i] }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
-                }
-
-                return headerTable;
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnNames.Length);
-            }
-        }
-
-        /// <summary>
-        /// Gets the simple settings header table.
-        /// </summary>
-        /// <param name="columnName">The column name of the table header.</param>
-        /// <returns>
-        /// The simple settings header table.
-        /// </returns>
-        protected DataTable GetSimpleSettingsHeaderTable(string columnName)
-        {
-            Logger.Instance.WriteMethodEntry("Column Count: '{0}'.", columnName);
-
-            try
-            {
-                var headerTable = Documenter.GetHeaderTable();
-
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", 2 } }).Values.Cast<object>().ToArray());
-
-                return headerTable;
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Column Count: '{0}'.", columnName);
             }
         }
 

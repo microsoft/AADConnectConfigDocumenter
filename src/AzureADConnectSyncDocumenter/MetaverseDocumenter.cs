@@ -69,7 +69,6 @@ namespace AzureADConnectConfigDocumenter
         /// Gets the metaverse configuration report.
         /// </summary>
         /// <returns>The Tuple of configuration report and associated TOC</returns>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed. XhtmlTextWriter takes care of disposting StreamWriter.")]
         public override Tuple<string, string> GetReport()
         {
@@ -102,7 +101,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the metaverse object types.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void ProcessMetaverseObjectTypes()
         {
             Logger.Instance.WriteMethodEntry();
@@ -154,7 +152,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the current metaverse object type.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void ProcessMetaverseObjectType()
         {
             Logger.Instance.WriteMethodEntry("Metaverse Object Type: {0}.", this.currentObjectType);
@@ -171,7 +168,7 @@ namespace AzureADConnectConfigDocumenter
                 this.FillMetaverseObjectTypeDataSet(true);
                 this.FillMetaverseObjectTypeDataSet(false);
 
-                this.CreateMetaverseObjectTypeDiffGram();
+                this.CreateMetaverseObjectTypeDiffgram();
 
                 this.PrintMetaverseObjectType();
             }
@@ -493,7 +490,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates the metaverse object type difference gram.
         /// </summary>
-        private void CreateMetaverseObjectTypeDiffGram()
+        private void CreateMetaverseObjectTypeDiffgram()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -575,7 +572,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the type of the metaverse object.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void PrintMetaverseObjectType()
         {
             Logger.Instance.WriteMethodEntry();
@@ -603,7 +599,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the metaverse object deletion rules.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void ProcessMetaverseObjectDeletionRules()
         {
             Logger.Instance.WriteMethodEntry();
@@ -668,7 +663,7 @@ namespace AzureADConnectConfigDocumenter
                 this.FillMetaverseObjectDeletionRuleDataSet(objectType, true);
                 this.FillMetaverseObjectDeletionRuleDataSet(objectType, false);
 
-                this.CreateMetaverseObjectDeletionRuleDiffGram();
+                this.CreateMetaverseObjectDeletionRuleDiffgram();
             }
             finally
             {
@@ -873,7 +868,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates the metaverse object deletion rule difference gram.
         /// </summary>
-        private void CreateMetaverseObjectDeletionRuleDiffGram()
+        private void CreateMetaverseObjectDeletionRuleDiffgram()
         {
             Logger.Instance.WriteMethodEntry();
 

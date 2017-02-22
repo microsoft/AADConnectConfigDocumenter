@@ -5,6 +5,8 @@
       <Value>metaverse</Value>
       <Value>indexable</Value>
       <Value>hashtable</Value>
+      <Value>Sql</Value>
+      <Value>Ldap</Value>
     </CollectionProperty>
   </GlobalSettings>
   <Analyzers>

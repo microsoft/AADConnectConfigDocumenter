@@ -11,11 +11,13 @@
 namespace AzureADConnectConfigDocumenter
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
+    using System.Text;
     using System.Web.UI;
     using System.Xml.Linq;
     using System.Xml.XPath;
@@ -49,12 +51,37 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Enumerator indicating whether the config element is present in pilot, production or both
+        /// </summary>
+        public enum ConfigParameterPage : int
+        {
+            /// <summary>
+            /// The Connectivity page
+            /// </summary>
+            Connectivity = 0,
+
+            /// <summary>
+            /// The Global parameters page
+            /// </summary>
+            Global,
+
+            /// <summary>
+            /// The Partition properties page
+            /// </summary>
+            Partition,
+
+            /// <summary>
+            /// The Run Step properties page
+            /// </summary>
+            RunStep
+        }
+
+        /// <summary>
         /// Gets the Extensible2 connector configuration report.
         /// </summary>
         /// <returns>
         /// The Tuple of configuration report and associated TOC
         /// </returns>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         public override Tuple<string, string> GetReport()
         {
             Logger.Instance.WriteMethodEntry();
@@ -68,7 +95,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ProcessExtensible2ExtensionInformation();
                 this.ProcessExtensible2ConnectivityInformation();
 
-                // TODO: Capabilities
+                this.ProcessExtensible2ConnectorCapabilities();
                 this.ProcessExtensible2GlobalParameters();
                 this.ProcessConnectorProvisioningHierarchyConfiguration();
 
@@ -81,7 +108,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ProcessConnectorStickyJoinSyncRules();
                 this.ProcessConnectorNormalJoinSyncRules();
                 this.ProcessConnectorSyncRules();
-                this.ProcessExtensible2RunProfiles();
+                this.ProcessConnectorRunProfiles();
 
                 return this.GetReportTuple();
             }
@@ -93,6 +120,84 @@ namespace AzureADConnectConfigDocumenter
                 Logger.ClearContextItem(ConnectorDocumenter.LoggerContextItemConnectorName);
                 Logger.ClearContextItem(ConnectorDocumenter.LoggerContextItemConnectorGuid);
                 Logger.ClearContextItem(ConnectorDocumenter.LoggerContextItemConnectorCategory);
+            }
+        }
+
+        /// <summary>
+        /// Gets the extensible2 config parameters data table.
+        /// </summary>
+        /// <param name="parameterDefinitions">The config parameter definition node for a configuration page.</param>
+        /// <param name="parameterValues">he config parameter values node for the corresponding configuration page.</param>
+        /// <returns>The config parameter values table.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
+        protected DataTable GetExtensible2ConfigParametersTable(IEnumerable<XElement> parameterDefinitions, IEnumerable<XElement> parameterValues)
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var parametersTable = new DataTable("ConfigParametersTable") { Locale = CultureInfo.InvariantCulture };
+
+                var column1 = new DataColumn("DisplayOrder", typeof(int));
+                var column2 = new DataColumn("Setting");
+                var column3 = new DataColumn("Configuration");
+                var column4 = new DataColumn("Encrypted?");
+
+                parametersTable.Columns.Add(column1);
+                parametersTable.Columns.Add(column2);
+                parametersTable.Columns.Add(column3);
+                parametersTable.Columns.Add(column4);
+                parametersTable.PrimaryKey = new[] { column1, column2 };
+
+                if (parameterDefinitions != null && parameterValues != null)
+                {
+                    for (var parameterIndex = 0; parameterIndex < parameterDefinitions.Count(); ++parameterIndex)
+                    {
+                        var parameterDefinition = parameterDefinitions.ElementAt(parameterIndex);
+                        var parameterName = (string)parameterDefinition.Element("name");
+                        var parameterType = (string)parameterDefinition.Element("type") ?? string.Empty;
+                        var parameterValue = string.Empty;
+
+                        foreach (var parameter in parameterValues)
+                        {
+                            if ((string)parameter.Attribute("name") == parameterName)
+                            {
+                                parameterValue = (string)parameter;
+                                break;
+                            }
+                        }
+
+                        var encrypted = parameterType.StartsWith("encrypted", StringComparison.OrdinalIgnoreCase);
+
+                        switch (parameterType.ToUpperInvariant())
+                        {
+                            case "FILE":
+                                try
+                                {
+                                    parameterValue = Encoding.UTF8.GetString(Convert.FromBase64String(parameterValue));
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Instance.WriteError(e.ToString());
+                                }
+
+                                break;
+                            case "CHECKBOX":
+                                parameterValue = parameterValue.Equals("1", StringComparison.OrdinalIgnoreCase) || parameterValue.Equals("true", StringComparison.OrdinalIgnoreCase) ? "Yes" : "No";
+                                break;
+                        }
+
+                        Documenter.AddRow(parametersTable, new object[] { parameterIndex, parameterName, encrypted ? "******" : parameterValue, encrypted ? "Yes" : "No" });
+                    }
+
+                    parametersTable.AcceptChanges();
+                }
+
+                return parametersTable;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodEntry();
             }
         }
 
@@ -176,7 +281,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the extensible2 extension information.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintExtensible2ExtensionInformation()
         {
             Logger.Instance.WriteMethodEntry();
@@ -187,7 +291,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -218,7 +322,7 @@ namespace AzureADConnectConfigDocumenter
                 this.FillExtensible2ConnectivityInformationDataSet(true);
                 this.FillExtensible2ConnectivityInformationDataSet(false);
 
-                this.CreateSimpleSettingsDiffgram();
+                this.CreateSimpleOrderedSettingsDiffgram();
 
                 this.PrintExtensible2ConnectivityInformation();
             }
@@ -247,13 +351,13 @@ namespace AzureADConnectConfigDocumenter
                 {
                     var table = dataSet.Tables[0];
 
-                    var parameters = connector.XPathSelectElements("private-configuration/MAConfig/parameter-values/parameter[@use='connectivity']");
+                    var parameterDefinitions = connector.XPathSelectElements("private-configuration/MAConfig/parameter-definitions/parameter[use = 'connectivity' and type != 'label' and type != 'divider']");
+                    var parameterValues = connector.XPathSelectElements("private-configuration/MAConfig/parameter-values/parameter[@use = 'connectivity']");
 
-                    for (var parameterIndex = 0; parameterIndex < parameters.Count(); ++parameterIndex)
+                    var parameterTable = this.GetExtensible2ConfigParametersTable(parameterDefinitions, parameterValues);
+                    foreach (DataRow row in parameterTable.Rows)
                     {
-                        var parameter = parameters.ElementAt(parameterIndex);
-                        var encrypted = (string)parameter.Attribute("encrypted") == "1";
-                        Documenter.AddRow(table, new object[] { parameterIndex, (string)parameter.Attribute("name"), encrypted ? "******" : (string)parameter, encrypted ? "Yes" : "No" });
+                        Documenter.AddRow(table, new object[] { row[0], row[1], row[2], row[3] });
                     }
 
                     table.AcceptChanges();
@@ -268,7 +372,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the extensible2 connectivity information.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintExtensible2ConnectivityInformation()
         {
             Logger.Instance.WriteMethodEntry();
@@ -279,7 +382,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -291,6 +394,27 @@ namespace AzureADConnectConfigDocumenter
         }
 
         #endregion Connectivity Information
+
+        #region Connector Capabilities
+        /// <summary>
+        /// Processes the extensible2 connector capabilities.
+        /// </summary>
+        protected void ProcessExtensible2ConnectorCapabilities()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                // TODO: Capabilities
+                ////Logger.Instance.WriteInfo("Processing Connector Capabilities");
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        #endregion Connector Capabilities
 
         #region Global Parameters
 
@@ -310,7 +434,7 @@ namespace AzureADConnectConfigDocumenter
                 this.FillExtensible2GlobalParametersDataSet(true);
                 this.FillExtensible2GlobalParametersDataSet(false);
 
-                this.CreateSimpleSettingsDiffgram();
+                this.CreateSimpleOrderedSettingsDiffgram();
 
                 this.PrintExtensible2GlobalParameters();
             }
@@ -339,13 +463,13 @@ namespace AzureADConnectConfigDocumenter
                 {
                     var table = dataSet.Tables[0];
 
-                    var parameters = connector.XPathSelectElements("private-configuration/MAConfig/parameter-values/parameter[@use='global']");
+                    var parameterDefinitions = connector.XPathSelectElements("private-configuration/MAConfig/parameter-definitions/parameter[use = 'global' and type != 'label' and type != 'divider']");
+                    var parameterValues = connector.XPathSelectElements("private-configuration/MAConfig/parameter-values/parameter[@use = 'global']");
 
-                    for (var parameterIndex = 0; parameterIndex < parameters.Count(); ++parameterIndex)
+                    var parameterTable = this.GetExtensible2ConfigParametersTable(parameterDefinitions, parameterValues);
+                    foreach (DataRow row in parameterTable.Rows)
                     {
-                        var parameter = parameters.ElementAt(parameterIndex);
-                        var encrypted = (string)parameter.Attribute("encrypted") == "1";
-                        Documenter.AddRow(table, new object[] { parameterIndex, (string)parameter.Attribute("name"), encrypted ? "******" : (string)parameter, encrypted ? "Yes" : "No" });
+                        Documenter.AddRow(table, new object[] { row[0], row[1], row[2], row[3] });
                     }
 
                     table.AcceptChanges();
@@ -360,7 +484,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the extensible2 global parameters.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintExtensible2GlobalParameters()
         {
             Logger.Instance.WriteMethodEntry();
@@ -371,7 +494,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -389,7 +512,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the extensible2 partitions and hierarchies configuration.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void ProcessExtensible2PartitionsAndHierarchiesConfiguration()
         {
             Logger.Instance.WriteMethodEntry();
@@ -402,15 +524,141 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                // TODO: Extensible2 Partitions And Hierarchies
-                this.ReportWriter.WriteLine();
-                this.ReportWriter.WriteLine("<b>TO BE COMPLETED</b>");
+                var xpath = "//ma-data[name ='" + this.ConnectorName + "']" + "//ma-partition-data/partition[selected = 1]";
+
+                var pilot = this.PilotXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
+                var production = this.ProductionXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
+
+                // Sort by name
+                var pilotPartitions = from partition in pilot
+                                      let name = (string)partition.Element("name")
+                                      orderby name
+                                      select name;
+
+                foreach (var partition in pilotPartitions)
+                {
+                    this.ProcessExtensible2Partition(partition);
+                }
+
+                // Sort by name
+                var productionPartitions = from partition in production
+                                           let name = (string)partition.Element("name")
+                                           orderby name
+                                           select name;
+
+                productionPartitions = productionPartitions.Where(productionPartition => !pilotPartitions.Contains(productionPartition));
+
+                foreach (var partition in productionPartitions)
+                {
+                    this.ProcessExtensible2Partition(partition);
+                }
             }
             finally
             {
                 Logger.Instance.WriteMethodExit();
             }
         }
+
+        /// <summary>
+        /// Processes the extensible2 partition.
+        /// </summary>
+        /// <param name="partitionName">Name of the partition.</param>
+        protected void ProcessExtensible2Partition(string partitionName)
+        {
+            Logger.Instance.WriteMethodEntry("Partition: '{0}'.", partitionName);
+
+            try
+            {
+                this.WriteSectionHeader("Partition: " + partitionName, 4, partitionName);
+
+                // Partion Settings
+                this.CreateSimpleOrderedSettingsDataSets(4); // 1= Setting Display Order, 2 = Setting, 3 = Configuration, 4 = Encrypted?
+
+                this.FillExtensible2PartitionParametersDataSet(partitionName, true);
+                this.FillExtensible2PartitionParametersDataSet(partitionName, false);
+
+                this.CreateSimpleOrderedSettingsDiffgram();
+
+                this.PrintExtensible2PartitionParameters();
+
+                // Container Include / Exclude settings
+                this.ProcessConnectorPartitionContainers(partitionName);
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Partition: '{0}'.", partitionName);
+            }
+        }
+
+        #region Partition Parameters
+
+        /// <summary>
+        /// Fills the extensible2 partition parameters data set.
+        /// </summary>
+        /// <param name="partitionName">Name of the partition.</param>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
+        protected void FillExtensible2PartitionParametersDataSet(string partitionName, bool pilotConfig)
+        {
+            Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
+
+            try
+            {
+                var config = pilotConfig ? this.PilotXml : this.ProductionXml;
+                var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
+
+                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+
+                if (connector != null)
+                {
+                    var table = dataSet.Tables[0];
+
+                    var partition = connector.XPathSelectElement("ma-partition-data/partition[selected = 1 and name = '" + partitionName + "']");
+
+                    if (partition != null)
+                    {
+                        var parameterDefinitions = connector.XPathSelectElements("private-configuration/MAConfig/parameter-definitions/parameter[use = 'partition' and type != 'label' and type != 'divider']");
+                        var parameterValues = partition.XPathSelectElements("custom-data/parameter-values/parameter");
+
+                        var parameterTable = this.GetExtensible2ConfigParametersTable(parameterDefinitions, parameterValues);
+                        foreach (DataRow row in parameterTable.Rows)
+                        {
+                            Documenter.AddRow(table, new object[] { row[0], row[1], row[2], row[3] });
+                        }
+
+                        table.AcceptChanges();
+                    }
+                }
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Pilot Config: '{0}'", pilotConfig);
+            }
+        }
+
+        /// <summary>
+        /// Prints the extensible2 partition parameters.
+        /// </summary>
+        protected void PrintExtensible2PartitionParameters()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                if (this.DiffgramDataSet.Tables[0].Rows.Count != 0)
+                {
+                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Partition Parameter", "Configuration", "Encrypted?" });
+
+                    this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                }
+            }
+            finally
+            {
+                this.ResetDiffgram(); // reset the diffgram variables
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        #endregion Partition Parameters
 
         #endregion Partitions and Hierarchies
 
@@ -598,7 +846,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the extensible2 anchor configurations.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintExtensible2AnchorConfigurations()
         {
             Logger.Instance.WriteMethodEntry();
@@ -609,7 +856,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Object Type", "Anchor Attribute" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Object Type", "Anchor Attribute" });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -625,90 +872,11 @@ namespace AzureADConnectConfigDocumenter
         #region Run Profiles
 
         /// <summary>
-        /// Processes the connector run profiles.
-        /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void ProcessExtensible2RunProfiles()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                Logger.Instance.WriteInfo("Processing Run Profiles.");
-
-                var sectionTitle = "Run Profiles";
-
-                this.WriteSectionHeader(sectionTitle, 3);
-
-                var xpath = "//ma-data[name ='" + this.ConnectorName + "']/ma-run-data/run-configuration";
-
-                var pilot = this.PilotXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
-                var production = this.ProductionXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
-
-                // Sort by name
-                var pilotRunProfiles = from runProfile in pilot
-                                       let name = (string)runProfile.Element("name")
-                                       orderby name
-                                       select name;
-
-                foreach (var runProfile in pilotRunProfiles)
-                {
-                    this.ProcessExtensible2RunProfile(runProfile);
-                }
-
-                // Sort by name
-                var productionRunProfiles = from runProfile in production
-                                            let name = (string)runProfile.Element("name")
-                                            orderby name
-                                            select name;
-
-                productionRunProfiles = productionRunProfiles.Where(productionRunProfile => !pilotRunProfiles.Contains(productionRunProfile));
-
-                foreach (var runProfile in productionRunProfiles)
-                {
-                    this.ProcessExtensible2RunProfile(runProfile);
-                }
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Processes the extensible2 run profile.
-        /// </summary>
-        /// <param name="runProfileName">Name of the run profile.</param>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void ProcessExtensible2RunProfile(string runProfileName)
-        {
-            Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'.", runProfileName);
-
-            try
-            {
-                this.WriteSectionHeader("Run Profile: " + runProfileName, 4, runProfileName);
-
-                this.CreateConnectorRunProfileDataSets();
-
-                this.FillExtensible2RunProfileDataSet(runProfileName, true);
-                this.FillExtensible2RunProfileDataSet(runProfileName, false);
-
-                this.CreateConnectorRunProfileDiffgram();
-
-                this.PrintConnectorRunProfile();
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Run Profile Name: '{0}'.", runProfileName);
-            }
-        }
-
-        /// <summary>
         /// Fills the extensible2 run profile data set.
         /// </summary>
         /// <param name="runProfileName">Name of the run profile.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        protected void FillExtensible2RunProfileDataSet(string runProfileName, bool pilotConfig)
+        protected override void FillConnectorRunProfileDataSet(string runProfileName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'. Pilot Config: '{1}'.", runProfileName, pilotConfig);
 
@@ -721,6 +889,8 @@ namespace AzureADConnectConfigDocumenter
 
                 if (connector != null)
                 {
+                    base.FillConnectorRunProfileDataSet(runProfileName, pilotConfig);
+
                     var table = dataSet.Tables[0];
                     var table2 = dataSet.Tables[1];
 
@@ -730,62 +900,25 @@ namespace AzureADConnectConfigDocumenter
                     {
                         var runProfileStep = runProfileSteps.ElementAt(stepIndex - 1);
 
-                        var runProfileStepType = ConnectorDocumenter.GetRunProfileStepType(runProfileStep.Element("step-type"));
-
-                        Documenter.AddRow(table, new object[] { stepIndex, runProfileStepType });
-
-                        var logFileName = (string)runProfileStep.Element("dropfile-name");
-                        if (!string.IsNullOrEmpty(logFileName))
+                        var batchSize = (string)runProfileStep.XPathSelectElement("custom-data/extensible2-step-data/batch-size");
+                        if (!string.IsNullOrEmpty(batchSize))
                         {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Log file", logFileName, 1 });
-                        }
-
-                        var numberOfObjects = (string)runProfileStep.XPathSelectElement("threshold/object");
-                        if (!string.IsNullOrEmpty(numberOfObjects))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Number of objects", numberOfObjects, 2 });
-                        }
-
-                        var numberOfDeletions = (string)runProfileStep.XPathSelectElement("threshold/delete");
-                        if (!string.IsNullOrEmpty(numberOfDeletions))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Number of deletions", numberOfDeletions, 3 });
-                        }
-
-                        var partitionId = ((string)runProfileStep.Element("partition") ?? string.Empty).ToUpperInvariant();
-                        var partitionName = (string)connector.XPathSelectElement("ma-partition-data/partition[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + partitionId + "']/name");
-                        Documenter.AddRow(table2, new object[] { stepIndex, "Partition", partitionName, 4 });
-
-                        var inputFileName = (string)connector.XPathSelectElement("custom-data/run-config/input-file");
-                        if (!string.IsNullOrEmpty(inputFileName))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Input file name", inputFileName, 5 });
-                        }
-
-                        var outputFileName = (string)connector.XPathSelectElement("custom-data/run-config/output-file");
-                        if (!string.IsNullOrEmpty(outputFileName))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Output file name", outputFileName, 6 });
-                        }
-
-                        var pageSize = (string)runProfileStep.XPathSelectElement("custom-data/extensible2-step-data/batch-size");
-                        if (!string.IsNullOrEmpty(pageSize))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Page Size (objects)", pageSize, 7 });
+                            Documenter.AddRow(table2, new object[] { stepIndex, "Batch Size (objects)", batchSize, 1000 });
                         }
 
                         var timeout = (string)runProfileStep.XPathSelectElement("custom-data/extensible2-step-data/timeout");
                         if (!string.IsNullOrEmpty(timeout))
                         {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Timeout (seconds)", timeout, 8 });
+                            Documenter.AddRow(table2, new object[] { stepIndex, "Timeout (seconds)", timeout, 1001 });
                         }
 
-                        var parameters = runProfileStep.XPathSelectElements("custom-data/parameter-values/parameter");
+                        var parameterDefinitions = connector.XPathSelectElements("private-configuration/MAConfig/parameter-definitions/parameter[use = 'run-step' and type != 'label' and type != 'divider']");
+                        var parameterValues = runProfileStep.XPathSelectElements("custom-data/parameter-values/parameter");
 
-                        for (var parameterIndex = 0; parameterIndex < parameters.Count(); ++parameterIndex)
+                        var parameterTable = this.GetExtensible2ConfigParametersTable(parameterDefinitions, parameterValues);
+                        foreach (DataRow row in parameterTable.Rows)
                         {
-                            var parameter = parameters.ElementAt(parameterIndex);
-                            Documenter.AddRow(table2, new object[] { stepIndex, (string)parameter.Attribute("name"), (string)parameter, 8 + parameterIndex });
+                            Documenter.AddRow(table2, new object[] { stepIndex, row[1], row[2], 1000 + (int)row[0] });
                         }
                     }
 

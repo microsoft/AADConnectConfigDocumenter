@@ -248,7 +248,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Writes the synchronize rule report header.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed. XhtmlTextWriter takes care of disposting StreamWriter.")]
         private void WriteSyncRuleReportHeader()
         {
@@ -495,7 +494,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the connector synchronize rule description.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void PrintConnectorSyncRuleDescription()
         {
             Logger.Instance.WriteMethodEntry();
@@ -636,7 +634,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the connector synchronize rule scoping filter.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void PrintConnectorSyncRuleScopingFilter()
         {
             Logger.Instance.WriteMethodEntry();
@@ -787,7 +784,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the connector synchronize rule join rules.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void PrintConnectorSyncRuleJoinRules()
         {
             Logger.Instance.WriteMethodEntry();
@@ -917,8 +913,8 @@ namespace AzureADConnectConfigDocumenter
                 headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Transformations" }, { "RowSpan", 1 }, { "ColSpan", 5 } }).Values.Cast<object>().ToArray());
 
                 // Header Row 2
-                // Target (MV) Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Target (MV) Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                // Target Attribute
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", this.syncRuleDirection == SyncRuleDirection.Inbound ? "Target (MV) Attribute" : "Target (CS) Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
 
                 // Source
                 headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
@@ -945,7 +941,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the connector synchronize rule transformations.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void PrintConnectorSyncRuleTransformations()
         {
             Logger.Instance.WriteMethodEntry();
@@ -969,8 +964,8 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates Connector Sync Rule Installation Script
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Reviewed.")]
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Reviewed.")]
         private void CreateConnectorSyncRuleInstallationScript()
         {
             Logger.Instance.WriteMethodEntry();

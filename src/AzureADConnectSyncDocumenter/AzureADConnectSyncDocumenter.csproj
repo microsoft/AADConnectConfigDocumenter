@@ -66,11 +66,15 @@
       <DependentUpon>DocumenterResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Extensible2ConnectorDocumenter.cs" />
+    <Compile Include="GenericLdapConnectorDocumenter.cs" />
+    <Compile Include="GenericSqlConnectorDocumenter.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="LoggerCallContextItems.cs" />
     <Compile Include="MetaverseDocumenter.cs" />
+    <Compile Include="PowerShellConnectorDocumenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyncRuleDocumenter.cs" />
+    <Compile Include="WebServicesConnectorDocumenter.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DocumenterResources.resx">

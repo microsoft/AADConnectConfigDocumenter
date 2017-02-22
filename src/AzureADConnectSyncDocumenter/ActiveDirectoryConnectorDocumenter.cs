@@ -21,7 +21,7 @@ namespace AzureADConnectConfigDocumenter
     using System.Xml.XPath;
 
     /// <summary>
-    /// The ActiveDirectoryConnectorDocumenter documents the configuration of Active Directory connector.
+    /// The ActiveDirectoryConnectorDocumenter documents the configuration of an Active Directory connector.
     /// </summary>
     internal class ActiveDirectoryConnectorDocumenter : ConnectorDocumenter
     {
@@ -54,7 +54,6 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The Tuple of configuration report and associated TOC
         /// </returns>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         public override Tuple<string, string> GetReport()
         {
             Logger.Instance.WriteMethodEntry();
@@ -74,7 +73,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ProcessConnectorStickyJoinSyncRules();
                 this.ProcessConnectorNormalJoinSyncRules();
                 this.ProcessConnectorSyncRules();
-                this.ProcessActiveDirectoryRunProfiles();
+                this.ProcessConnectorRunProfiles();
 
                 return this.GetReportTuple();
             }
@@ -169,7 +168,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the active directory connection information.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintActiveDirectoryConnectionInformation()
         {
             Logger.Instance.WriteMethodEntry();
@@ -180,7 +178,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -222,6 +220,8 @@ namespace AzureADConnectConfigDocumenter
                     }
                     else
                     {
+                        Documenter.AddRow(table, new object[] { 1, "Sign and Encrypt LDAP traffic", "No" });
+
                         var sslBind = connector.XPathSelectElement("private-configuration/adma-configuration/ssl-bind");
 
                         if ((string)sslBind == "1")
@@ -233,6 +233,18 @@ namespace AzureADConnectConfigDocumenter
                             var crlCheckEnabled = (string)crlCheck == "1" ? "Yes" : "No";
                             Documenter.AddRow(table, new object[] { 3, "Enable CRL Checking", crlCheckEnabled });
                         }
+                        else
+                        {
+                            Documenter.AddRow(table, new object[] { 2, "Enable SSL for the connection", "No" });
+                        }
+                    }
+
+                    // Only applicable for AD LDS connector
+                    var simpleBind = connector.XPathSelectElement("private-configuration/adma-configuration/simple-bind");
+
+                    if ((string)simpleBind == "1")
+                    {
+                        Documenter.AddRow(table, new object[] { 4, "Enable Simple Bind", "Yes" });
                     }
 
                     table.AcceptChanges();
@@ -247,14 +259,13 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the active directory connection option.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintActiveDirectoryConnectionOption()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                var headerTable = this.GetSimpleSettingsHeaderTable("Connection Options");
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable("Connection Options");
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -272,9 +283,8 @@ namespace AzureADConnectConfigDocumenter
         #region AD Partitions
 
         /// <summary>
-        /// Processes the metaverse object types.
+        /// Processes the active directory partitions.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void ProcessActiveDirectoryPartitions()
         {
             Logger.Instance.WriteMethodEntry();
@@ -326,7 +336,6 @@ namespace AzureADConnectConfigDocumenter
         /// Processes the active directory partition.
         /// </summary>
         /// <param name="partitionName">Name of the partition.</param>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void ProcessActiveDirectoryPartition(string partitionName)
         {
             Logger.Instance.WriteMethodEntry("Partition: '{0}'.", partitionName);
@@ -341,7 +350,7 @@ namespace AzureADConnectConfigDocumenter
                 this.FillActiveDirectoryPartitionSettingsDataSet(partitionName, true);
                 this.FillActiveDirectoryPartitionSettingsDataSet(partitionName, false);
 
-                this.CreateActiveDirectoryPartitionSettingsDiffGram();
+                this.CreateActiveDirectoryPartitionSettingsDiffgram();
 
                 this.PrintActiveDirectoryPartitionSettings();
 
@@ -366,14 +375,7 @@ namespace AzureADConnectConfigDocumenter
                 this.PrintActiveDirectoryContainerCredentialSettings();
 
                 // Container Include / Exclude settings
-                this.CreateActiveDirectoryPartitionContainersDataSets();
-
-                this.FillActiveDirectoryPartitionContainersDataSet(partitionName, true);
-                this.FillActiveDirectoryPartitionContainersDataSet(partitionName, false);
-
-                this.CreateActiveDirectoryPartitionContainersDiffGram();
-
-                this.PrintActiveDirectoryPartitionContainers();
+                this.ProcessConnectorPartitionContainers(partitionName);
             }
             finally
             {
@@ -523,7 +525,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Creates the active directory partition settings diffgram.
         /// </summary>
-        protected void CreateActiveDirectoryPartitionSettingsDiffGram()
+        protected void CreateActiveDirectoryPartitionSettingsDiffgram()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -541,14 +543,13 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the active directory partition settings.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintActiveDirectoryPartitionSettings()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -595,6 +596,8 @@ namespace AzureADConnectConfigDocumenter
                         }
                         else
                         {
+                            Documenter.AddRow(table, new object[] { 1, "Sign and Encrypt LDAP traffic", "No" });
+
                             var sslBind = partition.XPathSelectElement("custom-data/adma-partition-data/ssl-bind");
 
                             if ((string)sslBind == "1")
@@ -606,6 +609,18 @@ namespace AzureADConnectConfigDocumenter
                                 var crlCheckEnabled = (string)crlCheck == "1" ? "Yes" : "No";
                                 Documenter.AddRow(table, new object[] { 3, "Enable CRL Checking", crlCheckEnabled });
                             }
+                            else
+                            {
+                                Documenter.AddRow(table, new object[] { 2, "Enable SSL for the connection", "No" });
+                            }
+                        }
+
+                        // Only applicable for AD LDS connector
+                        var simpleBind = connector.XPathSelectElement("private-configuration/adma-configuration/simple-bind");
+
+                        if ((string)simpleBind == "1")
+                        {
+                            Documenter.AddRow(table, new object[] { 4, "Enable Simple Bind", "Yes" });
                         }
 
                         table.AcceptChanges();
@@ -671,14 +686,13 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the active directory container credential settings.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void PrintActiveDirectoryContainerCredentialSettings()
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
-                var headerTable = this.GetSimpleSettingsHeaderTable("Credentials");
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable("Credentials");
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -691,351 +705,16 @@ namespace AzureADConnectConfigDocumenter
 
         #endregion Container Credential Settings
 
-        #region Container Selections
-
-        /// <summary>
-        /// Creates the active directory partition containers data sets.
-        /// </summary>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
-        protected void CreateActiveDirectoryPartitionContainersDataSets()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                var table = new DataTable("Containers") { Locale = CultureInfo.InvariantCulture };
-
-                var column1 = new DataColumn("Container"); // Container
-                var column2 = new DataColumn("Setting"); // Include / Exclude
-                var column3 = new DataColumn("DNPart1"); // Sort Column 1
-                var column4 = new DataColumn("DNPart2"); // Sort Column 2
-                var column5 = new DataColumn("DNPart3"); // Sort Column 3
-                var column6 = new DataColumn("DNPart4"); // Sort Column 4
-                var column7 = new DataColumn("DNPart5"); // Sort Column 5
-                var column8 = new DataColumn("DNPart6"); // Sort Column 6
-                var column9 = new DataColumn("DNPart7"); // Sort Column 7
-                var column10 = new DataColumn("DNPart8"); // Sort Column 8
-                var column11 = new DataColumn("DNPart9"); // Sort Column 9
-                var column12 = new DataColumn("DNPart10"); // Sort Column 10
-
-                table.Columns.Add(column1);
-                table.Columns.Add(column2);
-                table.Columns.Add(column3);
-                table.Columns.Add(column4);
-                table.Columns.Add(column5);
-                table.Columns.Add(column6);
-                table.Columns.Add(column7);
-                table.Columns.Add(column8);
-                table.Columns.Add(column9);
-                table.Columns.Add(column10);
-                table.Columns.Add(column11);
-                table.Columns.Add(column12);
-                table.PrimaryKey = new[] { column1, column2 };
-
-                this.PilotDataSet = new DataSet("Containers") { Locale = CultureInfo.InvariantCulture };
-                this.PilotDataSet.Tables.Add(table);
-                this.ProductionDataSet = this.PilotDataSet.Clone();
-
-                var printTable = this.GetActiveDirectoryPartitionContainersPrintTable();
-                this.PilotDataSet.Tables.Add(printTable);
-                this.ProductionDataSet.Tables.Add(printTable.Copy());
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Gets the active directory partition containers print table.
-        /// </summary>
-        /// <returns>The active directory partition containers print table</returns>
-        protected DataTable GetActiveDirectoryPartitionContainersPrintTable()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                var printTable = Documenter.GetPrintTable();
-
-                // Table 1
-                // Container
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
-
-                // Include / Exclude
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
-
-                // Sort Column1
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 2 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column2
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column3
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 2 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column4
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", 3 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column5
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 6 }, { "Hidden", true }, { "SortOrder", 4 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column6
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 7 }, { "Hidden", true }, { "SortOrder", 5 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column7
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", 6 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column8
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", 7 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column9
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 10 }, { "Hidden", true }, { "SortOrder", 8 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                // Sort Column10
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 11 }, { "Hidden", true }, { "SortOrder", 9 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
-
-                printTable.AcceptChanges();
-
-                return printTable;
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Fills the active directory partition containers data set.
-        /// </summary>
-        /// <param name="partitionName">Name of the partition.</param>
-        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        protected void FillActiveDirectoryPartitionContainersDataSet(string partitionName, bool pilotConfig)
-        {
-            Logger.Instance.WriteMethodEntry("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
-
-            try
-            {
-                var config = pilotConfig ? this.PilotXml : this.ProductionXml;
-                var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
-
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
-
-                if (connector != null)
-                {
-                    var partition = connector.XPathSelectElement("ma-partition-data/partition[selected = 1 and name = '" + partitionName + "']");
-
-                    if (partition != null)
-                    {
-                        var table = dataSet.Tables[0];
-
-                        var inclusions = partition.XPathSelectElements("filter/containers/inclusions/inclusion");
-
-                        var columnCount = table.Columns.Count;
-                        foreach (var inclusion in inclusions)
-                        {
-                            var distinguishedName = (string)inclusion;
-                            var row = this.GetContainerSelectionRow(distinguishedName, true, columnCount);
-                            Documenter.AddRow(table, row);
-                        }
-
-                        var exclusions = partition.XPathSelectElements("filter/containers/exclusions/exclusion");
-
-                        foreach (var exclusion in exclusions)
-                        {
-                            var distinguishedName = (string)exclusion;
-                            var row = this.GetContainerSelectionRow(distinguishedName, false, columnCount);
-                            Documenter.AddRow(table, row);
-                        }
-
-                        table.AcceptChanges();
-                    }
-                }
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
-            }
-        }
-
-        /// <summary>
-        /// Gets the container selection row.
-        /// </summary>
-        /// <param name="distinguishedName">The distinguished name of the container.</param>
-        /// <param name="inclusion">True if the container is included.</param>
-        /// <param name="columnCount">The column count.</param>
-        /// <returns>The container selection row</returns>
-        protected object[] GetContainerSelectionRow(string distinguishedName, bool inclusion, int columnCount)
-        {
-            Logger.Instance.WriteMethodEntry("Container: '{0}'. Included: '{1}'.", distinguishedName, inclusion);
-            
-            try
-            {
-                var row = new object[columnCount];
-                var distinguishedNameParts = distinguishedName.Split(new string[] { "OU=" }, StringSplitOptions.None);
-                var partsCount = distinguishedNameParts.Length;
-                row[0] = distinguishedName;
-                row[1] = inclusion ? "Include" : "Exclude";
-
-                if (partsCount > Documenter.MaxSortableColumns)
-                {
-                    Logger.Instance.WriteInfo("Container: '{0}' is deeper than '{1}' levels. Display sequence may be a little out-of-order.", distinguishedName, Documenter.MaxSortableColumns);
-                }
-
-                for (var i = 0; i < row.Length - 2 && i < Documenter.MaxSortableColumns; ++i)
-                {
-                    row[2 + i] = string.Empty;
-                    if (i < partsCount)
-                    {
-                        if (partsCount == 1)
-                        {
-                            row[2 + i] = " " + distinguishedNameParts[0]; // so that the domain root is always sorted first
-                        }
-                        else
-                        {
-                            row[2 + i] = distinguishedNameParts[partsCount - 1 - i];
-                        }
-                    }
-                }
-
-                return row;
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Container: '{0}'. Included: '{1}'.", distinguishedName, inclusion);
-            }
-        }
-
-        /// <summary>
-        /// Creates the active directory partition containers diffgram.
-        /// </summary>
-        protected void CreateActiveDirectoryPartitionContainersDiffGram()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                this.DiffgramDataSet = Documenter.GetDiffgram(this.PilotDataSet, this.ProductionDataSet);
-                this.DiffgramDataSets.Add(this.DiffgramDataSet);
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Prints the active directory partition containers.
-        /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void PrintActiveDirectoryPartitionContainers()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Container", "Include / Exclude" });
-
-                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
-            }
-            finally
-            {
-                this.ResetDiffgram(); // reset the diffgram variables
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        #endregion Container Selections
-
         #endregion AD Partitions
 
         #region Run Profiles
-
-        /// <summary>
-        /// Processes the connector run profiles.
-        /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void ProcessActiveDirectoryRunProfiles()
-        {
-            Logger.Instance.WriteMethodEntry();
-
-            try
-            {
-                Logger.Instance.WriteInfo("Processing Run Profiles.");
-
-                var sectionTitle = "Run Profiles";
-
-                this.WriteSectionHeader(sectionTitle, 3);
-
-                var xpath = "//ma-data[name ='" + this.ConnectorName + "']/ma-run-data/run-configuration";
-
-                var pilot = this.PilotXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
-                var production = this.ProductionXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
-
-                // Sort by name
-                var pilotRunProfiles = from runProfile in pilot
-                                       let name = (string)runProfile.Element("name")
-                                       orderby name
-                                       select name;
-
-                foreach (var runProfile in pilotRunProfiles)
-                {
-                    this.ProcessActiveDirectoryRunProfile(runProfile);
-                }
-
-                // Sort by name
-                var productionRunProfiles = from runProfile in production
-                                            let name = (string)runProfile.Element("name")
-                                            orderby name
-                                            select name;
-
-                productionRunProfiles = productionRunProfiles.Where(productionRunProfile => !pilotRunProfiles.Contains(productionRunProfile));
-
-                foreach (var runProfile in productionRunProfiles)
-                {
-                    this.ProcessActiveDirectoryRunProfile(runProfile);
-                }
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit();
-            }
-        }
-
-        /// <summary>
-        /// Processes the Active Directory run profile.
-        /// </summary>
-        /// <param name="runProfileName">Name of the run profile.</param>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void ProcessActiveDirectoryRunProfile(string runProfileName)
-        {
-            Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'.", runProfileName);
-
-            try
-            {
-                this.WriteSectionHeader("Run Profile: " + runProfileName, 4, runProfileName);
-
-                this.CreateConnectorRunProfileDataSets();
-
-                this.FillActiveDirectoryRunProfileDataSet(runProfileName, true);
-                this.FillActiveDirectoryRunProfileDataSet(runProfileName, false);
-
-                this.CreateConnectorRunProfileDiffgram();
-
-                this.PrintConnectorRunProfile();
-            }
-            finally
-            {
-                Logger.Instance.WriteMethodExit("Run Profile Name: '{0}'.", runProfileName);
-            }
-        }
 
         /// <summary>
         /// Fills the Active Directory run profile data set.
         /// </summary>
         /// <param name="runProfileName">Name of the run profile.</param>
         /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
-        protected void FillActiveDirectoryRunProfileDataSet(string runProfileName, bool pilotConfig)
+        protected override void FillConnectorRunProfileDataSet(string runProfileName, bool pilotConfig)
         {
             Logger.Instance.WriteMethodEntry("Run Profile Name: '{0}'. Pilot Config: '{1}'.", runProfileName, pilotConfig);
 
@@ -1048,6 +727,8 @@ namespace AzureADConnectConfigDocumenter
 
                 if (connector != null)
                 {
+                    base.FillConnectorRunProfileDataSet(runProfileName, pilotConfig);
+
                     var table = dataSet.Tables[0];
                     var table2 = dataSet.Tables[1];
 
@@ -1057,60 +738,22 @@ namespace AzureADConnectConfigDocumenter
                     {
                         var runProfileStep = runProfileSteps.ElementAt(stepIndex - 1);
 
-                        var runProfileStepType = ConnectorDocumenter.GetRunProfileStepType(runProfileStep.Element("step-type"));
-
-                        Documenter.AddRow(table, new object[] { stepIndex, runProfileStepType });
-
-                        var logFileName = (string)runProfileStep.Element("dropfile-name");
-                        if (!string.IsNullOrEmpty(logFileName))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Log file", logFileName, 1 });
-                        }
-
-                        var numberOfObjects = (string)runProfileStep.XPathSelectElement("threshold/object");
-                        if (!string.IsNullOrEmpty(numberOfObjects))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Number of objects", numberOfObjects, 2 });
-                        }
-
-                        var numberOfDeletions = (string)runProfileStep.XPathSelectElement("threshold/delete");
-                        if (!string.IsNullOrEmpty(numberOfDeletions))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Number of deletions", numberOfDeletions, 3 });
-                        }
-
-                        var partitionId = ((string)runProfileStep.Element("partition") ?? string.Empty).ToUpperInvariant();
-                        var partitionName = (string)connector.XPathSelectElement("ma-partition-data/partition[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + partitionId + "']/name");
-                        Documenter.AddRow(table2, new object[] { stepIndex, "Partition", partitionName, 4 });
-
-                        var inputFileName = (string)connector.XPathSelectElement("custom-data/run-config/input-file");
-                        if (!string.IsNullOrEmpty(inputFileName))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Input file name", inputFileName, 5 });
-                        }
-
-                        var outputFileName = (string)connector.XPathSelectElement("custom-data/run-config/output-file");
-                        if (!string.IsNullOrEmpty(outputFileName))
-                        {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Output file name", outputFileName, 6 });
-                        }
-
                         var batchSize = (string)runProfileStep.XPathSelectElement("custom-data/adma-step-data/batch-size");
                         if (!string.IsNullOrEmpty(batchSize))
                         {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Batch Size (objects)", batchSize, 7 });
+                            Documenter.AddRow(table2, new object[] { stepIndex, "Batch Size (objects)", batchSize, 1000 });
                         }
 
                         var pageSize = (string)runProfileStep.XPathSelectElement("custom-data/adma-step-data/page-size");
                         if (!string.IsNullOrEmpty(pageSize))
                         {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Page Size (objects)", pageSize, 8 });
+                            Documenter.AddRow(table2, new object[] { stepIndex, "Page Size (objects)", pageSize, 1001 });
                         }
 
                         var timeout = (string)runProfileStep.XPathSelectElement("custom-data/adma-step-data/time-limit");
                         if (!string.IsNullOrEmpty(timeout))
                         {
-                            Documenter.AddRow(table2, new object[] { stepIndex, "Timeout (seconds)", timeout, 9 });
+                            Documenter.AddRow(table2, new object[] { stepIndex, "Timeout (seconds)", timeout, 1002 });
                         }
                     }
 

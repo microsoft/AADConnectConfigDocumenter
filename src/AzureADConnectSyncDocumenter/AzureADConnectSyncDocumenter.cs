@@ -242,12 +242,56 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                this.PilotXml = Documenter.MergeConfigurationExports(this.pilotConfigDirectory, true);
-                this.ProductionXml = Documenter.MergeConfigurationExports(this.productionConfigDirectory, false);
+                this.PilotXml = this.MergeConfigurationExports(true);
+                this.ProductionXml = this.MergeConfigurationExports(false);
             }
             finally
             {
                 Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Merges the ADSync configuration exports.
+        /// </summary>
+        /// <param name="pilotConfig">if set to <c>true</c>, indicates that this is a pilot configuration. Otherwise, this is a production configuration.</param>
+        /// <returns>
+        /// An <see cref="XElement" /> object representing the combined configuration XML object.
+        /// </returns>
+        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Xml.Linq.XElement.Parse(System.String)", Justification = "Template XML is not localizable.")]
+        private XElement MergeConfigurationExports(bool pilotConfig)
+        {
+            Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
+
+            try
+            {
+                var configDirectory = pilotConfig ? this.pilotConfigDirectory : this.productionConfigDirectory;
+                var templateXml = string.Format(CultureInfo.InvariantCulture, "<Root><{0}><Connectors/><GlobalSettings/><SynchronizationRules/></{0}></Root>", pilotConfig ? "Pilot" : "Production");
+                var configXml = XElement.Parse(templateXml);
+
+                var connectors = configXml.XPathSelectElement("*//Connectors");
+                foreach (var file in Directory.EnumerateFiles(configDirectory + "/Connectors", "*.xml"))
+                {
+                    connectors.Add(XElement.Load(file));
+                }
+
+                var globalSettings = configXml.XPathSelectElement("*//GlobalSettings");
+                foreach (var file in Directory.EnumerateFiles(configDirectory + "/GlobalSettings", "*.xml"))
+                {
+                    globalSettings.Add(XElement.Load(file));
+                }
+
+                var synchronizationRules = configXml.XPathSelectElement("*//SynchronizationRules");
+                foreach (var file in Directory.EnumerateFiles(configDirectory + "/SynchronizationRules", "*.xml"))
+                {
+                    synchronizationRules.Add(XElement.Load(file));
+                }
+
+                return configXml;
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
             }
         }
 
@@ -319,7 +363,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Prints the global settings.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void PrintGlobalSettings()
         {
             Logger.Instance.WriteMethodEntry();
@@ -330,7 +373,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 2);
 
-                var headerTable = this.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Value" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Value" });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -346,7 +389,6 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// Processes the metaverse configuration.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         private void ProcessMetaverseConfiguration()
         {
             Logger.Instance.WriteMethodEntry();
@@ -442,29 +484,35 @@ namespace AzureADConnectConfigDocumenter
                             switch (connectorSubType.ToUpperInvariant())
                             {
                                 case "WINDOWS AZURE ACTIVE DIRECTORY (MICROSOFT)":
-                                    {
-                                        connectorDocumenter = new AzureActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
-                                    }
-
+                                    connectorDocumenter = new AzureActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                                     break;
                                 case "POWERSHELL (MICROSOFT)":
-                                case "GENERIC LDAP (MICROSOFT)":
+                                    connectorDocumenter = new PowerShellConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
+                                    break;
                                 case "GENERIC SQL (MICROSOFT)":
+                                    connectorDocumenter = new GenericSqlConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
+                                    break;
+                                case "GENERIC LDAP (MICROSOFT)":
+                                    connectorDocumenter = new GenericLdapConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
+                                    break;
+                                case "MICROSOFT WEB SERVICE ECMA2 CONNECTOR (MICROSOFT)":
+                                    connectorDocumenter = new WebServicesConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
+                                    break;
                                 default:
+                                    if (!string.IsNullOrEmpty(connectorSubType))
                                     {
-                                        connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
+                                        Logger.Instance.WriteWarning("ECMA2 Connector of subtype '{0}' is currently not supported. The connector '{1}' with be treated as a generic ECMA2 connector.", connectorSubType, connectorName);
                                     }
 
+                                    connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                                     break;
                             }
                         }
 
                         break;
                     default:
-                        {
-                            connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
-                        }
-
+                        Logger.Instance.WriteWarning("Connector of type '{0}' is currently not supported. The connector '{1}' with be treated as a generic ECMA2 connector. Documentation may not be complete.", connectorCategory, connectorName);
+                        connectorDocumenter = new Extensible2ConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                         break;
                 }
 
