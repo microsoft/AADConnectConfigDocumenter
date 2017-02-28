@@ -12,7 +12,7 @@ The current capabilities of the tool include:
 
 * Documentation of the complete configuration of Azure AD Connect sync.
 * Documentation of any changes in the configuration of two Azure AD Connect sync servers or changes from a given configuration baseline.
-* **!!NEW!!** Generation of the PowerShell deployment script to migrate the sync rule differences or customisations from one server to another.
+* **!!NEW!!** _**Generation of the PowerShell deployment script to migrate the sync rule differences or customisations from one server to another.**_
 
 Prerequisites:
 
