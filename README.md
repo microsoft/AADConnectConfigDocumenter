@@ -1,3 +1,4 @@
+
 # Azure AD Connect Configuration Documenter
 
 AAD Connect configuration documenter is a tool to generate documentation of an Azure AD Connect installation. Currently, the documentation is only limited to the Azure AD Connect sync configuration.
@@ -13,6 +14,8 @@ The current capabilities of the tool include:
 * Documentation of the complete configuration of Azure AD Connect sync.
 * Documentation of any changes in the configuration of two Azure AD Connect sync servers or changes from a given configuration baseline.
 * **!!NEW!!** _**Generation of the PowerShell deployment script to migrate the sync rule differences or customisations from one server to another.**_
+
+![Sample Report](https://github.com/Microsoft/AADConnectConfigDocumenter/wiki/Sample-Report-ToC-Contoso-Header.jpg)
 
 Prerequisites:
 
