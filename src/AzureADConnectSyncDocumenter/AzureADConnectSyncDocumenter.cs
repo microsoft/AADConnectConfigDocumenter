@@ -70,6 +70,12 @@ namespace AzureADConnectConfigDocumenter
                 this.ReportFileName = Documenter.GetTempFilePath("Report.tmp.html");
                 this.ReportToCFileName = Documenter.GetTempFilePath("Report.TOC.tmp.html");
 
+                var rootDirectory = Directory.GetCurrentDirectory().TrimEnd('\\');
+
+                this.pilotConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, this.pilotConfigRelativePath);
+                this.productionConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, this.productionConfigRelativePath);
+                this.configReportFilePath = Documenter.ReportFolder + @"\" + (this.pilotConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AppliedTo_" + (this.productionConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AADConnectSync_report.html";
+
                 this.ValidateInput();
                 this.MergeSyncExports();
             }
@@ -89,11 +95,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var report = this.GetReport();
-
-                using (var outputFile = new StreamWriter(this.configReportFilePath))
-                {
-                    outputFile.WriteLine(report.Item1.Replace("##TOC##", report.Item2));
-                }
+                this.WriteReport("AAD Connect Sync Service Configuration", report.Item1, report.Item2, this.pilotConfigRelativePath, this.productionConfigRelativePath, this.configReportFilePath);
             }
             finally
             {
@@ -119,60 +121,6 @@ namespace AzureADConnectConfigDocumenter
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
 
-                this.ReportWriter.WriteFullBeginTag("html");
-
-                this.WriteReportHeader();
-
-                this.ReportWriter.WriteFullBeginTag("body");
-
-                this.ReportWriter.WriteFullBeginTag("h1");
-                this.ReportWriter.Write("AAD Connect Sync Service Configuration");
-                this.ReportWriter.WriteEndTag("h1");
-                this.ReportWriter.WriteLine();
-
-                this.WriteDocumenterInfo();
-
-                string syncVersionXPath = "//mv-data//parameter-values/parameter[@name = 'Microsoft.Synchronize.ServerConfigurationVersion']";
-
-                this.ReportWriter.WriteFullBeginTag("strong");
-                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Target / Pilot", this.PilotXml.XPathSelectElement(syncVersionXPath)));
-                this.ReportWriter.WriteEndTag("strong");
-
-                {
-                    this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Unchanged");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    this.ReportWriter.Write(this.pilotConfigRelativePath);
-                    this.ReportWriter.WriteEndTag("span");
-
-                    this.ReportWriter.WriteBeginTag("br");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
-                }
-
-                this.ReportWriter.WriteFullBeginTag("strong");
-                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Reference / Production", this.ProductionXml.XPathSelectElement(syncVersionXPath)));
-                this.ReportWriter.WriteEndTag("strong");
-
-                {
-                    this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Unchanged");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    this.ReportWriter.Write(this.productionConfigRelativePath);
-                    this.ReportWriter.WriteEndTag("span");
-
-                    this.ReportWriter.WriteBeginTag("br");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
-                }
-
-                this.ReportWriter.WriteLine();
-
-                this.ReportWriter.WriteFullBeginTag("h1");
-                this.ReportWriter.Write("Table of Contents");
-                this.ReportWriter.WriteEndTag("h1");
-                this.ReportWriter.WriteLine();
-
-                this.ReportWriter.WriteLine("##TOC##");
-
                 var sectionTitle = "AAD Connect Sync Service Configuration";
 
                 this.WriteSectionHeader(sectionTitle, 1);
@@ -187,10 +135,6 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
-                this.ReportWriter.WriteEndTag("body");
-
-                this.ReportWriter.WriteEndTag("html");
-
                 report = this.GetReportTuple();
 
                 Logger.Instance.WriteMethodExit();
@@ -208,11 +152,6 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var rootDirectory = Directory.GetCurrentDirectory().TrimEnd('\\');
-
-                this.pilotConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, this.pilotConfigRelativePath);
-                this.productionConfigDirectory = string.Format(CultureInfo.InvariantCulture, @"{0}\Data\{1}", rootDirectory, this.productionConfigRelativePath);
-
                 if (!Directory.Exists(this.pilotConfigDirectory))
                 {
                     var error = string.Format(CultureInfo.CurrentUICulture, DocumenterResources.PilotConfigurationDirectoryNotFound, this.pilotConfigDirectory);
@@ -224,8 +163,6 @@ namespace AzureADConnectConfigDocumenter
                     var error = string.Format(CultureInfo.CurrentUICulture, DocumenterResources.ProductionConfigurationDirectoryNotFound, this.productionConfigDirectory);
                     throw Logger.Instance.ReportError(new FileNotFoundException(error));
                 }
-
-                this.configReportFilePath = Documenter.ReportFolder + @"\" + (this.pilotConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AppliedTo_" + (this.productionConfigRelativePath ?? string.Empty).Replace(@"\", "_") + "_AADConnectSync_report.html";
             }
             finally
             {
@@ -473,10 +410,7 @@ namespace AzureADConnectConfigDocumenter
                 switch (connectorCategory.ToUpperInvariant())
                 {
                     case "AD":
-                        {
-                            connectorDocumenter = new ActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
-                        }
-
+                        connectorDocumenter = new ActiveDirectoryConnectorDocumenter(this.PilotXml, this.ProductionXml, connectorName, configEnvironment);
                         break;
                     case "EXTENSIBLE2":
                         {

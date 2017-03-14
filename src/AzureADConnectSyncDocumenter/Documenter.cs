@@ -396,12 +396,15 @@ namespace AzureADConnectConfigDocumenter
                     case "1.3.6.1.4.1.1466.115.121.1.15":
                     case "1.2.840.113556.1.4.1221":
                     case "1.2.840.113556.1.4.905":
+                    case "1.3.6.1.4.1.1466.115.121.1.44":
+                    case "1.2.840.113556.1.4.1362":
                         attributeType = "String";
                         break;
                     case "1.3.6.1.4.1.1466.115.121.1.12":
                         attributeType = "Reference (DN)";
                         break;
                     case "1.3.6.1.4.1.1466.115.121.1.24":
+                    case "1.3.6.1.4.1.1466.115.121.1.53":
                         attributeType = "DateTime";
                         break;
                 }
@@ -938,10 +941,13 @@ namespace AzureADConnectConfigDocumenter
 
                     var tableClone = table.Clone();
 
-                    IOrderedEnumerable<DataRow> rows;
+                    IEnumerable<DataRow> rows;
 
                     switch (sortColumns.Length)
                     {
+                        case 0:
+                            rows = table.Rows.Cast<DataRow>();
+                            break;
                         case 1:
                             rows = table.Rows.Cast<DataRow>().OrderBy(row => row[sortColumns[0]]);
                             break;
@@ -1192,6 +1198,87 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Writes the report.
+        /// </summary>
+        /// <param name="reportHeader">The report header.</param>
+        /// <param name="reportHtml">The report html.</param>
+        /// <param name="tocHtml">The TOC html.</param>
+        /// <param name="pilotConfigPath">The pilot config path.</param>
+        /// <param name="productionConfigPath">The production config path.</param>
+        /// <param name="configReportFilePath">The config report file path.</param>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed. XhtmlTextWriter takes care of disposting StreamWriter.")]
+        protected void WriteReport(string reportHeader, string reportHtml, string tocHtml, string pilotConfigPath, string productionConfigPath, string configReportFilePath)
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                this.ReportWriter = new XhtmlTextWriter(new StreamWriter(configReportFilePath));
+
+                this.ReportWriter.WriteFullBeginTag("html");
+
+                this.WriteReportHeader();
+
+                this.ReportWriter.WriteFullBeginTag("body");
+
+                this.ReportWriter.WriteFullBeginTag("h1");
+                this.ReportWriter.Write(reportHeader);
+                this.ReportWriter.WriteEndTag("h1");
+                this.ReportWriter.WriteLine();
+
+                this.WriteDocumenterInfo();
+
+                string syncVersionXPath = "//mv-data//parameter-values/parameter[@name = 'Microsoft.Synchronize.ServerConfigurationVersion']";
+
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Target / Pilot", this.PilotXml.XPathSelectElement(syncVersionXPath)));
+                this.ReportWriter.WriteEndTag("strong");
+
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write(pilotConfigPath);
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.WriteBreakTag();
+                }
+
+                this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Reference / Production", this.ProductionXml.XPathSelectElement(syncVersionXPath)));
+                this.ReportWriter.WriteEndTag("strong");
+
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write(productionConfigPath);
+                    this.ReportWriter.WriteEndTag("span");
+
+                    this.WriteBreakTag();
+                }
+
+                this.ReportWriter.WriteLine();
+
+                this.ReportWriter.WriteFullBeginTag("h1");
+                this.ReportWriter.Write("Table of Contents");
+                this.ReportWriter.WriteEndTag("h1");
+                this.ReportWriter.WriteLine();
+
+                this.ReportWriter.WriteLine(tocHtml);
+                this.ReportWriter.WriteLine(reportHtml);
+
+                this.ReportWriter.WriteEndTag("body");
+                this.ReportWriter.WriteEndTag("html");
+            }
+            finally
+            {
+                this.ReportWriter.Close();
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
         /// Writes the report header.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
@@ -1280,8 +1367,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ReportWriter.Write("Download Sync Rule Changes Script");
                 this.ReportWriter.WriteEndTag("a");
 
-                this.ReportWriter.WriteBeginTag("br");
-                this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                this.WriteBreakTag();
 
                 this.ReportWriter.WriteFullBeginTag("strong");
                 this.ReportWriter.Write("Legend:");
@@ -1306,8 +1392,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ReportWriter.Write("Delete ");
                     this.ReportWriter.WriteEndTag("span");
 
-                    this.ReportWriter.WriteBeginTag("br");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    this.WriteBreakTag();
                 }
 
                 this.ReportWriter.WriteFullBeginTag("strong");
@@ -1321,8 +1406,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ReportWriter.Write(VersionInfo.Version);
                     this.ReportWriter.WriteEndTag("span");
 
-                    this.ReportWriter.WriteBeginTag("br");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    this.WriteBreakTag();
                 }
 
                 this.ReportWriter.WriteFullBeginTag("strong");
@@ -1336,8 +1420,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ReportWriter.Write(DateTime.Now.ToString(CultureInfo.CurrentCulture));
                     this.ReportWriter.WriteEndTag("span");
 
-                    this.ReportWriter.WriteBeginTag("br");
-                    this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+                    this.WriteBreakTag();
                 }
 
                 this.ReportWriter.WriteBeginTag("div");
@@ -1524,6 +1607,10 @@ namespace AzureADConnectConfigDocumenter
                 if (rows == null)
                 {
                     throw new ArgumentNullException("rows");
+                }
+                else if (rows.Count() == 0)
+                {
+                    return;
                 }
 
                 var printTable = this.DiffgramDataSet.Tables["PrintSettings"];
@@ -1884,46 +1971,49 @@ namespace AzureADConnectConfigDocumenter
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
         protected void WriteTableHeader(DataTable headerTable)
         {
-            #region thead
-
-            this.ReportWriter.WriteBeginTag("thead");
-            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+            if (headerTable != null && headerTable.Rows.Count != 0)
             {
-                #region head row(s)
+                #region thead
 
-                var rows = from row in headerTable.Rows.Cast<DataRow>()
-                           orderby row[0], row[1]
-                           select row;
-
-                var currentRowIndex = -1;
-                foreach (var row in rows)
+                this.ReportWriter.WriteBeginTag("thead");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                 {
-                    if ((int)row[0] != currentRowIndex)
+                    #region head row(s)
+
+                    var rows = from row in headerTable.Rows.Cast<DataRow>()
+                               orderby row[0], row[1]
+                               select row;
+
+                    var currentRowIndex = -1;
+                    foreach (var row in rows)
                     {
-                        if (currentRowIndex != -1)
+                        if ((int)row[0] != currentRowIndex)
                         {
-                            this.ReportWriter.WriteEndTag("tr");
-                            this.ReportWriter.WriteLine();
+                            if (currentRowIndex != -1)
+                            {
+                                this.ReportWriter.WriteEndTag("tr");
+                                this.ReportWriter.WriteLine();
+                            }
+
+                            currentRowIndex = (int)row[0];
+
+                            this.ReportWriter.WriteBeginTag("tr");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                         }
 
-                        currentRowIndex = (int)row[0];
-
-                        this.ReportWriter.WriteBeginTag("tr");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                        this.WriteTableHeaderCell(row[2] as string, (int)row[3], (int)row[4]);
                     }
 
-                    this.WriteTableHeaderCell(row[2] as string, (int)row[3], (int)row[4]);
+                    this.ReportWriter.WriteEndTag("tr");
+                    this.ReportWriter.WriteLine();
+
+                    #endregion head row(s)
                 }
 
-                this.ReportWriter.WriteEndTag("tr");
-                this.ReportWriter.WriteLine();
+                this.ReportWriter.WriteEndTag("thead");
 
-                #endregion head row(s)
+                #endregion thead
             }
-
-            this.ReportWriter.WriteEndTag("thead");
-
-            #endregion thead
         }
 
         /// <summary>
@@ -1948,6 +2038,15 @@ namespace AzureADConnectConfigDocumenter
             this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
             this.ReportWriter.WriteLine(content);
             this.ReportWriter.WriteEndTag("p");
+        }
+
+        /// <summary>
+        /// Writes the break tag.
+        /// </summary>
+        protected void WriteBreakTag()
+        {
+            this.ReportWriter.WriteBeginTag("br");
+            this.ReportWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
         }
 
         #region Simple Settings Sections

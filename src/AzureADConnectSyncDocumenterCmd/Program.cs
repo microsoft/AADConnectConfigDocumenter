@@ -32,7 +32,6 @@ namespace AzureADConnectConfigDocumenter
             }
 
             var documenter = new AzureADConnectSyncDocumenter(args[0], args[1]);
-
             documenter.GenerateReport();
         }
     }
