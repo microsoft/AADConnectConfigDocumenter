@@ -1269,6 +1269,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 var syncRuleName = (string)syncRule.Element("name");
                 var syncRuleId = ((string)syncRule.Element("id")).TrimStart('{').TrimEnd('}');
+                var syncRulePrecedence = (string)syncRule.Element("precedence");
 
                 syncRuleScript.AppendFormat(CultureInfo.InvariantCulture, Documenter.GetEmbeddedScriptResource("PowerShellScriptSectionHeader.ps1"), this.ConnectorName, syncRuleName);
                 syncRuleScript.AppendLine();
@@ -1276,6 +1277,10 @@ namespace AzureADConnectConfigDocumenter
                 syncRuleScript.AppendFormat("$connectorName = '{0}'", this.ConnectorName);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRuleId = '{0}'", syncRuleId);
+                syncRuleScript.AppendLine();
+                syncRuleScript.AppendFormat("$syncRulePrecedence = {0}", syncRulePrecedence);
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine("Write-Host \"Processing Sync Rule '$syncRuleName' for Connector '$connectorName'\"");
                 syncRuleScript.AppendLine();
@@ -1297,12 +1302,9 @@ namespace AzureADConnectConfigDocumenter
 
                 syncRuleScript.AppendLine("New-ADSyncRule `");
 
-                syncRuleScript.AppendLine("-Name @'");
-                syncRuleScript.AppendLine(syncRuleName);
-                syncRuleScript.AppendLine("'@ `");
+                syncRuleScript.AppendLine("-Name $syncRuleName `");
 
-                syncRuleScript.AppendFormat("-Identifier '{0}' `", syncRuleId);
-                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("-Identifier $syncRuleId `");
 
                 syncRuleScript.AppendLine("-Description @'");
                 syncRuleScript.AppendLine((string)syncRule.Element("description"));
@@ -1311,8 +1313,7 @@ namespace AzureADConnectConfigDocumenter
                 syncRuleScript.AppendFormat("-Direction '{0}' `", (string)syncRule.Element("direction"));
                 syncRuleScript.AppendLine();
 
-                syncRuleScript.AppendFormat("-Precedence '{0}' `", (string)syncRule.Element("precedence"));
-                syncRuleScript.AppendLine();
+                syncRuleScript.AppendLine("-Precedence $syncRulePrecedence `");
 
                 syncRuleScript.AppendFormat("-PrecedenceAfter '{0}' `", (string)syncRule.Element("precedence-after"));
                 syncRuleScript.AppendLine();
