@@ -176,8 +176,8 @@
   <sourcecode name="ActiveDirectoryConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 11:01:43.338</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.460</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -199,8 +199,8 @@
   <sourcecode name="AzureActiveDirectoryConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 08:37:44.527</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.472</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -222,8 +222,8 @@
   <sourcecode name="AzureADConnectSyncDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 14:45:18.600</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 09:34:41.271</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -245,8 +245,8 @@
   <sourcecode name="ConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 11:04:31.659</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/04/12 17:05:35.480</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -268,8 +268,8 @@
   <sourcecode name="Documenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 10:20:51.424</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/04/12 18:38:41.467</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -291,8 +291,8 @@
   <sourcecode name="DocumenterResources.Designer.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/03 10:25:04.000</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.529</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -314,8 +314,8 @@
   <sourcecode name="Extensible2ConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 11:18:37.169</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.544</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -337,8 +337,8 @@
   <sourcecode name="GenericLdapConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 14:38:16.865</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.545</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -360,8 +360,8 @@
   <sourcecode name="GenericSqlConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 14:38:09.891</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.559</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -383,8 +383,8 @@
   <sourcecode name="Logger.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/03 10:25:04.000</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.571</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -406,8 +406,8 @@
   <sourcecode name="LoggerCallContextItems.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/03 10:25:04.000</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.581</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -429,8 +429,8 @@
   <sourcecode name="MetaverseDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 10:58:05.913</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.604</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -452,8 +452,8 @@
   <sourcecode name="PowerShellConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 14:37:38.799</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.619</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -475,8 +475,8 @@
   <sourcecode name="AssemblyInfo.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/03 10:25:04.000</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.631</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -498,8 +498,8 @@
   <sourcecode name="SyncRuleDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 08:39:00.285</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 21:57:44.510</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -521,8 +521,8 @@
   <sourcecode name="VersionInfo.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 14:39:39.528</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/04/12 18:31:50.680</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -544,8 +544,8 @@
   <sourcecode name="WebServicesConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
-      <settingsFile>2017/02/22 14:46:58.055</settingsFile>
-      <sourceFile>2017/02/22 14:37:59.717</sourceFile>
+      <settingsFile>2017/03/14 22:02:01.686</settingsFile>
+      <sourceFile>2017/03/14 22:02:01.663</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>

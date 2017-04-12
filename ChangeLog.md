@@ -8,6 +8,41 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.17.0412.0
+
+#### Fixed
+- Fixed issue where the "Selected Attributes" section of a connector may display incorrect attribute type information.
+
+------------
+
+### Version 1.17.0314.0
+
+#### Added
+- Added support for complete documentation of GLDAP, GSQL, PowerShell and WebServices connectors.
+
+#### Changed
+- Variablized $syncRuleId and $syncRulePrecedence to improve portability of the sync rule changes script.
+
+------------
+
+### Version 1.17.0208.0
+
+#### Fixed
+- Fixed broken bookmarks in TOC Level 3 entries.
+
+------------
+
+### Version 1.17.0207.0
+
+#### Fixed
+- Synchronisation Rule changes script is now correctly downloads in IE.
+- Corrected Add-ADSyncAttributeFlowMapping cmdlet script for -Source parameter when the Transformation expression involved more than one attribute.
+
+#### Changed
+- TOC now formats entries for Additions and Deletions
+
+------------
+
 ### Version 1.16.1123.0
 
 #### Added

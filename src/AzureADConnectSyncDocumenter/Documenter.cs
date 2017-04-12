@@ -1228,15 +1228,25 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteDocumenterInfo();
 
-                string syncVersionXPath = "//mv-data//parameter-values/parameter[@name = 'Microsoft.Synchronize.ServerConfigurationVersion']";
+                var syncVersionXPath = "//mv-data//parameter-values/parameter[@name = 'Microsoft.Synchronize.ServerConfigurationVersion']";
+                var syncVersionPilot = (string)this.PilotXml.XPathSelectElement(syncVersionXPath);
+                var syncVersionProduction = (string)this.ProductionXml.XPathSelectElement(syncVersionXPath);
+                var cellClass = (syncVersionPilot == syncVersionProduction ? DataRowState.Unchanged : DataRowState.Modified).ToString();
 
                 this.ReportWriter.WriteFullBeginTag("strong");
-                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Target / Pilot", this.PilotXml.XPathSelectElement(syncVersionXPath)));
-                this.ReportWriter.WriteEndTag("strong");
-
+                this.ReportWriter.Write("Target / Pilot Config ");
                 {
                     this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteAttribute("class", cellClass);
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write("(" + syncVersionPilot + ")");
+                    this.ReportWriter.WriteEndTag("span");
+                }
+
+                this.ReportWriter.WriteEndTag("strong");
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", DataRowState.Unchanged.ToString());
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write(pilotConfigPath);
                     this.ReportWriter.WriteEndTag("span");
@@ -1245,12 +1255,19 @@ namespace AzureADConnectConfigDocumenter
                 }
 
                 this.ReportWriter.WriteFullBeginTag("strong");
-                this.ReportWriter.Write(string.Format(CultureInfo.InvariantCulture, "{0} Config ({1}):", "Reference / Production", this.ProductionXml.XPathSelectElement(syncVersionXPath)));
-                this.ReportWriter.WriteEndTag("strong");
-
+                this.ReportWriter.Write("Reference / Production Config ");
                 {
                     this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteAttribute("class", cellClass);
+                    this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
+                    this.ReportWriter.Write("(" + syncVersionProduction + ")");
+                    this.ReportWriter.WriteEndTag("span");
+                }
+
+                this.ReportWriter.WriteEndTag("strong");
+                {
+                    this.ReportWriter.WriteBeginTag("span");
+                    this.ReportWriter.WriteAttribute("class", DataRowState.Unchanged.ToString());
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write(productionConfigPath);
                     this.ReportWriter.WriteEndTag("span");
@@ -1401,7 +1418,7 @@ namespace AzureADConnectConfigDocumenter
 
                 {
                     this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteAttribute("class", DataRowState.Unchanged.ToString());
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write(VersionInfo.Version);
                     this.ReportWriter.WriteEndTag("span");
@@ -1415,7 +1432,7 @@ namespace AzureADConnectConfigDocumenter
 
                 {
                     this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Unchanged");
+                    this.ReportWriter.WriteAttribute("class", DataRowState.Unchanged.ToString());
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write(DateTime.Now.ToString(CultureInfo.CurrentCulture));
                     this.ReportWriter.WriteEndTag("span");
