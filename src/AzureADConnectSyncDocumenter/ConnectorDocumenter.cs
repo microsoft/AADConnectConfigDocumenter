@@ -947,20 +947,22 @@ namespace AzureADConnectConfigDocumenter
                         var attributeName = (string)attribute;
 
                         var attributeInfo = connector.XPathSelectElement(".//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
+                        if (attributeInfo != null) // Check for any misconfig as reported in GitHub Issue #4 for directory schema extension
+                        {
+                            var hasInboundFlows = config.XPathSelectElement("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping/src[attr = '" + attributeName + "']") != null;
+                            var hasOutboundFlows = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping[dest = '" + attributeName + "']") != null;
 
-                        var hasInboundFlows = config.XPathSelectElement("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping/src[attr = '" + attributeName + "']") != null;
-                        var hasOutboundFlows = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping[dest = '" + attributeName + "']") != null;
+                            var row = table.NewRow();
 
-                        var row = table.NewRow();
+                            row[0] = attributeName;
+                            var attributeSyntax = (string)attributeInfo.Element(Documenter.DsmlNamespace + "syntax");
+                            row[1] = Documenter.GetAttributeType(attributeSyntax, (string)attributeInfo.Attribute(Documenter.MmsDsmlNamespace + "indexable"));
+                            row[2] = ((string)attributeInfo.Attribute("single-value") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase) ? "No" : "Yes";
 
-                        row[0] = attributeName;
-                        var attributeSyntax = (string)attributeInfo.Element(Documenter.DsmlNamespace + "syntax");
-                        row[1] = Documenter.GetAttributeType(attributeSyntax, (string)attributeInfo.Attribute(Documenter.MmsDsmlNamespace + "indexable"));
-                        row[2] = ((string)attributeInfo.Attribute("single-value") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase) ? "No" : "Yes";
+                            row[3] = hasInboundFlows && hasOutboundFlows ? "Import / Export" : hasInboundFlows ? "Import" : hasOutboundFlows ? "Export" : "No";
 
-                        row[3] = hasInboundFlows && hasOutboundFlows ? "Import / Export" : hasInboundFlows ? "Import" : hasOutboundFlows ? "Export" : "No";
-
-                        Documenter.AddRow(table, row);
+                            Documenter.AddRow(table, row);
+                        }
                     }
 
                     table.AcceptChanges();
