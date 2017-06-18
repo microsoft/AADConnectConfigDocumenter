@@ -64,7 +64,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.ProcessConnectorProperties();
 
-                ////this.ProcessExtensible2ExtensionInformation();
+                this.ProcessExtensible2ExtensionInformation();
                 this.ProcessExtensible2ConnectivityInformation();
                 this.ProcessGenericSqlSchemaInformation();
 
@@ -73,7 +73,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.ProcessConnectorSelectedObjectTypes();
                 this.ProcessConnectorSelectedAttributes();
-                ////this.ProcessExtensible2AnchorConfigurations();
+                this.ProcessExtensible2AnchorConfigurations();
                 this.ProcessConnectorProvisioningSyncRules();
                 this.ProcessConnectorStickyJoinSyncRules();
                 this.ProcessConnectorNormalJoinSyncRules();
@@ -200,7 +200,7 @@ namespace AzureADConnectConfigDocumenter
 
                     this.WriteSectionHeader(sectionTitle, 4);
 
-                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 30 }, { "Configuration", 70 } });
 
                     this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
                 }

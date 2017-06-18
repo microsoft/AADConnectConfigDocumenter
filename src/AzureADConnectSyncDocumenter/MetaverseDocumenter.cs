@@ -519,45 +519,45 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Attribute" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Attribute" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 13 } }).Values.Cast<object>().ToArray());
 
                 // Type
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Type" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Type" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 7 } }).Values.Cast<object>().ToArray());
 
                 // Multi-valued
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 2 }, { "ColumnName", "Multi-valued" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 2 }, { "ColumnName", "Multi-valued" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 4 } }).Values.Cast<object>().ToArray());
 
                 // Indexed
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 3 }, { "ColumnName", "Indexed" }, { "RowSpan", 3 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 3 }, { "ColumnName", "Indexed" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 4 } }).Values.Cast<object>().ToArray());
 
                 // Precedence
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 4 }, { "ColumnName", "Precedence" }, { "RowSpan", 1 }, { "ColSpan", 7 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 4 }, { "ColumnName", "Precedence" }, { "RowSpan", 1 }, { "ColSpan", 7 }, { "ColWidth", 0 } }).Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // Precedence Display - Rank or Manual or Equal
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Rank" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Rank" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 4 } }).Values.Cast<object>().ToArray());
 
                 // Connector
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Connector" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Connector" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 15 } }).Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 15 } }).Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Source" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Source" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 15 } }).Values.Cast<object>().ToArray());
 
                 // Scoping Condition
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 3 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 3 }, { "ColWidth", 0 } }).Values.Cast<object>().ToArray());
 
                 // Header Row 3
                 // CS Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 0 }, { "ColumnName", "CS Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 0 }, { "ColumnName", "CS Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
 
                 // Operator
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 1 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 1 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 8 } }).Values.Cast<object>().ToArray());
 
                 // Value
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 2 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 2 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 5 } }).Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -583,7 +583,7 @@ namespace AzureADConnectConfigDocumenter
                 this.WriteSectionHeader(sectionTitle, 4);
 
                 var headerTable = this.GetMetaverseObjectTypeHeaderTable();
-                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable, HtmlTableSize.Huge);
             }
             finally
             {
@@ -897,20 +897,20 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Object Type
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Object Type" }, { "RowSpan", 2 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Object Type" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 20 } }).Values.Cast<object>().ToArray());
 
                 // Deletion Rules
                 headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Deletion Rules" }, { "RowSpan", 1 }, { "ColSpan", 3 } }).Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // Connector
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 25 } }).Values.Cast<object>().ToArray());
 
                 // Synchronization Rule
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Synchronization Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Synchronization Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 40 } }).Values.Cast<object>().ToArray());
 
                 // Link Type
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Link Type" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Link Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 15 } }).Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -933,37 +933,43 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var sectionTitle = "Metaverse Object Deletion Rules Summary";
-
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = this.GetMetaverseObjectDeletionRulesHeaderTable();
-
-                #region table
-
-                this.ReportWriter.WriteBeginTag("table");
-                this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
-                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                if (this.DiffgramDataSets.Count != 0)
                 {
-                    #region thead
+                    var headerTable = this.GetMetaverseObjectDeletionRulesHeaderTable();
 
-                    this.WriteTableHeader(headerTable);
+                    #region table
 
-                    #endregion thead
+                    this.ReportWriter.WriteBeginTag("table");
+                    this.ReportWriter.WriteAttribute("class", HtmlTableSize.Standard.ToString() + " " + this.GetCssVisibilityClass());
+                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                    {
+                        #region thead
+
+                        this.WriteTableHeader(headerTable);
+
+                        #endregion thead
+                    }
+
+                    #region rows
+
+                    foreach (var dataSet in this.DiffgramDataSets)
+                    {
+                        this.DiffgramDataSet = dataSet;
+                        this.WriteRows(dataSet.Tables[0].Rows);
+                    }
+
+                    #endregion rows
+
+                    this.ReportWriter.WriteEndTag("table");
+
+                    #endregion table
                 }
-
-                #region rows
-
-                foreach (var dataSet in this.DiffgramDataSets)
+                else
                 {
-                    this.DiffgramDataSet = dataSet;
-                    this.WriteRows(dataSet.Tables[0].Rows);
+                    this.WriteContentParagraph("There are no metaverse object deletion rules configured.");
                 }
-
-                #endregion rows
-
-                this.ReportWriter.WriteEndTag("table");
-
-                #endregion table
             }
             finally
             {

@@ -102,7 +102,7 @@ namespace AzureADConnectConfigDocumenter
                 Logger.Instance.WriteInfo("Processing Active Directory Connection Information.");
 
                 // Forest Connection Information
-                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order, 2 = Setting, 3 = Configuration
+                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order Control, 2 = Setting, 3 = Configuration
 
                 this.FillActiveDirectoryConnectionInformationDataSet(true);
                 this.FillActiveDirectoryConnectionInformationDataSet(false);
@@ -112,7 +112,7 @@ namespace AzureADConnectConfigDocumenter
                 this.PrintActiveDirectoryConnectionInformation();
 
                 // Forest Connection Option
-                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order, 2 = Setting, 3 = Configuration
+                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order Control, 2 = Setting, 3 = Configuration
 
                 this.FillActiveDirectoryConnectionOptionDataSet(true);
                 this.FillActiveDirectoryConnectionOptionDataSet(false);
@@ -178,7 +178,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 50 }, { "Configuration", 50 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -265,7 +265,7 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable("Connection Options");
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Connection Options", 70 }, { string.Empty, 30 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -355,7 +355,7 @@ namespace AzureADConnectConfigDocumenter
                 this.PrintActiveDirectoryPartitionSettings();
 
                 // Partition Connection Option
-                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order, 2 = Setting, 3 = Configuration
+                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order Control, 2 = Setting, 3 = Configuration
 
                 this.FillActiveDirectoryConnectionOptionDataSet(partitionName, true);
                 this.FillActiveDirectoryConnectionOptionDataSet(partitionName, false);
@@ -549,7 +549,7 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 50 }, { "Configuration", 50 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -692,7 +692,7 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable("Credentials");
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Credentials", 70 }, { string.Empty, 30 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }

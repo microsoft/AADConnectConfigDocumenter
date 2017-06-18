@@ -11,13 +11,21 @@ table {
     font-size: 10pt;
     padding: 0;
     border-collapse: collapse;
-    width: 100%;
     white-space: pre-wrap;
+    table-layout: fixed;
 }
 
-    table.outer-table {
-        width: 600pt;
-    }
+table.standard {
+    width: 60%;
+}
+
+table.large {
+    width: 75%;
+}
+
+table.huge {
+    width: 95%;
+}
 
 th {
     text-align: left;
@@ -70,6 +78,7 @@ td {
     padding-left: 10px;
     padding-right: 10px;
     border-bottom: 1px solid #999999;
+    word-wrap: break-word;
 }
 
     td.Unchanged {
@@ -88,6 +97,10 @@ td {
         color: blue;
     }
 
+    td.Highlight {
+        background-color: yellow;
+        font-weight: bold;
+    }
 
 span.Unchanged {
 }

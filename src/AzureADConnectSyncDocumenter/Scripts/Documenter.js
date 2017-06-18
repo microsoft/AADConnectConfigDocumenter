@@ -45,7 +45,7 @@ function DownloadScript(downloadLink) {
         data += "\r\nelse {"
         data += "\r\n    Write-Host \"Script execution completed sucessfully.\" -ForegroundColor Green"
         data += "\r\n    Write-Host \"Please regenerate the report with the latest config exports to confirm.\" -ForegroundColor Green"
-        data += "\r\n    Write-Host \"Once confirmed, it is recommended you run Full Synchronization run profile all connectors.\" -ForegroundColor Green"
+        data += "\r\n    Write-Host \"Once confirmed, it is recommended that you run Full Synchronization run profile all connectors.\" -ForegroundColor Green"
         data += "\r\n}"
         data += "\r\n"
     }

@@ -64,7 +64,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.ProcessConnectorProperties();
 
-                ////this.ProcessExtensible2ExtensionInformation();
+                this.ProcessExtensible2ExtensionInformation();
                 this.ProcessExtensible2ConnectivityInformation();
 
                 this.ProcessExtensible2GlobalParameters();
@@ -73,7 +73,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.ProcessConnectorSelectedObjectTypes();
                 this.ProcessConnectorSelectedAttributes();
-                ////this.ProcessExtensible2AnchorConfigurations();
+                this.ProcessExtensible2AnchorConfigurations();
                 this.ProcessConnectorProvisioningSyncRules();
                 this.ProcessConnectorStickyJoinSyncRules();
                 this.ProcessConnectorNormalJoinSyncRules();

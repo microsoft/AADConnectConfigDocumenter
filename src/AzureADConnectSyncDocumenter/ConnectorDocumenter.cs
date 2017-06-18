@@ -337,7 +337,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Connector Properties.");
 
-                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order, 2 = Property Name, 3 = Value
+                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order Control, 2 = Property Name, 3 = Value
 
                 this.FillConnectorPropertiesDataSet(true);
                 this.FillConnectorPropertiesDataSet(false);
@@ -426,7 +426,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 50 }, { "Configuration", 50 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -512,7 +512,7 @@ namespace AzureADConnectConfigDocumenter
 
                 if (this.DiffgramDataSet.Tables[0].Rows.Count != 0)
                 {
-                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "DN Component", "Object Class Mapping" });
+                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "DN Component", 50 }, { "Object Class Mapping", 50 } });
 
                     this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
                 }
@@ -796,7 +796,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 if (this.DiffgramDataSet.Tables[0].Rows.Count != 0)
                 {
-                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Container", "Include / Exclude" });
+                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Container", 70 }, { "Include / Exclude", 30 } });
 
                     this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
                 }
@@ -881,7 +881,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Object Types" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Object Types", 100 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -947,7 +947,7 @@ namespace AzureADConnectConfigDocumenter
                         var attributeName = (string)attribute;
 
                         var attributeInfo = connector.XPathSelectElement(".//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
-                        if (attributeInfo != null) // Check for any misconfig as reported in GitHub Issue #4 for directory schema extension
+                        if (attributeInfo != null)
                         {
                             var hasInboundFlows = config.XPathSelectElement("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping/src[attr = '" + attributeName + "']") != null;
                             var hasOutboundFlows = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping[dest = '" + attributeName + "']") != null;
@@ -987,7 +987,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Attribute Name", "Type", "Multi-valued", "Flows Configured?" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Attribute Name", 40 }, { "Type", 35 }, { "Multi-valued", 10 }, { "Flows Configured?", 15 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -1465,7 +1465,7 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Step#", "Step Name", "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Step#", 5 }, { "Step Name", 35 }, { "Setting", 35 }, { "Configuration", 25 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }

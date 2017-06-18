@@ -11,6 +11,7 @@
 namespace AzureADConnectConfigDocumenter
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Data;
@@ -169,6 +170,27 @@ namespace AzureADConnectConfigDocumenter
             /// The config element exists in only in the Production
             /// </summary>
             ProductionOnly
+        }
+
+        /// <summary>
+        /// Enumerator indicating the HTML table size
+        /// </summary>
+        public enum HtmlTableSize : int
+        {
+            /// <summary>
+            /// The standard / default html table size (50%)
+            /// </summary>
+            Standard = 0,
+
+            /// <summary>
+            /// The large html table size (75%)
+            /// </summary>
+            Large,
+
+            /// <summary>
+            /// The extra large table size (95%)
+            /// </summary>
+            Huge
         }
 
         /// <summary>
@@ -465,6 +487,11 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
+                if (htmlWriter == null)
+                {
+                    throw new ArgumentNullException("htmlWriter");
+                }
+
                 htmlWriter.WriteBeginTag("a");
                 htmlWriter.WriteAttribute("class", cellClass);
                 htmlWriter.WriteAttribute("href", "#" + Documenter.GetBookmarkCode(bookmark, sectionGuid));
@@ -559,18 +586,45 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Sets the visibility status of each row of the html table based on the modification status of the row or it's children.
+        /// Adds the visibility status column to each table of the diffgram data set.
         /// </summary>
         /// <param name="diffgramDataSet">The diffgram data set.</param>
-        protected static void SetHtmlTableRowVisibilityStatus(DataSet diffgramDataSet)
+        protected static void AddRowVisibilityStatusColumn(DataSet diffgramDataSet)
         {
+            if (diffgramDataSet == null)
+            {
+                throw new ArgumentNullException("diffgramDataSet");
+            }
+
             diffgramDataSet.ExtendedProperties.Add(Documenter.CanHide, true);
 
             // Loop all ignore last table which is PrintSetting table
             for (var i = 0; i < diffgramDataSet.Tables.Count - 1; ++i)
             {
-                diffgramDataSet.Tables[i].Columns.Add(Documenter.HtmlTableRowVisibilityStatusColumn);
+                try
+                {
+                    diffgramDataSet.Tables[i].Columns.Add(Documenter.HtmlTableRowVisibilityStatusColumn);
+                }
+                catch (DuplicateNameException)
+                {
+                    // just ignore
+                }
+            }
 
+            diffgramDataSet.AcceptChanges();
+        }
+
+        /// <summary>
+        /// Sets the visibility status of each row of the html table based on the modification status of the row or it's children.
+        /// </summary>
+        /// <param name="diffgramDataSet">The diffgram data set.</param>
+        protected static void SetHtmlTableRowVisibilityStatus(DataSet diffgramDataSet)
+        {
+            Documenter.AddRowVisibilityStatusColumn(diffgramDataSet);
+
+            // Loop all ignore last table which is PrintSetting table
+            for (var i = 0; i < diffgramDataSet.Tables.Count - 1; ++i)
+            {
                 foreach (DataRow row in diffgramDataSet.Tables[i].Rows)
                 {
                     if (i == 0)
@@ -746,6 +800,11 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>The diffgram table structure based on input table.</returns>
         protected static DataTable CreateDiffgramTable(DataTable dataTable)
         {
+            if (dataTable == null)
+            {
+                throw new ArgumentNullException("dataTable");
+            }
+
             var diffgramTable = dataTable.Clone();
             diffgramTable.Columns.Add(Documenter.RowStateColumn);
             foreach (DataColumn column in dataTable.Columns)
@@ -821,12 +880,14 @@ namespace AzureADConnectConfigDocumenter
                 var column3 = new DataColumn("ColumnName", typeof(string));
                 var column4 = new DataColumn("RowSpan", typeof(int));
                 var column5 = new DataColumn("ColSpan", typeof(int));
+                var column6 = new DataColumn("ColWidth", typeof(int)); // polulate it as zero for any colspan rows and populate the width only the child rows
 
                 headerTable.Columns.Add(column1);
                 headerTable.Columns.Add(column2);
                 headerTable.Columns.Add(column3);
                 headerTable.Columns.Add(column4);
                 headerTable.Columns.Add(column5);
+                headerTable.Columns.Add(column6);
                 headerTable.PrimaryKey = new[] { column1, column2 };
 
                 return headerTable;
@@ -844,21 +905,9 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The simple settings header table with multiple columns.
         /// </returns>
-        protected static DataTable GetSimpleSettingsHeaderTable(string[] columnNames)
+        protected static DataTable GetSimpleSettingsHeaderTable(OrderedDictionary columnNames)
         {
             return Documenter.GetSimpleSettingsHeaderTable(null, columnNames);
-        }
-
-        /// <summary>
-        /// Gets the simple settings header table with the single header column spanning two columns.
-        /// </summary>
-        /// <param name="columnName">The column name of the table header.</param>
-        /// <returns>
-        /// The simple settings header table with the single header column spanning two columns.
-        /// </returns>
-        protected static DataTable GetSimpleSettingsHeaderTable(string columnName)
-        {
-            return Documenter.GetSimpleSettingsHeaderTable(columnName, null);
         }
 
         /// <summary>
@@ -869,7 +918,7 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The simple settings header table.
         /// </returns>
-        protected static DataTable GetSimpleSettingsHeaderTable(string columnName, string[] columnNames)
+        protected static DataTable GetSimpleSettingsHeaderTable(string columnName, OrderedDictionary columnNames)
         {
             Logger.Instance.WriteMethodEntry("Column Count: '{0}'.", columnName);
 
@@ -877,20 +926,20 @@ namespace AzureADConnectConfigDocumenter
             {
                 var headerTable = Documenter.GetHeaderTable();
 
-                if (!string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Length != 0)
+                if (!string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Count != 0)
                 {
-                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", columnNames.Length } }).Values.Cast<object>().ToArray());
+                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", columnNames.Count } }).Values.Cast<object>().ToArray());
 
-                    for (var i = 0; i < columnNames.Length; ++i)
+                    for (var i = 0; i < columnNames.Count; ++i)
                     {
-                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", i }, { "ColumnName", columnNames[i] }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", i }, { "ColumnName", columnNames.Cast<DictionaryEntry>().ElementAt(i).Key }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", columnNames[i] } }).Values.Cast<object>().ToArray());
                     }
                 }
-                else if (string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Length != 0)
+                else if (string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Count != 0)
                 {
-                    for (var i = 0; i < columnNames.Length; ++i)
+                    for (var i = 0; i < columnNames.Count; ++i)
                     {
-                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", i }, { "ColumnName", columnNames[i] }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", i }, { "ColumnName", columnNames.Cast<DictionaryEntry>().ElementAt(i).Key }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", columnNames[i] } }).Values.Cast<object>().ToArray());
                     }
                 }
                 else if (!string.IsNullOrEmpty(columnName))
@@ -1036,6 +1085,8 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="table">The table.</param>
         /// <param name="row">The row.</param>
         /// <param name="vanityRow">if set to <c>true</c>, the row is not printed if it appears as a deleted row in the diffgram.</param>
+        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "Reviewed.")]
+        [SuppressMessage("Microsoft.Performance", "CA1800:DoNotCastUnnecessarily", Justification = "Reviewed.")]
         protected static void AddRow(DataTable table, object row, bool vanityRow)
         {
             if (table == null)
@@ -1077,7 +1128,11 @@ namespace AzureADConnectConfigDocumenter
             }
             catch (DataException e)
             {
-                Logger.Instance.WriteError(e.ToString());
+                var dataRow = row as DataRow;
+                var values = (dataRow != null) ? dataRow.ItemArray : row as object[];
+                var rowString = (values != null) ? string.Join("|", values) : string.Empty;
+                var errorMsg = e.Message + " Data Row: " + rowString + e.StackTrace;
+                Logger.Instance.WriteError(errorMsg);
             }
         }
 
@@ -1392,19 +1447,19 @@ namespace AzureADConnectConfigDocumenter
 
                 {
                     this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Added");
+                    this.ReportWriter.WriteAttribute("class", DataRowState.Added.ToString());
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write("Create ");
                     this.ReportWriter.WriteEndTag("span");
 
                     this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Modified");
+                    this.ReportWriter.WriteAttribute("class", DataRowState.Modified.ToString());
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write("Update ");
                     this.ReportWriter.WriteEndTag("span");
 
                     this.ReportWriter.WriteBeginTag("span");
-                    this.ReportWriter.WriteAttribute("class", "Deleted");
+                    this.ReportWriter.WriteAttribute("class", DataRowState.Deleted.ToString());
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
                     this.ReportWriter.Write("Delete ");
                     this.ReportWriter.WriteEndTag("span");
@@ -1577,7 +1632,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <returns>The CSS visibility class, either CanHide or empty string</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Reviewed.")]
-        protected string GetCssVisibilityClass()
+        protected virtual string GetCssVisibilityClass()
         {
             return this.DiffgramDataSets.Count == 0 || this.DiffgramDataSets.Any(dataSet => !(bool)dataSet.ExtendedProperties[Documenter.CanHide]) ? string.Empty : Documenter.CanHide;
         }
@@ -1849,6 +1904,11 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="cellClass">The cell class.</param>
         protected void WriteCellText(string cellText, int? bookmarkIndex, int? jumpToBookmarkIndex, DataRow row, string cellClass)
         {
+            if (row == null)
+            {
+                return;
+            }
+
             var bookmark = bookmarkIndex != null ? Convert.ToString(row[(int)bookmarkIndex], CultureInfo.InvariantCulture) : null;
             var jumpToBookmark = jumpToBookmarkIndex != null ? Convert.ToString(row[(int)jumpToBookmarkIndex], CultureInfo.InvariantCulture) : null;
 
@@ -1956,13 +2016,14 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <param name="dataTable">The section data table</param>
         /// <param name="headerTable">The section data header table</param>
+        /// <param name="tableSize">The size (width) of the HTML table</param>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1123:DoNotPlaceRegionsWithinElements", Justification = "Reviewed.")]
-        protected void WriteTable(DataTable dataTable, DataTable headerTable)
+        protected void WriteTable(DataTable dataTable, DataTable headerTable, HtmlTableSize tableSize = HtmlTableSize.Standard)
         {
             #region table
 
             this.ReportWriter.WriteBeginTag("table");
-            this.ReportWriter.WriteAttribute("class", "outer-table" + " " + this.GetCssVisibilityClass());
+            this.ReportWriter.WriteAttribute("class", tableSize.ToString() + " " + this.GetCssVisibilityClass());
             this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
             {
                 this.WriteTableHeader(headerTable);
@@ -1970,7 +2031,10 @@ namespace AzureADConnectConfigDocumenter
 
             #region rows
 
-            this.WriteRows(dataTable.Rows);
+            if (dataTable != null && dataTable.Rows.Count > 0)
+            {
+                this.WriteRows(dataTable.Rows);
+            }
 
             #endregion rows
 
@@ -1990,6 +2054,29 @@ namespace AzureADConnectConfigDocumenter
         {
             if (headerTable != null && headerTable.Rows.Count != 0)
             {
+                #region column group
+
+                this.ReportWriter.WriteFullBeginTag("colgroup");
+
+                var columnWidths = from row in headerTable.Rows.Cast<DataRow>()
+                                   orderby row["RowIndex"], row["ColumnIndex"]
+                                   select row["ColWidth"] == DBNull.Value ? 0 : (int)row["ColWidth"];
+                foreach (var columnWidth in columnWidths)
+                {
+                    // skip any colspan rows as child rows will have width defined
+                    if (columnWidth != 0)
+                    {
+                        this.ReportWriter.WriteBeginTag("col");
+                        this.ReportWriter.WriteAttribute("style", "width:" + columnWidth + "%;");
+                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                        this.ReportWriter.WriteEndTag("col");
+                    }
+                }
+
+                this.ReportWriter.WriteEndTag("colgroup");
+
+                #endregion column group
+
                 #region thead
 
                 this.ReportWriter.WriteBeginTag("thead");
@@ -1998,13 +2085,13 @@ namespace AzureADConnectConfigDocumenter
                     #region head row(s)
 
                     var rows = from row in headerTable.Rows.Cast<DataRow>()
-                               orderby row[0], row[1]
+                               orderby row["RowIndex"], row["ColumnIndex"]
                                select row;
 
                     var currentRowIndex = -1;
                     foreach (var row in rows)
                     {
-                        if ((int)row[0] != currentRowIndex)
+                        if ((int)row["RowIndex"] != currentRowIndex)
                         {
                             if (currentRowIndex != -1)
                             {
@@ -2012,13 +2099,13 @@ namespace AzureADConnectConfigDocumenter
                                 this.ReportWriter.WriteLine();
                             }
 
-                            currentRowIndex = (int)row[0];
+                            currentRowIndex = (int)row["RowIndex"];
 
                             this.ReportWriter.WriteBeginTag("tr");
                             this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
                         }
 
-                        this.WriteTableHeaderCell(row[2] as string, (int)row[3], (int)row[4]);
+                        this.WriteTableHeaderCell(row["ColumnName"] as string, (int)row["RowSpan"], (int)row["ColSpan"]);
                     }
 
                     this.ReportWriter.WriteEndTag("tr");

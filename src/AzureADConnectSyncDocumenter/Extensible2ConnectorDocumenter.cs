@@ -100,10 +100,10 @@ namespace AzureADConnectConfigDocumenter
                 this.ProcessConnectorProvisioningHierarchyConfiguration();
 
                 this.ProcessExtensible2PartitionsAndHierarchiesConfiguration();
-                this.ProcessExtensible2AnchorConfigurations();
 
                 this.ProcessConnectorSelectedObjectTypes();
                 this.ProcessConnectorSelectedAttributes();
+                this.ProcessExtensible2AnchorConfigurations();
                 this.ProcessConnectorProvisioningSyncRules();
                 this.ProcessConnectorStickyJoinSyncRules();
                 this.ProcessConnectorNormalJoinSyncRules();
@@ -129,6 +129,7 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="parameterDefinitions">The config parameter definition node for a configuration page.</param>
         /// <param name="parameterValues">he config parameter values node for the corresponding configuration page.</param>
         /// <returns>The config parameter values table.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Reviewed.")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No good reason to call Dispose() on DataTable and DataColumn.")]
         protected DataTable GetExtensible2ConfigParametersTable(IEnumerable<XElement> parameterDefinitions, IEnumerable<XElement> parameterValues)
         {
@@ -214,7 +215,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Extension Information.");
 
-                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order, 2 = Capability Name, 3 = Configuration
+                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order Control, 2 = Capability Name, 3 = Configuration
 
                 this.FillExtensible2ExtensionInformationDataSet(true);
                 this.FillExtensible2ExtensionInformationDataSet(false);
@@ -248,26 +249,13 @@ namespace AzureADConnectConfigDocumenter
                 {
                     var table = dataSet.Tables[0];
 
-                    var importEnabled = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/import-enabled") == "1";
-                    var exportEnabled = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/export-enabled") == "1";
-                    var stepTypesSupported = importEnabled && exportEnabled ? "Import and Export" : importEnabled ? "Import Only" : exportEnabled ? "Export Only" : "??";
+                    var connectorAssembly = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/filename");
+                    var connectorAssemblyVersion = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/assembly-version");
+                    var connectorCapabilityBits = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/capability-bits");
 
-                    Documenter.AddRow(table, new object[] { 1, "Step Types supported", stepTypesSupported });
-
-                    if (importEnabled)
-                    {
-                        var importMode = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/import-mode");
-                        Documenter.AddRow(table, new object[] { 2, "Import Mode", importMode });
-                    }
-
-                    if (exportEnabled)
-                    {
-                        var exportMode = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/export-mode");
-                        Documenter.AddRow(table, new object[] { 3, "Export Mode", exportMode });
-                    }
-
-                    var extensionDll = (string)connector.XPathSelectElement("private-configuration/MAConfig/extension-config/filename");
-                    Documenter.AddRow(table, new object[] { 4, "Connected data source extension name", extensionDll });
+                    Documenter.AddRow(table, new object[] { 1, "Connector Assembly Name", connectorAssembly });
+                    Documenter.AddRow(table, new object[] { 2, "Connector Assembly Version", connectorAssemblyVersion });
+                    Documenter.AddRow(table, new object[] { 3, "Connector Capability Bits", connectorCapabilityBits });
 
                     table.AcceptChanges();
                 }
@@ -287,11 +275,11 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var sectionTitle = "Extension Information";
+                var sectionTitle = "Connector Capabilities";
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 30 }, { "Configuration", 70 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -382,7 +370,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 25 }, { "Configuration", 65 }, { "Encrypted?", 10 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }
@@ -494,9 +482,16 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Configuration", "Encrypted?" });
+                if (this.DiffgramDataSet.Tables[0].Rows.Count != 0)
+                {
+                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 25 }, { "Configuration", 65 }, { "Encrypted?", 10 } });
 
-                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                    this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                }
+                else
+                {
+                    this.WriteContentParagraph("There are no Global parameters configured.");
+                }
             }
             finally
             {
@@ -646,7 +641,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 if (this.DiffgramDataSet.Tables[0].Rows.Count != 0)
                 {
-                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Partition Parameter", "Configuration", "Encrypted?" });
+                    var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Partition Parameter", 25 }, { "Configuration", 65 }, { "Encrypted?", 10 } });
 
                     this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
                 }
@@ -852,11 +847,11 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var sectionTitle = "Anchors Configuration";
+                var sectionTitle = "Anchor Configuration";
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Object Type", "Anchor Attribute" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Object Type", 30 }, { "Anchor Attribute", 70 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }

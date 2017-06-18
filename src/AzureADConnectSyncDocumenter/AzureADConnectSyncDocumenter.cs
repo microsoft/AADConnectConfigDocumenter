@@ -11,6 +11,7 @@
 namespace AzureADConnectConfigDocumenter
 {
     using System;
+    using System.Collections.Specialized;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
@@ -310,7 +311,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 2);
 
-                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new string[] { "Setting", "Value" });
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable(new OrderedDictionary { { "Setting", 50 }, { "Value", 50 } });
 
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
             }

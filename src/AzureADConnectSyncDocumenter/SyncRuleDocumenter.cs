@@ -325,7 +325,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Sync Rule Description.");
 
-                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order, 2 = Field Name, 3 = Value
+                this.CreateSimpleOrderedSettingsDataSets(3); // 1 = Display Order Control, 2 = Field Name, 3 = Value
 
                 this.FillConnectorSyncRuleDescriptionDataSet(true);
                 this.FillConnectorSyncRuleDescriptionDataSet(false);
@@ -443,10 +443,10 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 2
                 // Setting
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Setting" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Setting" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
 
                 // Configuration
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Configuration" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Configuration" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 70 } }).Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -503,7 +503,7 @@ namespace AzureADConnectConfigDocumenter
                 var headerTable = this.GetConnectorSyncRuleDescriptionHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[0];
-                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable, this.syncRuleReportType == SyncRuleReportType.AllSections ? HtmlTableSize.Huge : HtmlTableSize.Standard);
             }
             finally
             {
@@ -526,7 +526,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Sync Rule Scoping Filter.");
 
-                this.CreateSimpleOrderedSettingsDataSets(5, 5, false); // 1 = Display Order, 2 = Group #, 3 = Attribute, 4 = Operator, 5 = Value
+                this.CreateSimpleOrderedSettingsDataSets(5, 5, false); // 1 = Display Order Control, 2 = Group #, 3 = Attribute, 4 = Operator, 5 = Value
 
                 this.FillConnectorSyncRuleScopingFilterDataSet(true);
                 this.FillConnectorSyncRuleScopingFilterDataSet(false);
@@ -610,16 +610,16 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 2
                 // Group#
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
 
                 // Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
 
                 // Operator
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
 
                 // Value
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -643,7 +643,7 @@ namespace AzureADConnectConfigDocumenter
                 var headerTable = this.GetConnectorSyncRuleScopingFilterHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[1];
-                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable, this.syncRuleReportType == SyncRuleReportType.AllSections ? HtmlTableSize.Huge : HtmlTableSize.Standard);
             }
             finally
             {
@@ -666,7 +666,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Sync Rule Join Rules");
 
-                this.CreateSimpleOrderedSettingsDataSets(5, 5, false); // 1 = Display Order, 2 = Group #, 3 = Source Attribute, 4 = Target Attribute, 5 = Case Sensitive?
+                this.CreateSimpleOrderedSettingsDataSets(5, 5, false); // 1 = Display Order Control, 2 = Group #, 3 = Source Attribute, 4 = Target Attribute, 5 = Case Sensitive?
 
                 this.FillConnectorSyncRuleJoinRulesDataSet(true);
                 this.FillConnectorSyncRuleJoinRulesDataSet(false);
@@ -760,16 +760,16 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 2
                 // Group#
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
 
                 // Source Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 40 } }).Values.Cast<object>().ToArray());
 
                 // Target Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Target Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Target Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 40 } }).Values.Cast<object>().ToArray());
 
                 // Case Sensitive
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Case Sensitive" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Case Sensitive" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -793,7 +793,7 @@ namespace AzureADConnectConfigDocumenter
                 var headerTable = this.GetConnectorSyncRuleJoinRulesHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[2];
-                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable, this.syncRuleReportType == SyncRuleReportType.AllSections ? HtmlTableSize.Huge : HtmlTableSize.Standard);
             }
             finally
             {
@@ -914,19 +914,19 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 2
                 // Target Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", this.syncRuleDirection == SyncRuleDirection.Inbound ? "Target (MV) Attribute" : "Target (CS) Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", this.syncRuleDirection == SyncRuleDirection.Inbound ? "Target (MV) Attribute" : "Target (CS) Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 20 } }).Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 50 } }).Values.Cast<object>().ToArray());
 
                 // Flow Type
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Flow Type" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Flow Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
 
                 // Apply Once
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Apply Once" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Apply Once" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
 
                 // Merge Type
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Merge Type" }, { "RowSpan", 1 }, { "ColSpan", 1 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Merge Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -950,7 +950,7 @@ namespace AzureADConnectConfigDocumenter
                 var headerTable = this.GetConnectorSyncRuleTransformationsHeaderTable();
 
                 this.DiffgramDataSet = this.DiffgramDataSets[3];
-                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable, this.syncRuleReportType == SyncRuleReportType.AllSections ? HtmlTableSize.Huge : HtmlTableSize.Standard);
             }
             finally
             {
@@ -1020,7 +1020,9 @@ namespace AzureADConnectConfigDocumenter
                                 }
                                 else
                                 {
-                                    script = this.CreateDefaultSyncRuleUpdateWarningScript(syncRuleProduction);
+                                    var precedencePilot = (string)syncRule.Element("precedence");
+                                    var precedenceProduction = (string)syncRuleProduction.Element("precedence");
+                                    script = this.CreateDefaultSyncRuleUpdateWarningScript(syncRuleProduction, precedencePilot != precedenceProduction);
                                 }
                             }
                         }
@@ -1130,8 +1132,9 @@ namespace AzureADConnectConfigDocumenter
         /// Creates a Warning Script if unsupported changes are made to a default sync rule
         /// </summary>
         /// <param name="syncRule">The Synchronization Rule to be scripted.</param>
+        /// <param name="precedenceChange">Indicates if the precedence has been changed between the Pilot and Production.</param>
         /// <returns>The Synchronization Rule script.</returns>
-        private string CreateDefaultSyncRuleUpdateWarningScript(XElement syncRule)
+        private string CreateDefaultSyncRuleUpdateWarningScript(XElement syncRule, bool precedenceChange)
         {
             Logger.Instance.WriteMethodEntry("SycRule: '{0}', Id: '{1}'.", (string)syncRule.Element("name"), (string)syncRule.Element("id"));
 
@@ -1150,6 +1153,11 @@ namespace AzureADConnectConfigDocumenter
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' has unsupported chanages detected.\" -f $syncRuleName, $connectorName)");
                 syncRuleScript.AppendLine("Write-Warning (\"Only supported change to an out-of-box default rule is to make it `\"Disabled`\".\")");
+                if (precedenceChange)
+                {
+                    syncRuleScript.AppendLine("Write-Warning (\"If only the precedence number is different for this out-of-box rule, this warning may be safely ignored.\")");
+                }
+
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendLine();
 
