@@ -8,6 +8,19 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.17.0702.0
+
+#### Added
+- Added a new section for documenting End-to-End attribute flows.
+
+#### Fixed
+- Fixed tool crash when config exports have internal inconsistency when directory schema extension attributes are selected and then removed.
+
+#### Changed
+- Table widths in various sections.
+
+------------
+
 ### Version 1.17.0412.0
 
 #### Fixed
