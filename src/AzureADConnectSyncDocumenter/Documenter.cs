@@ -640,9 +640,18 @@ namespace AzureADConnectConfigDocumenter
                     }
                     else if (!Documenter.IsCumulativeRowStateChanged(row, i))
                     {
-                        var dataRelationName = string.Format(CultureInfo.InvariantCulture, "DataRelation{0}{1}", i, i + 1);
-                        var parentRow = row.GetParentRow(dataRelationName);
-                        row[Documenter.HtmlTableRowVisibilityStatusColumn] = parentRow[Documenter.HtmlTableRowVisibilityStatusColumn];
+                        try
+                        {
+                            var dataRelationName = string.Format(CultureInfo.InvariantCulture, "DataRelation{0}{1}", i, i + 1);
+                            var parentRow = row.GetParentRow(dataRelationName);
+                            row[Documenter.HtmlTableRowVisibilityStatusColumn] = parentRow[Documenter.HtmlTableRowVisibilityStatusColumn];
+                        }
+                        catch (DataException e)
+                        {
+                            var rowString = (row != null) ? string.Join("|", row.ItemArray) : string.Empty;
+                            var errorMsg = e.Message + " Data Row: " + rowString + e.StackTrace;
+                            Logger.Instance.WriteError(errorMsg);
+                        }
                     }
                 }
 

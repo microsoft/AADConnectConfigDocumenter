@@ -8,6 +8,13 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.17.0703.0
+
+#### Fixed
+- Bug fix in the logic of End-to-End Attribute flows.
+
+------------
+
 ### Version 1.17.0702.0
 
 #### Added

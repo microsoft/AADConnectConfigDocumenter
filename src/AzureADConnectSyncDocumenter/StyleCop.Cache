@@ -171,7 +171,7 @@
     <violations />
   </sourcecode>
   <project key="1174695384">
-    <configuration>CODE_ANALYSIS;DEBUG;TRACE</configuration>
+    <configuration>TRACE</configuration>
   </project>
   <sourcecode name="ActiveDirectoryConnectorDocumenter.cs" parser="StyleCop.CSharp.CsParser">
     <timestamps>
@@ -223,7 +223,7 @@
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
       <settingsFile>2017/04/16 06:55:54.094</settingsFile>
-      <sourceFile>2017/07/01 23:55:44.586</sourceFile>
+      <sourceFile>2017/07/03 23:05:46.690</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -246,7 +246,7 @@
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
       <settingsFile>2017/04/16 06:55:54.094</settingsFile>
-      <sourceFile>2017/07/02 20:24:31.064</sourceFile>
+      <sourceFile>2017/07/03 23:02:55.985</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -269,7 +269,7 @@
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
       <settingsFile>2017/04/16 06:55:54.094</settingsFile>
-      <sourceFile>2017/06/29 18:58:02.313</sourceFile>
+      <sourceFile>2017/07/03 23:09:48.706</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
@@ -522,7 +522,7 @@
     <timestamps>
       <styleCop>2016/11/09 21:13:02.000</styleCop>
       <settingsFile>2017/04/16 06:55:54.094</settingsFile>
-      <sourceFile>2017/07/01 23:37:18.664</sourceFile>
+      <sourceFile>2017/07/03 21:30:13.063</sourceFile>
       <parser>2016/11/09 21:13:02.000</parser>
       <StyleCop.CSharp.DocumentationRules>2016/11/09 21:13:02.000</StyleCop.CSharp.DocumentationRules>
       <StyleCop.CSharp.DocumentationRules.FilesHashCode>-277821146</StyleCop.CSharp.DocumentationRules.FilesHashCode>
