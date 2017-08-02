@@ -44,14 +44,19 @@ namespace AzureADConnectConfigDocumenter
         private const string LoggerContextItemSyncRuleReportType = "Sync Rule Report Type";
 
         /// <summary>
-        /// The synchronize rule direction
+        /// The synchronization rule direction
         /// </summary>
         private SyncRuleDirection syncRuleDirection;
 
         /// <summary>
-        /// The synchronize rule report type
+        /// The synchronization rule report type
         /// </summary>
         private SyncRuleReportType syncRuleReportType;
+
+        /// <summary>
+        /// Indicates if the the synchronization rule is inferred as a default sync rule can be made invisible
+        /// </summary>
+        private bool defaultSyncRuleVisibility;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncRuleDocumenter" /> class.
@@ -71,8 +76,9 @@ namespace AzureADConnectConfigDocumenter
             {
                 this.SyncRuleName = syncRuleName;
                 this.SyncRuleGuid = syncRuleGuid;
-                this.ReportFileName = Documenter.GetTempFilePath(this.ConnectorName + "_" + this.SyncRuleName + "_" + this.SyncRuleGuid + ".tmp.html");
-                this.ReportToCFileName = Documenter.GetTempFilePath(this.ConnectorName + "_" + this.SyncRuleName + "_" + this.SyncRuleGuid + ".TOC.tmp.html");
+                this.defaultSyncRuleVisibility = false;
+                this.ReportFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".tmp.html");
+                this.ReportToCFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".TOC.tmp.html");
 
                 // Set Logger call context items
                 Logger.SetContextItem(SyncRuleDocumenter.LoggerContextItemSyncRuleName, this.SyncRuleName);
@@ -212,9 +218,10 @@ namespace AzureADConnectConfigDocumenter
                     }
                 }
 
+                this.WriteSyncRuleReportHeader();
+
                 try
                 {
-                    this.WriteSyncRuleReportHeader();
                     this.PrintConnectorSyncRuleDescription();
                     this.PrintConnectorSyncRuleScopingFilter();
                     this.PrintConnectorSyncRuleJoinRules();
@@ -229,6 +236,12 @@ namespace AzureADConnectConfigDocumenter
                 }
                 finally
                 {
+                    if (!this.defaultSyncRuleVisibility)
+                    {
+                        this.ReportWriter.WriteEndTag("div");
+                        this.ReportToCWriter.WriteEndTag("div");
+                    }
+
                     this.ResetDiffgram(); // reset the diffgram variables
                 }
 
@@ -259,12 +272,22 @@ namespace AzureADConnectConfigDocumenter
                 if (this.syncRuleReportType != SyncRuleReportType.AllSections)
                 {
                     bookmark += this.syncRuleReportType.ToString();
-                    this.ReportFileName = Documenter.GetTempFilePath(this.syncRuleReportType + "." + this.ConnectorName + "_" + this.SyncRuleName + "_" + this.SyncRuleGuid + ".tmp.html");
-                    this.ReportToCFileName = Documenter.GetTempFilePath(this.syncRuleReportType + "." + this.ConnectorName + "_" + this.SyncRuleName + "_" + this.SyncRuleGuid + ".TOC.tmp.html");
+                    this.ReportFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".tmp.html");
+                    this.ReportToCFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".TOC.tmp.html");
                 }
 
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
+
+                if (!this.defaultSyncRuleVisibility)
+                {
+                    this.ReportWriter.WriteBeginTag("div");
+                    this.ReportWriter.WriteAttribute("class", "DefaultRuleCanHide");
+                    this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                    this.ReportToCWriter.WriteBeginTag("div");
+                    this.ReportToCWriter.WriteAttribute("class", "DefaultRuleCanHide");
+                    this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
+                }
 
                 this.WriteSectionHeader(this.SyncRuleName, 5, bookmark, this.SyncRuleGuid);
             }
@@ -366,6 +389,21 @@ namespace AzureADConnectConfigDocumenter
                         var table = dataSet.Tables[0];
 
                         this.syncRuleDirection = (SyncRuleDirection)Enum.Parse(typeof(SyncRuleDirection), (string)syncRule.Element("direction"), true);
+                        var defaultSyncRule = ((string)syncRule.Element("immutable-tag") ?? string.Empty).StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase);
+
+                        // Only turn the visibility on and never off.
+                        if (this.defaultSyncRuleVisibility == false)
+                        {
+                            this.defaultSyncRuleVisibility = !defaultSyncRule;
+                        }
+
+                        // Any disabled rule will also be always visible.
+                        // Ideally we should have any unsupported customisation to default sync rule always visible
+                        // as well but for now depend on the PowerShell script to flag that
+                        if (((string)syncRule.Element("disabled") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            this.defaultSyncRuleVisibility = true;
+                        }
 
                         var setting = (string)syncRule.Element("name");
                         Documenter.AddRow(table, new object[] { 0, "Name", setting });
@@ -416,6 +454,11 @@ namespace AzureADConnectConfigDocumenter
                         }
 
                         table.AcceptChanges();
+                    }
+                    else
+                    {
+                        // The missing rule in either of the environments will make the rule always visible
+                        this.defaultSyncRuleVisibility = true;
                     }
                 }
             }

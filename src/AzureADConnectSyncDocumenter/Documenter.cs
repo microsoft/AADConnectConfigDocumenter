@@ -1451,6 +1451,18 @@ namespace AzureADConnectConfigDocumenter
                 this.WriteBreakTag();
 
                 this.ReportWriter.WriteFullBeginTag("strong");
+                this.ReportWriter.Write("Hide Default Sync Rules:");
+                this.ReportWriter.WriteEndTag("strong");
+
+                this.ReportWriter.WriteBeginTag("input");
+                this.ReportWriter.WriteAttribute("type", "checkbox");
+                this.ReportWriter.WriteAttribute("id", "HideDefaultSyncRules");
+                this.ReportWriter.WriteAttribute("onclick", "ToggleDefaultRuleVisibility();");
+                this.ReportWriter.WriteLine(HtmlTextWriter.SelfClosingTagEnd);
+
+                this.WriteBreakTag();
+
+                this.ReportWriter.WriteFullBeginTag("strong");
                 this.ReportWriter.Write("Legend:");
                 this.ReportWriter.WriteEndTag("strong");
 
@@ -2077,8 +2089,7 @@ namespace AzureADConnectConfigDocumenter
                     {
                         this.ReportWriter.WriteBeginTag("col");
                         this.ReportWriter.WriteAttribute("style", "width:" + columnWidth + "%;");
-                        this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                        this.ReportWriter.WriteEndTag("col");
+                        this.ReportWriter.Write(HtmlTextWriter.SelfClosingTagEnd);
                     }
                 }
 

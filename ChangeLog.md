@@ -5,6 +5,12 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 ### Version [Unreleased]
 
 * Support for adding report metadata to include section / concept contents.
+------------
+
+### Version 1.17.0802.0
+
+#### Added
+- Added check-box control to hide default synchronization rules.
 
 ------------
 

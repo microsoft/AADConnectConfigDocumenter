@@ -20,6 +20,19 @@
     }
 }
 
+function ToggleDefaultRuleVisibility() {
+    var x = document.getElementById("HideDefaultSyncRules");
+    var elements = document.getElementsByClassName("DefaultRuleCanHide");
+    for (var i = 0; i < elements.length; ++i) {
+        if (x.checked == true) {
+            elements[i].style.display = "none";
+        }
+        else {
+            elements[i].style.display = "";
+        }
+    }
+}
+
 function DownloadScript(downloadLink) {
     var scripts = document.getElementsByClassName("PowerShellScript");
     var data = "";
