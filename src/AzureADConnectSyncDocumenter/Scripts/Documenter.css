@@ -15,17 +15,17 @@ table {
     table-layout: fixed;
 }
 
-table.standard {
-    width: 60%;
-}
+    table.standard {
+        width: 60%;
+    }
 
-table.large {
-    width: 75%;
-}
+    table.large {
+        width: 75%;
+    }
 
-table.huge {
-    width: 95%;
-}
+    table.huge {
+        width: 95%;
+    }
 
 th {
     text-align: left;
@@ -101,6 +101,11 @@ td {
         background-color: yellow;
         font-weight: bold;
     }
+
+p.Highlight {
+    background-color: yellow;
+    font-weight: bold;
+}
 
 span.Unchanged {
 }

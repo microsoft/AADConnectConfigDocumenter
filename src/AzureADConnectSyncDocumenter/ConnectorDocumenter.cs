@@ -13,6 +13,7 @@ namespace AzureADConnectConfigDocumenter
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
+    using System.Configuration;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
@@ -1025,6 +1026,14 @@ namespace AzureADConnectConfigDocumenter
                 Logger.Instance.WriteInfo("Processing " + sectionTitle + ".");
 
                 this.WriteSectionHeader(sectionTitle, 3);
+
+                var configSetting = ConfigurationManager.AppSettings["SuppressConnectorImportExportEndToEndFlows"];
+                if (!string.IsNullOrEmpty(configSetting) && configSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Instance.WriteWarning(string.Format(CultureInfo.InvariantCulture, "!!WARNING!! SuppressConnectorImportExportEndToEndFlows = '{0}'.", configSetting));
+                    this.WriteContentParagraph("The documentation of this section is suppressed via config setting.", "Highlight");
+                    return;
+                }
 
                 var objectTypeXPath = "//ma-data[name ='" + this.ConnectorName + "']/ma-partition-data/partition[position() = 1]/filter/object-classes/object-class";
                 var pilotObjectTypes = from objectClass in this.PilotXml.XPathSelectElements(objectTypeXPath)

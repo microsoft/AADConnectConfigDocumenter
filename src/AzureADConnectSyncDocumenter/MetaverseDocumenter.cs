@@ -13,6 +13,7 @@ namespace AzureADConnectConfigDocumenter
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
+    using System.Configuration;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
@@ -112,6 +113,14 @@ namespace AzureADConnectConfigDocumenter
                 Logger.Instance.WriteInfo("Processing " + sectionTitle + ".");
 
                 this.WriteSectionHeader(sectionTitle, 3);
+
+                var configSetting = ConfigurationManager.AppSettings["SuppressMetaverseObjectTypeConfigSection"];
+                if (!string.IsNullOrEmpty(configSetting) && configSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Instance.WriteWarning(string.Format(CultureInfo.InvariantCulture, "!!WARNING!! SuppressMetaverseObjectTypeConfigSection = '{0}'.", configSetting));
+                    this.WriteContentParagraph("The documentation of this section is suppressed via config setting.", "Highlight");
+                    return;
+                }
 
                 const string XPath = "//mv-data//dsml:class";
                 var pilot = this.PilotXml.XPathSelectElements(XPath, Documenter.NamespaceManager);

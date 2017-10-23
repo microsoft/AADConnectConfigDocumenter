@@ -7,6 +7,13 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 * Support for adding report metadata to include section / concept contents.
 ------------
 
+### Version 1.17.1023.0
+
+#### Added
+- Added ability to suppress "Metaverse Object Type" and connector "End-to-End Attribute Flows Summary" sections to speed up report generation.
+
+------------
+
 ### Version 1.17.0802.0
 
 #### Added
