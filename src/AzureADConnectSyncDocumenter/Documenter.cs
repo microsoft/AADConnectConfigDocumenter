@@ -447,6 +447,36 @@ namespace AzureADConnectConfigDocumenter
         public abstract Tuple<string, string> GetReport();
 
         /// <summary>
+        /// Gets the XPath for "mv-data" node
+        /// </summary>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
+        /// <returns>Returns "mv-data" XPath</returns>
+        protected static string GetMetaverseXmlRootXPath(bool pilotConfig)
+        {
+            return (pilotConfig ? "/Pilot" : "/Production") + "/GlobalSettings/child::*";
+        }
+
+        /// <summary>
+        /// Gets the XPath for "ma-data" node
+        /// </summary>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
+        /// <returns>Returns "ma-data" XPath</returns>
+        protected static string GetConnectorXmlRootXPath(bool pilotConfig)
+        {
+            return (pilotConfig ? "/Pilot" : "/Production") + "/Connectors";
+        }
+
+        /// <summary>
+        /// Gets the XPath for "synchronizationRule" node
+        /// </summary>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
+        /// <returns>Returns "synchronizationRule" XPath</returns>
+        protected static string GetSynchronizationRuleXmlRootXPath(bool pilotConfig)
+        {
+            return (pilotConfig ? "/Pilot" : "/Production") + "/SynchronizationRules";
+        }
+
+        /// <summary>
         /// Gets the Bookmark code for the specified bookmark text.
         /// </summary>
         /// <param name="text">The Bookmark text.</param>
@@ -733,7 +763,11 @@ namespace AzureADConnectConfigDocumenter
                 foreach (var row in modifiedPilotRows)
                 {
                     // Match the unmodified version of the row via the PrimaryKey
-                    var matchInProductionTable = modifiedProductionRows.Where(mondifiedProductionRow => productionTable.PrimaryKey.Aggregate(true, (match, keyColumn) => match && mondifiedProductionRow[keyColumn].Equals(row[keyColumn.Ordinal]))).First();
+                    ////var matchInProductionTable = modifiedProductionRows.Where(mondifiedProductionRow => productionTable.PrimaryKey.Aggregate(true, (match, keyColumn) => match && mondifiedProductionRow[keyColumn].Equals(row[keyColumn.Ordinal]))).First();
+                    // revised query for perf improvements
+                    var matchInProductionTable = (from productionRow in productionTable.AsEnumerable()
+                                                 where productionTable.PrimaryKey.Aggregate(true, (match, keyColumn) => match && productionRow[keyColumn].Equals(row[keyColumn.Ordinal]))
+                                                 select productionRow).First();
                     var newRow = diffgramTable.NewRow();
                     newRow[Documenter.RowStateColumn] = DataRowState.Modified;
 
@@ -1292,9 +1326,9 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteDocumenterInfo();
 
-                var syncVersionXPath = "//mv-data//parameter-values/parameter[@name = 'Microsoft.Synchronize.ServerConfigurationVersion']";
-                var syncVersionPilot = (string)this.PilotXml.XPathSelectElement(syncVersionXPath);
-                var syncVersionProduction = (string)this.ProductionXml.XPathSelectElement(syncVersionXPath);
+                var syncVersionXPath = "/mv-data//parameter-values/parameter[@name = 'Microsoft.Synchronize.ServerConfigurationVersion']";
+                var syncVersionPilot = (string)this.PilotXml.XPathSelectElement(Documenter.GetMetaverseXmlRootXPath(true) + syncVersionXPath);
+                var syncVersionProduction = (string)this.ProductionXml.XPathSelectElement(Documenter.GetMetaverseXmlRootXPath(false) + syncVersionXPath);
                 var cellClass = (syncVersionPilot == syncVersionProduction ? DataRowState.Unchanged : DataRowState.Modified).ToString();
 
                 this.ReportWriter.WriteFullBeginTag("strong");

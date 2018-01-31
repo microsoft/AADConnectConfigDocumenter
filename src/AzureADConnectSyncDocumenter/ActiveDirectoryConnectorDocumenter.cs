@@ -142,7 +142,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -206,7 +206,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -297,10 +297,10 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var xpath = "//ma-data[name ='" + this.ConnectorName + "']" + "//ma-partition-data/partition[selected = 1]";
+                var xpath = "/ma-data[name ='" + this.ConnectorName + "']" + "//ma-partition-data/partition[selected = 1]";
 
-                var pilot = this.PilotXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
-                var production = this.ProductionXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
+                var pilot = this.PilotXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(true) + xpath, Documenter.NamespaceManager);
+                var production = this.ProductionXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(false) + xpath, Documenter.NamespaceManager);
 
                 // Sort by name
                 var pilotPartitions = from partition in pilot
@@ -487,7 +487,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
                 if (connector != null)
                 {
                     var partition = connector.XPathSelectElement("ma-partition-data/partition[selected = 1 and name = '" + partitionName + "']");
@@ -501,9 +501,11 @@ namespace AzureADConnectConfigDocumenter
                         Documenter.AddRow(table, new object[] { 0, "Preferred Domain Controllers" });
                         var preferredDomainControllers = partition.XPathSelectElements("custom-data/adma-partition-data/preferred-dcs/preferred-dc");
 
-                        for (var pdcIndex = 0; pdcIndex < preferredDomainControllers.Count(); ++pdcIndex)
+                        var pdcIndex = -1;
+                        foreach (var preferredDomainController in preferredDomainControllers)
                         {
-                            Documenter.AddRow(table2, new object[] { "Preferred Domain Controllers", pdcIndex, (string)preferredDomainControllers.ElementAt(pdcIndex) });
+                            ++pdcIndex;
+                            Documenter.AddRow(table2, new object[] { "Preferred Domain Controllers", pdcIndex, (string)preferredDomainController });
                         }
 
                         // Last Domain Controller used
@@ -578,7 +580,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -651,7 +653,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -723,7 +725,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -734,10 +736,10 @@ namespace AzureADConnectConfigDocumenter
 
                     var runProfileSteps = connector.XPathSelectElements("ma-run-data/run-configuration[name = '" + runProfileName + "']/configuration/step");
 
-                    for (var stepIndex = 1; stepIndex <= runProfileSteps.Count(); ++stepIndex)
+                    var stepIndex = 0;
+                    foreach (var runProfileStep in runProfileSteps)
                     {
-                        var runProfileStep = runProfileSteps.ElementAt(stepIndex - 1);
-
+                        ++stepIndex;
                         var batchSize = (string)runProfileStep.XPathSelectElement("custom-data/adma-step-data/batch-size");
                         if (!string.IsNullOrEmpty(batchSize))
                         {

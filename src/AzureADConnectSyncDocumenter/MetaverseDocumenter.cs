@@ -122,9 +122,8 @@ namespace AzureADConnectConfigDocumenter
                     return;
                 }
 
-                const string XPath = "//mv-data//dsml:class";
-                var pilot = this.PilotXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
-                var production = this.ProductionXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
+                var pilot = this.PilotXml.XPathSelectElements(Documenter.GetMetaverseXmlRootXPath(true) + "/mv-data//dsml:class", Documenter.NamespaceManager);
+                var production = this.ProductionXml.XPathSelectElements(Documenter.GetMetaverseXmlRootXPath(false) + "/mv-data//dsml:class", Documenter.NamespaceManager);
 
                 // Sort by name
                 var pilotObjectTypes = from objectType in pilot
@@ -385,17 +384,17 @@ namespace AzureADConnectConfigDocumenter
                 var table2 = dataSet.Tables[1];
                 var table3 = dataSet.Tables[2];
 
-                var attributes = config.XPathSelectElements("//mv-data//dsml:class[dsml:name = '" + this.currentObjectType + "' ]/dsml:attribute", Documenter.NamespaceManager);
+                var attributes = config.XPathSelectElements(Documenter.GetMetaverseXmlRootXPath(pilotConfig) + "/mv-data//dsml:class[dsml:name = '" + this.currentObjectType + "' ]/dsml:attribute", Documenter.NamespaceManager);
 
                 // Sort by name
                 attributes = from attribute in attributes
                              let name = (string)attribute.Attribute("ref")
                              orderby name
                              select attribute;
-
-                for (var attributeIndex = 0; attributeIndex < attributes.Count(); ++attributeIndex)
+                var attributeIndex = -1;
+                foreach (var attribute in attributes)
                 {
-                    var attribute = attributes.ElementAt(attributeIndex);
+                    ++attributeIndex;
                     var attributeName = ((string)attribute.Attribute("ref") ?? string.Empty).Trim('#');
 
                     // Set Logger call context items
@@ -403,7 +402,7 @@ namespace AzureADConnectConfigDocumenter
 
                     Logger.Instance.WriteInfo("Processing Attribute Information.");
 
-                    var attributeInfo = config.XPathSelectElement("//mv-data//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
+                    var attributeInfo = config.XPathSelectElement(Documenter.GetMetaverseXmlRootXPath(pilotConfig) + "/mv-data//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
 
                     var attributeSyntax = (string)attributeInfo.Element(Documenter.DsmlNamespace + "syntax");
 
@@ -419,21 +418,22 @@ namespace AzureADConnectConfigDocumenter
                     Logger.Instance.WriteVerbose("Processed Attribute Information.");
 
                     // Fetch Sync Rules
-                    var syncRules = config.XPathSelectElements("//synchronizationRule[targetObjectType = '" + this.currentObjectType + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and attribute-mappings/mapping/dest = '" + attributeName + "']");
+                    var syncRules = config.XPathSelectElements(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[targetObjectType = '" + this.currentObjectType + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and attribute-mappings/mapping/dest = '" + attributeName + "']");
                     syncRules = from syncRule in syncRules
                                 let precedence = (int)syncRule.Element("precedence")
                                 orderby precedence
                                 select syncRule;
 
-                    for (var syncRuleIndex = 0; syncRuleIndex < syncRules.Count(); ++syncRuleIndex)
+                    var syncRuleIndex = -1;
+                    foreach (var syncRule in syncRules)
                     {
-                        var syncRule = syncRules.ElementAt(syncRuleIndex);
+                        ++syncRuleIndex;
                         var row2 = table2.NewRow();
                         row2[0] = attributeName;
                         row2[1] = syncRuleIndex + 1; // Care only about the precedence relative rank here than actual value
                         var connector = ((string)syncRule.Element("connector") ?? string.Empty).ToUpperInvariant();
 
-                        var connectorName = (string)config.XPathSelectElement("//Connectors/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connector + "']/name");
+                        var connectorName = (string)config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connector + "']/name");
                         var syncRuleName = (string)syncRule.Element("name");
                         row2[2] = connectorName;
                         row2[3] = syncRuleName;
@@ -454,15 +454,18 @@ namespace AzureADConnectConfigDocumenter
 
                         // Fetch Sync Rule Scoping Conditions
                         var conditions = syncRule.XPathSelectElements("synchronizationCriteria/conditions");
-                        for (var conditionIndex = 0; conditionIndex < conditions.Count(); ++conditionIndex)
+                        var conditionIndex = -1;
+                        foreach (var condition in conditions)
                         {
+                            ++conditionIndex;
+
                             Logger.Instance.WriteVerbose("Processing Sync Rule Scope for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, syncRuleName);
 
-                            var condition = conditions.ElementAt(conditionIndex);
                             var scopes = condition.Elements("scope");
-                            for (var scopeIndex = 0; scopeIndex < scopes.Count(); ++scopeIndex)
+                            var scopeIndex = -1;
+                            foreach (var scope in scopes)
                             {
-                                var scope = scopes.ElementAt(scopeIndex);
+                                ++scopeIndex;
                                 var row3 = table3.NewRow();
                                 row3[0] = attributeName;
                                 row3[1] = connectorName;
@@ -616,9 +619,8 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteInfo("Processing Metaverse Object Deletion Rules Summary");
 
-                const string XPath = "//mv-data//dsml:class";
-                var pilot = this.PilotXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
-                var production = this.ProductionXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
+                var pilot = this.PilotXml.XPathSelectElements(Documenter.GetMetaverseXmlRootXPath(true) + "/mv-data//dsml:class", Documenter.NamespaceManager);
+                var production = this.ProductionXml.XPathSelectElements(Documenter.GetMetaverseXmlRootXPath(false) + "/mv-data//dsml:class", Documenter.NamespaceManager);
 
                 // Sort by name
                 var pilotObjectTypes = from objectType in pilot
@@ -826,16 +828,17 @@ namespace AzureADConnectConfigDocumenter
 
                 Documenter.AddRow(table, new object[] { objectType });
 
-                var deletionRules = config.XPathSelectElements("//SynchronizationRules/synchronizationRule[direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and (linkType = 'Provision' or  linkType = 'StickyJoin') and targetObjectType = '" + objectType + "']");
+                var deletionRules = config.XPathSelectElements(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and (linkType = 'Provision' or  linkType = 'StickyJoin') and targetObjectType = '" + objectType + "']");
 
-                for (var deletionRuleIndex = 0; deletionRuleIndex < deletionRules.Count(); ++deletionRuleIndex)
+                var deletionRuleIndex = -1;
+                foreach (var deletionRule in deletionRules)
                 {
-                    var deletionRule = deletionRules.ElementAt(deletionRuleIndex);
+                    ++deletionRuleIndex;
                     var deletionRuleName = (string)deletionRule.Element("name");
                     var deletionRuleGuid = (string)deletionRule.Element("id");
                     var deletionRuleLinkType = (string)deletionRule.Element("linkType");
                     var connectorGuid = (string)deletionRule.Element("connector");
-                    var connectorName = from connectorData in config.XPathSelectElements("//ma-data")
+                    var connectorName = from connectorData in config.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data")
                                         where ((string)connectorData.Element("id") ?? string.Empty).Equals(connectorGuid, StringComparison.OrdinalIgnoreCase)
                                         select (string)connectorData.Element("name");
 

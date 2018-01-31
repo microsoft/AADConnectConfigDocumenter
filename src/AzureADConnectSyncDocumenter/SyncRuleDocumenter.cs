@@ -301,14 +301,15 @@ namespace AzureADConnectConfigDocumenter
         /// Gets the sync rule xpath.
         /// </summary>
         /// <param name="currentConnectorGuid">The current connector unique identifier.</param>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
         /// <returns>
         /// The sync rule xpath.
         /// </returns>
-        private string GetSyncRuleXPath(string currentConnectorGuid)
+        private string GetSyncRuleXPath(string currentConnectorGuid, bool pilotConfig)
         {
-            Logger.Instance.WriteMethodEntry("Current Connector Guid: '{0}'.", currentConnectorGuid);
+            Logger.Instance.WriteMethodEntry("Current Connector Guid: '{0}'. Pilot Config: '{1}'.", currentConnectorGuid, pilotConfig);
 
-            var xpath = "//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and name = '" + this.SyncRuleName + "'";
+            var xpath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and name = '" + this.SyncRuleName + "'";
 
             try
             {
@@ -331,7 +332,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
-                Logger.Instance.WriteMethodExit("Current Connector Guid: '{0}'. XPath: '{1}'.", currentConnectorGuid, xpath);
+                Logger.Instance.WriteMethodExit("Current Connector Guid: '{0}'. Pilot Config: '{1}'. XPath: '{2}'.", currentConnectorGuid, pilotConfig, xpath);
             }
         }
 
@@ -374,13 +375,13 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
                     var currentConnectorGuid = ((string)connector.Element("id") ?? string.Empty).ToUpperInvariant(); // This may be pilot or production GUID
 
-                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid);
+                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid, pilotConfig);
 
                     var syncRule = config.XPathSelectElement(xpath);
 
@@ -595,13 +596,13 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
                     var table = dataSet.Tables[0];
                     var currentConnectorGuid = ((string)connector.Element("id") ?? string.Empty).ToUpperInvariant(); // This may be pilot or production GUID
-                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid) + "/synchronizationCriteria/conditions";
+                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid, pilotConfig) + "/synchronizationCriteria/conditions";
 
                     var syncRuleScopingConditions = config.XPathSelectElements(xpath);
                     var conditionCount = syncRuleScopingConditions.Count();
@@ -612,9 +613,10 @@ namespace AzureADConnectConfigDocumenter
                     }
                     else
                     {
-                        for (var conditionIndex = 0; conditionIndex < conditionCount; ++conditionIndex)
+                        var conditionIndex = -1;
+                        foreach (var condition in syncRuleScopingConditions)
                         {
-                            var condition = syncRuleScopingConditions.ElementAt(conditionIndex);
+                            ++conditionIndex;
                             var scopes = condition.Elements("scope");
                             foreach (var scope in scopes)
                             {
@@ -735,13 +737,13 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
                     var table = dataSet.Tables[0];
                     var currentConnectorGuid = ((string)connector.Element("id") ?? string.Empty).ToUpperInvariant(); // This may be pilot or production GUID
-                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid);
+                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid, pilotConfig);
                     var syncRule = config.XPathSelectElement(xpath);
                     xpath += "/relationshipCriteria/conditions";
                     var syncRuleJoiningRules = config.XPathSelectElements(xpath);
@@ -755,9 +757,10 @@ namespace AzureADConnectConfigDocumenter
                     {
                         this.syncRuleDirection = (SyncRuleDirection)Enum.Parse(typeof(SyncRuleDirection), (string)syncRule.Element("direction"), true);
 
-                        for (var joinRuleIndex = 0; joinRuleIndex < joinRuleCount; ++joinRuleIndex)
+                        var joinRuleIndex = -1;
+                        foreach (var joinRule in syncRuleJoiningRules)
                         {
-                            var joinRule = syncRuleJoiningRules.ElementAt(joinRuleIndex);
+                            ++joinRuleIndex;
                             var conditions = joinRule.Elements("condition");
                             foreach (var condition in conditions)
                             {
@@ -883,13 +886,13 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
                     var table = dataSet.Tables[0];
                     var currentConnectorGuid = ((string)connector.Element("id") ?? string.Empty).ToUpperInvariant(); // This may be pilot or production GUID
-                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid) + "/attribute-mappings/mapping";
+                    var xpath = this.GetSyncRuleXPath(currentConnectorGuid, pilotConfig) + "/attribute-mappings/mapping";
 
                     var transformations = from transformation in config.XPathSelectElements(xpath)
                                           let target = (string)transformation.Element("dest")
@@ -1018,7 +1021,7 @@ namespace AzureADConnectConfigDocumenter
                 Logger.Instance.WriteInfo("Creating installation script for sync rule. Name = '{0}'. Id = '{1}'.", this.SyncRuleName, this.SyncRuleGuid);
 
                 var config = this.Environment != ConfigEnvironment.ProductionOnly ? this.PilotXml : this.ProductionXml;
-                var syncRule = config.XPathSelectElement("//synchronizationRule[id = '" + this.SyncRuleGuid + "']");
+                var syncRule = config.XPathSelectElement(Documenter.GetSynchronizationRuleXmlRootXPath(this.Environment != ConfigEnvironment.ProductionOnly) + "/synchronizationRule[id = '" + this.SyncRuleGuid + "']");
                 var script = string.Empty;
 
                 // if the sync rule is part of the default config (i.e. starts with tag "Microsoft.")
@@ -1035,7 +1038,7 @@ namespace AzureADConnectConfigDocumenter
                     else
                     {
                         // This sync rule may be present only in the Pilot config OR in the Pilot as well as Production config.
-                        var connectorProduction = this.ProductionXml.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                        var connectorProduction = this.ProductionXml.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(false) + "/ma-data[name ='" + this.ConnectorName + "']");
                         if (connectorProduction == null)
                         {
                             // This sync rule is present only in the Pilot config. Give a warning.
@@ -1044,7 +1047,7 @@ namespace AzureADConnectConfigDocumenter
                         else
                         {
                             var connectorGuidProduction = ((string)connectorProduction.Element("id") ?? string.Empty).ToUpperInvariant();
-                            var syncRuleProduction = this.ProductionXml.XPathSelectElement(this.GetSyncRuleXPath(connectorGuidProduction));
+                            var syncRuleProduction = this.ProductionXml.XPathSelectElement(this.GetSyncRuleXPath(connectorGuidProduction, false));
                             if (syncRuleProduction == null)
                             {
                                 // This sync rule is present only in the Pilot config. Give a warning.
@@ -1533,9 +1536,10 @@ namespace AzureADConnectConfigDocumenter
                     var scopes = condition.Elements("scope");
 
                     var conditionVariables = "-ScopeConditions @(";
-                    for (var scopeIndex = 0; scopeIndex < scopes.Count(); ++scopeIndex)
+                    var scopeIndex = -1;
+                    foreach (var scope in scopes)
                     {
-                        var scope = scopes.ElementAt(scopeIndex);
+                        ++scopeIndex;
                         var scopeAttribute = (string)scope.Element("csAttribute");
                         var scopeOperator = (string)scope.Element("csOperator");
                         var scopeValue = (string)scope.Element("csValue");
@@ -1588,9 +1592,10 @@ namespace AzureADConnectConfigDocumenter
                     var conditions = joinRule.Elements("condition");
 
                     var conditionVariables = "-JoinConditions @(";
-                    for (var conditionIndex = 0; conditionIndex < conditions.Count(); ++conditionIndex)
+                    var conditionIndex = -1;
+                    foreach (var condition in conditions)
                     {
-                        var condition = conditions.ElementAt(conditionIndex);
+                        ++conditionIndex;
                         var csAttribute = (string)condition.Element("csAttribute");
                         var mvAttribute = (string)condition.Element("ilmAttribute");
                         var caseSensitive = (string)condition.Element("caseSensitive");

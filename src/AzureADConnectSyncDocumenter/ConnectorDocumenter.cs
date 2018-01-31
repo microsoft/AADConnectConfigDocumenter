@@ -72,8 +72,8 @@ namespace AzureADConnectConfigDocumenter
                 this.ConnectorName = connectorName;
                 this.Environment = configEnvironment;
 
-                string xpath = "//ma-data[name ='" + this.ConnectorName + "']";
-                var connector = configEnvironment == ConfigEnvironment.ProductionOnly ? this.ProductionXml.XPathSelectElement(xpath, Documenter.NamespaceManager) : this.PilotXml.XPathSelectElement(xpath, Documenter.NamespaceManager);
+                string xpath = "/ma-data[name ='" + this.ConnectorName + "']";
+                var connector = configEnvironment == ConfigEnvironment.ProductionOnly ? this.ProductionXml.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(false) + xpath, Documenter.NamespaceManager) : this.PilotXml.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(true) + xpath, Documenter.NamespaceManager);
 
                 this.ConnectorGuid = (string)connector.Element("id");
                 this.ConnectorCategory = (string)connector.Element("category");
@@ -129,12 +129,13 @@ namespace AzureADConnectConfigDocumenter
         /// <param name="currentConnectorGuid">The current connector unique identifier.</param>
         /// <param name="direction">The direction.</param>
         /// <param name="reportType">Type of the report.</param>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
         /// <returns>The sync rule xpath.</returns>
-        protected static string GetSyncRuleXPath(string currentConnectorGuid, SyncRuleDocumenter.SyncRuleDirection direction, SyncRuleDocumenter.SyncRuleReportType reportType)
+        protected static string GetSyncRuleXPath(string currentConnectorGuid, SyncRuleDocumenter.SyncRuleDirection direction, SyncRuleDocumenter.SyncRuleReportType reportType, bool pilotConfig)
         {
-            Logger.Instance.WriteMethodEntry("Current Connector Guid: '{0}'. Sync Rule Direction: '{1}'.  Sync Rule Report Type: '{2}'.", currentConnectorGuid, direction, reportType);
+            Logger.Instance.WriteMethodEntry("Current Connector Guid: '{0}'. Sync Rule Direction: '{1}'.  Sync Rule Report Type: '{2}'. Pilot Config: '{3}'.", currentConnectorGuid, direction, reportType, pilotConfig);
 
-            var xpath = "//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = '" + direction.ToString() + "'";
+            var xpath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = '" + direction.ToString() + "'";
             try
             {
                 switch (reportType)
@@ -157,7 +158,7 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
-                Logger.Instance.WriteMethodExit("Current Connector Guid: '{0}'. Sync Rule Direction: '{1}'.  Sync Rule Report Type: '{2}'. XPath: '{3}'.", currentConnectorGuid, direction, reportType, xpath);
+                Logger.Instance.WriteMethodExit("Current Connector Guid: '{0}'. Sync Rule Direction: '{1}'.  Sync Rule Report Type: '{2}'. Pilot Config: '{3}'. XPath: '{4}'.", currentConnectorGuid, direction, reportType, pilotConfig, xpath);
             }
         }
 
@@ -375,7 +376,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var table = dataSet.Tables[0];
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -490,7 +491,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var table = dataSet.Tables[0];
 
-                var mappings = config.XPathSelectElements("//ma-data[name ='" + this.ConnectorName + "']/component_mappings/mapping");
+                var mappings = config.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']/component_mappings/mapping");
 
                 foreach (var mapping in mappings)
                 {
@@ -682,7 +683,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -861,7 +862,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var table = dataSet.Tables[0];
 
-                var objectTypes = config.XPathSelectElements("//ma-data[name ='" + this.ConnectorName + "']/ma-partition-data/partition[position() = 1]/filter/object-classes/object-class");
+                var objectTypes = config.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']/ma-partition-data/partition[position() = 1]/filter/object-classes/object-class");
 
                 foreach (var objectType in objectTypes)
                 {
@@ -945,7 +946,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -959,8 +960,8 @@ namespace AzureADConnectConfigDocumenter
                         var attributeInfo = connector.XPathSelectElement(".//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
                         if (attributeInfo != null)
                         {
-                            var hasInboundFlows = config.XPathSelectElement("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping/src[attr = '" + attributeName + "']") != null;
-                            var hasOutboundFlows = config.XPathSelectElements("//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping[dest = '" + attributeName + "']") != null;
+                            var hasInboundFlows = config.XPathSelectElement(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping/src[attr = '" + attributeName + "']") != null;
+                            var hasOutboundFlows = config.XPathSelectElements(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + "]/attribute-mappings/mapping[dest = '" + attributeName + "']") != null;
 
                             var row = table.NewRow();
 
@@ -1035,8 +1036,8 @@ namespace AzureADConnectConfigDocumenter
                     return;
                 }
 
-                var objectTypeXPath = "//ma-data[name ='" + this.ConnectorName + "']/ma-partition-data/partition[position() = 1]/filter/object-classes/object-class";
-                var pilotObjectTypes = from objectClass in this.PilotXml.XPathSelectElements(objectTypeXPath)
+                var objectTypeXPath = "/ma-data[name ='" + this.ConnectorName + "']/ma-partition-data/partition[position() = 1]/filter/object-classes/object-class";
+                var pilotObjectTypes = from objectClass in this.PilotXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(true) + objectTypeXPath)
                                        let objectType = (string)objectClass
                                        orderby objectType
                                        select objectType;
@@ -1047,7 +1048,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ProcessConnectorObjectAttributeFlowsSummary();
                 }
 
-                var productionObjectTypes = from objectClass in this.ProductionXml.XPathSelectElements(objectTypeXPath)
+                var productionObjectTypes = from objectClass in this.ProductionXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(false) + objectTypeXPath)
                                             let objectType = (string)objectClass
                                             orderby objectType
                                             select objectType;
@@ -1338,12 +1339,12 @@ namespace AzureADConnectConfigDocumenter
                 var table3 = dataSet.Tables[2];
                 var table4 = dataSet.Tables[3];
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
                     var connectorGuid = ((string)connector.Element("id") ?? string.Empty).ToUpperInvariant();
-                    var metaverseAttributesXPath = "//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and sourceObjectType = '" + this.currentDataSourceObjectType + "']/attribute-mappings/mapping/dest";
+                    var metaverseAttributesXPath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and sourceObjectType = '" + this.currentDataSourceObjectType + "']/attribute-mappings/mapping/dest";
                     var metaverseAttributes = from inboundSyncRuleDestination in config.XPathSelectElements(metaverseAttributesXPath)
                                               let dest = (string)inboundSyncRuleDestination
                                               orderby dest
@@ -1352,7 +1353,7 @@ namespace AzureADConnectConfigDocumenter
                     {
                         Documenter.AddRow(table, new object[] { metaverseAttribute, "&#8592;" });
 
-                        var inboundSyncRuleXPath = "//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and sourceObjectType = '" + this.currentDataSourceObjectType + "' and ./attribute-mappings/mapping/dest = '" + metaverseAttribute + "']";
+                        var inboundSyncRuleXPath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and sourceObjectType = '" + this.currentDataSourceObjectType + "' and ./attribute-mappings/mapping/dest = '" + metaverseAttribute + "']";
                         var inboundSyncRules = config.XPathSelectElements(inboundSyncRuleXPath);
                         inboundSyncRules = from syncRule in inboundSyncRules
                                            let inboundSyncRulePrecedence = (int)syncRule.Element("precedence")
@@ -1378,9 +1379,10 @@ namespace AzureADConnectConfigDocumenter
                             var inboundSyncRuleScopingConditionsCount = inboundSyncRuleScopingConditions.Count();
                             if (inboundSyncRuleScopingConditionsCount != 0)
                             {
-                                for (var conditionIndex = 0; conditionIndex < inboundSyncRuleScopingConditionsCount; ++conditionIndex)
+                                var conditionIndex = -1;
+                                foreach (var condition in inboundSyncRuleScopingConditions)
                                 {
-                                    var condition = inboundSyncRuleScopingConditions.ElementAt(conditionIndex);
+                                    ++conditionIndex;
                                     var scopes = condition.Elements("scope");
                                     inboundSyncRuleScopingConditionString += scopes.Select(scope => string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", (string)scope.Element("csAttribute"), (string)scope.Element("csOperator"), (string)scope.Element("csValue"))).Aggregate((i, j) => i + " AND " + j);
                                     if (conditionIndex < inboundSyncRuleScopingConditionsCount - 1)
@@ -1397,7 +1399,7 @@ namespace AzureADConnectConfigDocumenter
                                 Documenter.AddRow(table3, new object[] { metaverseAttribute, inboundSyncRuleName, "&#8594;" });
 
                                 // Outbound metaverse flows
-                                var outboundSyncRules = config.XPathSelectElements("//synchronizationRule[sourceObjectType = '" + targetObjectType + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + " and (attribute-mappings/mapping/src/attr = '" + metaverseAttribute + "' or contains(attribute-mappings/mapping/expression, '[" + metaverseAttribute + "]'))]");
+                                var outboundSyncRules = config.XPathSelectElements(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[sourceObjectType = '" + targetObjectType + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + " and (attribute-mappings/mapping/src/attr = '" + metaverseAttribute + "' or contains(attribute-mappings/mapping/expression, '[" + metaverseAttribute + "]'))]");
                                 outboundSyncRules = from syncRule in outboundSyncRules
                                                     let outboundSyncRulePrecedence = (int)syncRule.Element("precedence")
                                                     orderby outboundSyncRulePrecedence
@@ -1408,7 +1410,7 @@ namespace AzureADConnectConfigDocumenter
                                     var outboundSyncRuleName = (string)outboundSyncRule.Element("name");
                                     var outboundSyncRuleGuid = (string)outboundSyncRule.Element("id");
                                     var outboundConnectorGuid = ((string)outboundSyncRule.Element("connector") ?? string.Empty).ToUpperInvariant();
-                                    var outboundConnectorName = (string)config.XPathSelectElement("//Connectors/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + outboundConnectorGuid + "']/name");
+                                    var outboundConnectorName = (string)config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + outboundConnectorGuid + "']/name");
                                     ++outboundSyncRuleRank; // Used only for sorting, not displayed on the report
 
                                     var targetAttributeMapping = outboundSyncRule.XPathSelectElement("attribute-mappings/mapping[./src/attr = '" + metaverseAttribute + "' or contains(expression, '[" + metaverseAttribute + "]')]");
@@ -1424,9 +1426,10 @@ namespace AzureADConnectConfigDocumenter
                                         var outboundSyncRuleScopingConditionCount = outboundSyncRuleScopingConditions.Count();
                                         if (outboundSyncRuleScopingConditionCount != 0)
                                         {
-                                            for (var conditionIndex = 0; conditionIndex < outboundSyncRuleScopingConditionCount; ++conditionIndex)
+                                            var conditionIndex = -1;
+                                            foreach (var condition in outboundSyncRuleScopingConditions)
                                             {
-                                                var condition = outboundSyncRuleScopingConditions.ElementAt(conditionIndex);
+                                                ++conditionIndex;
                                                 var scopes = condition.Elements("scope");
                                                 outboundSyncRuleScopingCondition += scopes.Select(scope => string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", (string)scope.Element("csAttribute"), (string)scope.Element("csOperator"), (string)scope.Element("csValue"))).Aggregate((i, j) => i + " AND " + j);
                                                 if (conditionIndex < outboundSyncRuleScopingConditionCount - 1)
@@ -1789,12 +1792,12 @@ namespace AzureADConnectConfigDocumenter
                 var table3 = dataSet.Tables[2];
                 var table4 = dataSet.Tables[3];
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
                     var connectorGuid = ((string)connector.Element("id") ?? string.Empty).ToUpperInvariant();
-                    var targetAttributesXPath = "//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + " and targetObjectType = '" + this.currentDataSourceObjectType + "']/attribute-mappings/mapping/dest";
+                    var targetAttributesXPath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + " and targetObjectType = '" + this.currentDataSourceObjectType + "']/attribute-mappings/mapping/dest";
                     var targetAttributes = from outboundSyncRuleDestination in config.XPathSelectElements(targetAttributesXPath)
                                            let dest = (string)outboundSyncRuleDestination
                                            orderby dest
@@ -1804,7 +1807,7 @@ namespace AzureADConnectConfigDocumenter
                     {
                         Documenter.AddRow(table, new object[] { targetAttribute, "&#8592;" });
 
-                        var outboundSyncRuleXPath = "//synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + " and targetObjectType = '" + this.currentDataSourceObjectType + "' and ./attribute-mappings/mapping/dest = '" + targetAttribute + "']";
+                        var outboundSyncRuleXPath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connectorGuid + "' and direction = 'Outbound' " + Documenter.SyncRuleDisabledCondition + " and targetObjectType = '" + this.currentDataSourceObjectType + "' and ./attribute-mappings/mapping/dest = '" + targetAttribute + "']";
                         var outboundSyncRules = config.XPathSelectElements(outboundSyncRuleXPath);
                         outboundSyncRules = from syncRule in outboundSyncRules
                                             let precedence = (int)syncRule.Element("precedence")
@@ -1830,9 +1833,10 @@ namespace AzureADConnectConfigDocumenter
                             var outboundSyncRuleScopingConditionsCount = outboundSyncRuleScopingConditions.Count();
                             if (outboundSyncRuleScopingConditionsCount != 0)
                             {
-                                for (var conditionIndex = 0; conditionIndex < outboundSyncRuleScopingConditionsCount; ++conditionIndex)
+                                var conditionIndex = -1;
+                                foreach (var condition in outboundSyncRuleScopingConditions)
                                 {
-                                    var condition = outboundSyncRuleScopingConditions.ElementAt(conditionIndex);
+                                    ++conditionIndex;
                                     var scopes = condition.Elements("scope");
                                     outboundSyncRuleScopingConditionString += scopes.Select(scope => string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", (string)scope.Element("csAttribute"), (string)scope.Element("csOperator"), (string)scope.Element("csValue"))).Aggregate((i, j) => i + " AND " + j);
                                     if (conditionIndex < outboundSyncRuleScopingConditionsCount - 1)
@@ -1864,7 +1868,7 @@ namespace AzureADConnectConfigDocumenter
                                     Documenter.AddRow(table3, new object[] { targetAttribute, outboundSyncRuleName, metaverseAttribute, "&#8592;" });
 
                                     // Inbound metaverse flows
-                                    var inboundSyncRules = config.XPathSelectElements("//synchronizationRule[targetObjectType = '" + sourceObjectType + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and (attribute-mappings/mapping/dest = '" + metaverseAttribute + "' or contains(attribute-mappings/mapping/expression, '[" + metaverseAttribute + "]'))]");
+                                    var inboundSyncRules = config.XPathSelectElements(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[targetObjectType = '" + sourceObjectType + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and (attribute-mappings/mapping/dest = '" + metaverseAttribute + "' or contains(attribute-mappings/mapping/expression, '[" + metaverseAttribute + "]'))]");
                                     inboundSyncRules = from syncRule in inboundSyncRules
                                                        let inboundSyncRulePrecedence = (int)syncRule.Element("precedence")
                                                        orderby inboundSyncRulePrecedence
@@ -1876,7 +1880,7 @@ namespace AzureADConnectConfigDocumenter
                                         var inboundSyncRuleName = (string)inboundSyncRule.Element("name");
                                         var inboundSyncRuleGuid = (string)inboundSyncRule.Element("id");
                                         var inboundConnectorGuid = ((string)inboundSyncRule.Element("connector") ?? string.Empty).ToUpperInvariant();
-                                        var inboundConnectorName = (string)config.XPathSelectElement("//Connectors/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + inboundConnectorGuid + "']/name");
+                                        var inboundConnectorName = (string)config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + inboundConnectorGuid + "']/name");
                                         ++inboundSyncRuleRank; // Used only for sorting, not displayed on the report
 
                                         var metaverseAttributeMapping = inboundSyncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + metaverseAttribute + "' or contains(expression, '[" + metaverseAttribute + "]')]");
@@ -1891,9 +1895,10 @@ namespace AzureADConnectConfigDocumenter
                                             var inboundSyncRuleScopingConditionCount = inboundSyncRuleScopingConditions.Count();
                                             if (inboundSyncRuleScopingConditionCount != 0)
                                             {
-                                                for (var conditionIndex = 0; conditionIndex < inboundSyncRuleScopingConditionCount; ++conditionIndex)
+                                                var conditionIndex = -1;
+                                                foreach (var condition in inboundSyncRuleScopingConditions)
                                                 {
-                                                    var condition = inboundSyncRuleScopingConditions.ElementAt(conditionIndex);
+                                                    ++conditionIndex;
                                                     var scopes = condition.Elements("scope");
                                                     inboundSyncRuleScopingCondition += scopes.Select(scope => string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", (string)scope.Element("csAttribute"), (string)scope.Element("csOperator"), (string)scope.Element("csValue"))).Aggregate((i, j) => i + " AND " + j);
                                                     if (conditionIndex < inboundSyncRuleScopingConditionCount - 1)
@@ -2143,14 +2148,14 @@ namespace AzureADConnectConfigDocumenter
                 this.WriteSectionHeader(direction.ToString(), 4, direction.ToString() + sectionTitle, this.ConnectorGuid);
 
                 var sectionPrinted = false;
-                var pilotConnector = this.PilotXml.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
-                var productionConnector = this.ProductionXml.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var pilotConnector = this.PilotXml.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(true) + "/ma-data[name ='" + this.ConnectorName + "']");
+                var productionConnector = this.ProductionXml.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(false) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 var pilotConnectorGuid = pilotConnector != null ? ((string)pilotConnector.Element("id") ?? string.Empty).ToUpperInvariant() : string.Empty;
                 var productionConnectorGuid = productionConnector != null ? ((string)productionConnector.Element("id") ?? string.Empty).ToUpperInvariant() : string.Empty;
 
-                var pilotSyncRules = this.PilotXml.XPathSelectElements(ConnectorDocumenter.GetSyncRuleXPath(pilotConnectorGuid, direction, reportType));
-                var productionSyncRules = this.ProductionXml.XPathSelectElements(ConnectorDocumenter.GetSyncRuleXPath(productionConnectorGuid, direction, reportType));
+                var pilotSyncRules = this.PilotXml.XPathSelectElements(ConnectorDocumenter.GetSyncRuleXPath(pilotConnectorGuid, direction, reportType, true));
+                var productionSyncRules = this.ProductionXml.XPathSelectElements(ConnectorDocumenter.GetSyncRuleXPath(productionConnectorGuid, direction, reportType, false));
 
                 // Sort by name
                 pilotSyncRules = from syncRule in pilotSyncRules
@@ -2224,10 +2229,10 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 3);
 
-                var xpath = "//ma-data[name ='" + this.ConnectorName + "']/ma-run-data/run-configuration";
+                var xpath = "/ma-data[name ='" + this.ConnectorName + "']/ma-run-data/run-configuration";
 
-                var pilot = this.PilotXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
-                var production = this.ProductionXml.XPathSelectElements(xpath, Documenter.NamespaceManager);
+                var pilot = this.PilotXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(true) + xpath, Documenter.NamespaceManager);
+                var production = this.ProductionXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(false) + xpath, Documenter.NamespaceManager);
 
                 var connectorHasRunProfilesConfigured = false;
 
@@ -2405,7 +2410,7 @@ namespace AzureADConnectConfigDocumenter
                 var config = pilotConfig ? this.PilotXml : this.ProductionXml;
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
-                var connector = config.XPathSelectElement("//ma-data[name ='" + this.ConnectorName + "']");
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
 
                 if (connector != null)
                 {
@@ -2413,11 +2418,10 @@ namespace AzureADConnectConfigDocumenter
                     var table2 = dataSet.Tables[1];
 
                     var runProfileSteps = connector.XPathSelectElements("ma-run-data/run-configuration[name = '" + runProfileName + "']/configuration/step");
-
-                    for (var stepIndex = 1; stepIndex <= runProfileSteps.Count(); ++stepIndex)
+                    var stepIndex = 0;
+                    foreach (var runProfileStep in runProfileSteps)
                     {
-                        var runProfileStep = runProfileSteps.ElementAt(stepIndex - 1);
-
+                        ++stepIndex;
                         var runProfileStepType = ConnectorDocumenter.GetRunProfileStepType(runProfileStep.Element("step-type"));
 
                         Documenter.AddRow(table, new object[] { stepIndex, runProfileStepType });

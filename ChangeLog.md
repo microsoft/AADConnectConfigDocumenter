@@ -5,6 +5,14 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 ### Version [Unreleased]
 
 * Support for adding report metadata to include section / concept contents.
+* Support for ignoring change to OOB rules if only precedence number is changed (due to upgrade / forest addition).
+------------
+
+### Version 1.18.0131.0
+
+#### Changed
+- Changes for performance improvements.
+
 ------------
 
 ### Version 1.17.1023.0

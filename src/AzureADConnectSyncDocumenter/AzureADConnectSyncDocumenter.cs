@@ -276,7 +276,7 @@ namespace AzureADConnectConfigDocumenter
 
                 var table = dataSet.Tables[0];
 
-                var parameters = config.XPathSelectElements("//mv-data//parameter-values/parameter");
+                var parameters = config.XPathSelectElements(Documenter.GetMetaverseXmlRootXPath(pilotConfig) + "/mv-data//parameter-values/parameter");
 
                 // Sort by name
                 parameters = from parameter in parameters
@@ -354,10 +354,8 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                const string XPath = "//ma-data";
-
-                var pilot = this.PilotXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
-                var production = this.ProductionXml.XPathSelectElements(XPath, Documenter.NamespaceManager);
+                var pilot = this.PilotXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(true) + "/ma-data", Documenter.NamespaceManager);
+                var production = this.ProductionXml.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(false) + "/ma-data", Documenter.NamespaceManager);
 
                 // Sort by name
                 pilot = from connector in pilot
