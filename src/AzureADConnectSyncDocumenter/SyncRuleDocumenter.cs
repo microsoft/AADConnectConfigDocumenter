@@ -54,7 +54,12 @@ namespace AzureADConnectConfigDocumenter
         private SyncRuleReportType syncRuleReportType;
 
         /// <summary>
-        /// Indicates if the the synchronization rule is inferred as a default sync rule can be made invisible
+        /// Indicates if the synchronization rule is inferred as a default sync rule
+        /// </summary>
+        private bool defaultSyncRule;
+
+        /// <summary>
+        /// Indicates if the default synchronization rule has to be visible all the time
         /// </summary>
         private bool defaultSyncRuleVisibility;
 
@@ -76,6 +81,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 this.SyncRuleName = syncRuleName;
                 this.SyncRuleGuid = syncRuleGuid;
+                this.defaultSyncRule = false;
                 this.defaultSyncRuleVisibility = false;
                 this.ReportFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".tmp.html");
                 this.ReportToCFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".TOC.tmp.html");
@@ -195,7 +201,19 @@ namespace AzureADConnectConfigDocumenter
                     this.ProcessConnectorSyncRuleTransformations();
                 }
 
-                var noHide = this.DiffgramDataSets.Any(dataSet => !(bool)dataSet.ExtendedProperties[Documenter.CanHide]);
+                // for default rule it can be hidden if the only change is to the precedence number
+                if (this.defaultSyncRule)
+                {
+                    var filterExpression = "[Column2] <> 'Precedence' AND [Column2] <> 'Tag' AND [" + Documenter.OldColumnPrefix + "Column3] <> [Column3]";
+                    var defaultSyncRuleDescriptionChanged = this.DiffgramDataSets.Count > 0 && this.DiffgramDataSets[0].Tables[0].Select(filterExpression).Count() != 0;
+                    var defaultSyncRuleScopingFilterChanged = this.DiffgramDataSets.Count > 1 && !(bool)this.DiffgramDataSets[1].ExtendedProperties[Documenter.CanHide];
+                    var defaultSyncRuleJoinRulesChanged = this.DiffgramDataSets.Count > 2  && !(bool)this.DiffgramDataSets[2].ExtendedProperties[Documenter.CanHide];
+                    var defaultSyncRuleTransformationsChanged = this.DiffgramDataSets.Count > 3 && !(bool)this.DiffgramDataSets[3].ExtendedProperties[Documenter.CanHide];
+
+                    this.defaultSyncRuleVisibility = defaultSyncRuleDescriptionChanged || defaultSyncRuleScopingFilterChanged || defaultSyncRuleJoinRulesChanged || defaultSyncRuleTransformationsChanged;
+                }
+
+                var noHide = this.defaultSyncRule ? this.defaultSyncRuleVisibility != false : this.DiffgramDataSets.Any(dataSet => !(bool)dataSet.ExtendedProperties[Documenter.CanHide]);
 
                 if (noHide)
                 {
@@ -236,7 +254,7 @@ namespace AzureADConnectConfigDocumenter
                 }
                 finally
                 {
-                    if (!this.defaultSyncRuleVisibility)
+                    if (this.defaultSyncRule && this.defaultSyncRuleVisibility == false)
                     {
                         this.ReportWriter.WriteEndTag("div");
                         this.ReportToCWriter.WriteEndTag("div");
@@ -279,7 +297,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
 
-                if (!this.defaultSyncRuleVisibility)
+                if (this.defaultSyncRule && this.defaultSyncRuleVisibility == false)
                 {
                     this.ReportWriter.WriteBeginTag("div");
                     this.ReportWriter.WriteAttribute("class", "DefaultRuleCanHide");
@@ -390,21 +408,7 @@ namespace AzureADConnectConfigDocumenter
                         var table = dataSet.Tables[0];
 
                         this.syncRuleDirection = (SyncRuleDirection)Enum.Parse(typeof(SyncRuleDirection), (string)syncRule.Element("direction"), true);
-                        var defaultSyncRule = ((string)syncRule.Element("immutable-tag") ?? string.Empty).StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase);
-
-                        // Only turn the visibility on and never off.
-                        if (this.defaultSyncRuleVisibility == false)
-                        {
-                            this.defaultSyncRuleVisibility = !defaultSyncRule;
-                        }
-
-                        // Any disabled rule will also be always visible.
-                        // Ideally we should have any unsupported customisation to default sync rule always visible
-                        // as well but for now depend on the PowerShell script to flag that
-                        if (((string)syncRule.Element("disabled") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase))
-                        {
-                            this.defaultSyncRuleVisibility = true;
-                        }
+                        this.defaultSyncRule = ((string)syncRule.Element("immutable-tag") ?? string.Empty).StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase);
 
                         var setting = (string)syncRule.Element("name");
                         Documenter.AddRow(table, new object[] { 0, "Name", setting });
@@ -455,11 +459,6 @@ namespace AzureADConnectConfigDocumenter
                         }
 
                         table.AcceptChanges();
-                    }
-                    else
-                    {
-                        // The missing rule in either of the environments will make the rule always visible
-                        this.defaultSyncRuleVisibility = true;
                     }
                 }
             }

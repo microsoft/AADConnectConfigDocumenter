@@ -1022,6 +1022,13 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
+                this.ReportWriter.WriteBeginTag("div");
+                this.ReportWriter.WriteAttribute("class", "EndToEndFlowsSummary");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                this.ReportToCWriter.WriteBeginTag("div");
+                this.ReportToCWriter.WriteAttribute("class", "EndToEndFlowsSummary");
+                this.ReportToCWriter.Write(HtmlTextWriter.TagRightChar);
+
                 var sectionTitle = "End-to-End Attribute Flows Summary";
 
                 Logger.Instance.WriteInfo("Processing " + sectionTitle + ".");
@@ -1063,6 +1070,9 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.ReportWriter.WriteEndTag("div");
+                this.ReportToCWriter.WriteEndTag("div");
+
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -1411,6 +1421,12 @@ namespace AzureADConnectConfigDocumenter
                                     var outboundSyncRuleGuid = (string)outboundSyncRule.Element("id");
                                     var outboundConnectorGuid = ((string)outboundSyncRule.Element("connector") ?? string.Empty).ToUpperInvariant();
                                     var outboundConnectorName = (string)config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + outboundConnectorGuid + "']/name");
+                                    if (string.IsNullOrEmpty(outboundConnectorName))
+                                    {
+                                        Logger.Instance.WriteWarning(string.Format(CultureInfo.InvariantCulture, "Unable to dereferece connector: '{0}'. The documentation of outbound flows will be skipped for this connector. PilotConfig: '{1}'.", outboundConnectorGuid, pilotConfig));
+                                        continue;
+                                    }
+
                                     ++outboundSyncRuleRank; // Used only for sorting, not displayed on the report
 
                                     var targetAttributeMapping = outboundSyncRule.XPathSelectElement("attribute-mappings/mapping[./src/attr = '" + metaverseAttribute + "' or contains(expression, '[" + metaverseAttribute + "]')]");
@@ -1881,6 +1897,12 @@ namespace AzureADConnectConfigDocumenter
                                         var inboundSyncRuleGuid = (string)inboundSyncRule.Element("id");
                                         var inboundConnectorGuid = ((string)inboundSyncRule.Element("connector") ?? string.Empty).ToUpperInvariant();
                                         var inboundConnectorName = (string)config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + inboundConnectorGuid + "']/name");
+                                        if (string.IsNullOrEmpty(inboundConnectorName))
+                                        {
+                                            Logger.Instance.WriteWarning(string.Format(CultureInfo.InvariantCulture, "Unable to dereferece connector: '{0}'. The documentation of inbound flows will be skipped for this connector. PilotConfig: '{1}'.", inboundConnectorGuid, pilotConfig));
+                                            continue;
+                                        }
+
                                         ++inboundSyncRuleRank; // Used only for sorting, not displayed on the report
 
                                         var metaverseAttributeMapping = inboundSyncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + metaverseAttribute + "' or contains(expression, '[" + metaverseAttribute + "]')]");

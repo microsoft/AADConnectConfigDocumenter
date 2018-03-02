@@ -1,4 +1,10 @@
-﻿function ToggleVisibility() {
+﻿window.onload = function (e) {
+    document.getElementById("OnlyShowChanges").disabled = false;
+    document.getElementById("HideDefaultSyncRules").disabled = false;
+    document.getElementById("HideEndToEndFlowsSummary").disabled = false;
+}
+
+function ToggleVisibility() {
     var x = document.getElementById("OnlyShowChanges");
     var elements = document.getElementsByClassName("CanHide");
     for (var i = 0; i < elements.length; ++i) {
@@ -23,6 +29,19 @@
 function ToggleDefaultRuleVisibility() {
     var x = document.getElementById("HideDefaultSyncRules");
     var elements = document.getElementsByClassName("DefaultRuleCanHide");
+    for (var i = 0; i < elements.length; ++i) {
+        if (x.checked == true) {
+            elements[i].style.display = "none";
+        }
+        else {
+            elements[i].style.display = "";
+        }
+    }
+}
+
+function ToggleEndToEndFlowsSummaryVisibility() {
+    var x = document.getElementById("HideEndToEndFlowsSummary");
+    var elements = document.getElementsByClassName("EndToEndFlowsSummary");
     for (var i = 0; i < elements.length; ++i) {
         if (x.checked == true) {
             elements[i].style.display = "none";

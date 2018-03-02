@@ -434,6 +434,12 @@ namespace AzureADConnectConfigDocumenter
                         var connector = ((string)syncRule.Element("connector") ?? string.Empty).ToUpperInvariant();
 
                         var connectorName = (string)config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connector + "']/name");
+                        if (string.IsNullOrEmpty(connectorName))
+                        {
+                            Logger.Instance.WriteWarning(string.Format(CultureInfo.InvariantCulture, "Unable to dereferece connector: '{0}'. The documentation of inbound flows will be skipped for this connector. PilotConfig: '{1}'.", connector, pilotConfig));
+                            continue;
+                        }
+
                         var syncRuleName = (string)syncRule.Element("name");
                         row2[2] = connectorName;
                         row2[3] = syncRuleName;
@@ -594,11 +600,17 @@ namespace AzureADConnectConfigDocumenter
 
                 this.WriteSectionHeader(sectionTitle, 4);
 
+                this.ReportWriter.WriteBeginTag("div");
+                this.ReportWriter.WriteAttribute("class", "EndToEndFlowsSummary");
+                this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+
                 var headerTable = this.GetMetaverseObjectTypeHeaderTable();
                 this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable, HtmlTableSize.Huge);
             }
             finally
             {
+                this.ReportWriter.WriteEndTag("div");
+
                 this.ResetDiffgram(); // reset the diffgram variables
                 Logger.Instance.WriteMethodExit();
             }
@@ -838,14 +850,19 @@ namespace AzureADConnectConfigDocumenter
                     var deletionRuleGuid = (string)deletionRule.Element("id");
                     var deletionRuleLinkType = (string)deletionRule.Element("linkType");
                     var connectorGuid = (string)deletionRule.Element("connector");
-                    var connectorName = from connectorData in config.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data")
+                    var connectorName = (from connectorData in config.XPathSelectElements(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data")
                                         where ((string)connectorData.Element("id") ?? string.Empty).Equals(connectorGuid, StringComparison.OrdinalIgnoreCase)
-                                        select (string)connectorData.Element("name");
+                                        select (string)connectorData.Element("name")).FirstOrDefault();
+                    if (string.IsNullOrEmpty(connectorName))
+                    {
+                        Logger.Instance.WriteWarning(string.Format(CultureInfo.InvariantCulture, "Unable to dereferece connector: '{0}'. The documentation of deletion rules will be skipped for this connector. PilotConfig: '{1}'.", connectorGuid, pilotConfig));
+                        continue;
+                    }
 
                     var row2 = table2.NewRow();
 
                     row2[0] = objectType;
-                    row2[1] = connectorName.FirstOrDefault();
+                    row2[1] = connectorName;
                     row2[2] = connectorGuid;
 
                     // Expected that this is likely to result in Contraint violation
@@ -858,7 +875,7 @@ namespace AzureADConnectConfigDocumenter
                     var row3 = table3.NewRow();
 
                     row3[0] = objectType;
-                    row3[1] = connectorName.FirstOrDefault();
+                    row3[1] = connectorName;
                     row3[2] = deletionRuleName;
                     row3[3] = deletionRuleLinkType;
                     row3[4] = connectorGuid;
