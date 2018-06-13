@@ -19,6 +19,13 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.18.0613.0
+
+#### Fixed
+- Fixed issue where the "Selected Attributes" section of a connector wrongly documented that an attribute had export flows configured when none existed.
+
+------------
+
 ### Version 1.18.0131.0
 
 #### Changed
