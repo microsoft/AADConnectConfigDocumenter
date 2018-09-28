@@ -80,7 +80,7 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy /I /Y "$(TargetDir)$(TargetName).exe" "$(SolutionDir)SolutionOutput"
 xcopy /I /Y "$(TargetDir)$(TargetName).exe.config" "$(SolutionDir)SolutionOutput"
-xcopy /I /Y "$(SolutionDir)AzureADConnectSyncDocumenter.cmd" "$(SolutionDir)SolutionOutput"
+xcopy /I /Y "$(SolutionDir)AzureADConnectSyncDocumenter-Contoso.cmd" "$(SolutionDir)SolutionOutput"
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

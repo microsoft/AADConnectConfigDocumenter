@@ -8,6 +8,13 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.18.0928.0
+
+#### Fixed
+- Fixed issue where the "Download Sync Rule Changes Script" link was not working in Chrome / Firefox.
+
+------------
+
 ### Version 1.18.0613.0
 
 #### Fixed

@@ -29,8 +29,12 @@ namespace AzureADConnectConfigDocumenter
             {
                 if (args == null || args.Length < 2)
                 {
-                    string errorMsg = string.Format(CultureInfo.CurrentUICulture, "Missing commnad-line arguments. Usage: {0} {1} {2}.", new object[] { Assembly.GetExecutingAssembly().GetName().Name, "{Pilot / Target Config Folder}", "{Production / Reference / Baseline Config Folder}" });
+                    var errorMsg = string.Format(CultureInfo.CurrentUICulture, "Missing commnad-line arguments. Usage: {0} {1} {2}.", new object[] { Assembly.GetExecutingAssembly().GetName().Name, "{Pilot / Target Config Folder}", "{Production / Reference / Baseline Config Folder}" });
                     Console.Error.WriteLine(errorMsg);
+
+                    errorMsg = string.Format(CultureInfo.CurrentUICulture, "Example: \t{0} {1} {2} {3}", new object[] { Environment.NewLine, Assembly.GetExecutingAssembly().GetName().Name, "\"Contoso\\Pilot\"", "\"Contoso\\Production\"" });
+                    Console.Error.WriteLine(errorMsg);
+
                     Console.ReadKey();
                     return;
                 }

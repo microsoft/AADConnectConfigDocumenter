@@ -1337,7 +1337,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ReportWriter.WriteBeginTag("span");
                     this.ReportWriter.WriteAttribute("class", cellClass);
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    this.ReportWriter.Write("(" + syncVersionPilot + ")");
+                    this.ReportWriter.Write("(" + syncVersionPilot + "):");
                     this.ReportWriter.WriteEndTag("span");
                 }
 
@@ -1358,7 +1358,7 @@ namespace AzureADConnectConfigDocumenter
                     this.ReportWriter.WriteBeginTag("span");
                     this.ReportWriter.WriteAttribute("class", cellClass);
                     this.ReportWriter.WriteLine(HtmlTextWriter.TagRightChar);
-                    this.ReportWriter.Write("(" + syncVersionProduction + ")");
+                    this.ReportWriter.Write("(" + syncVersionProduction + "):");
                     this.ReportWriter.WriteEndTag("span");
                 }
 

@@ -22,7 +22,7 @@ namespace AzureADConnectConfigDocumenter
         ///      Build Number (MMDD)
         ///      Revision (if any on the same day)
         /// </summary>
-        internal const string Version = "1.18.0613.0";
+        internal const string Version = "1.18.0928.0";
 
         /// <summary>
         /// File Version information for the assembly consists of the following four values:
@@ -31,6 +31,6 @@ namespace AzureADConnectConfigDocumenter
         ///      Build Number (MMDD)
         ///      Revision (if any on the same day)
         /// </summary>
-        internal const string FileVersion = "1.18.0613.0";
+        internal const string FileVersion = "1.18.0928.0";
     }
 }
