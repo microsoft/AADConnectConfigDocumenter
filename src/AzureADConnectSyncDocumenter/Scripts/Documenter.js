@@ -82,7 +82,8 @@ function DownloadScript(downloadLink) {
         data += "\r\n"
     }
     
-    var file = new Blob([data.replace(/([^\r])\n/g, "$1\r\n")], { type: "text/plain; charset=utf-8" });
+    data = data.replace(/([^\r])\n/g, "$1\r\n");
+    var file = new Blob([data], { type: "text/plain; charset=utf-8" });
     if (downloadLink == null && navigator.msSaveOrOpenBlob != null) {
         navigator.msSaveOrOpenBlob(file, "SyncRuleChanges.ps1.txt");
     }
@@ -91,6 +92,7 @@ function DownloadScript(downloadLink) {
         var href = URL.createObjectURL(file);
         downloadLink.href = href;
         downloadLink.download = "SyncRuleChanges.ps1.txt"
+        URL.revokeObjectURL(url);
     }
 
     return false;
