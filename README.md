@@ -13,7 +13,7 @@ The current capabilities of the tool include:
 
 * Documentation of the complete configuration of Azure AD Connect sync.
 * Documentation of any changes in the configuration of two Azure AD Connect sync servers or changes from a given configuration baseline.
-* Generation of the PowerShell deployment script to migrate the sync rule differences or customisations from one server to another.
+* Generation of the PowerShell deployment script to migrate the sync rule differences or customizations from one server to another.
 
 ![Sample Report](https://github.com/Microsoft/AADConnectConfigDocumenter/wiki/Sample-Report-ToC-Contoso-Header.jpg)
 
@@ -43,7 +43,7 @@ How to use the tool:
 	* e.g. the "Pilot" configuration files for the customer "Contoso" are provided as a sample under the "Data\Contoso\Pilot" folder. This is the folder where the files of the ***to be*** or ***end-state*** configuration are located. So, for example, in a swing migration project the "Pilot" or "Target" configuration will be the configuration of the "old" server, since the goal is to build a new server with the configuration as close to the old server as possible.
 * If you want to document the changes from a specific baseline, export the server configuration of your baseline / production Azure AD Connect server and copy the output to a folder under the Documenter "Data" directory.
 	* e.g. the "Production" configuration files for the customer "Contoso" are provided as a sample under the "Data\Contoso\Production" folder. This is the folder where the files of the ***as-is*** or ***baseline*** configuration are located.
-* Make a copy of AzureADConnectSyncDocumenter-Contoso.cmd with a name appropriate for your enviroment (say AzureADConnectSyncDocumenter-Fabrikam.cmd) and edit your copy for the values of "Pilot" and "Production" directories.
+* Make a copy of AzureADConnectSyncDocumenter-Contoso.cmd with a name appropriate for your environment (say AzureADConnectSyncDocumenter-Fabrikam.cmd) and edit your copy for the values of "Pilot" and "Production" directories.
 	* If you don't have a baseline / production config, specify the same path as the "Pilot" config.
 * Run your updated updated batch file. Upon successful execution, the generated report will be found in the Documenter "Report" folder. 
 
