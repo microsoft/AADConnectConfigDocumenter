@@ -25,11 +25,11 @@ Prerequisites:
 
 How to use the tool:
 
-* Download the latest release AzureADConnectSyncDocumenter.zip from the [**releases**](https://github.com/Microsoft/AADConnectConfigDocumenter/releases) tab under the Code tab tab.
+* Download the latest release AzureADConnectSyncDocumenter.zip from the [**releases**](https://github.com/Microsoft/AADConnectConfigDocumenter/releases) tab under the Code tab.
 * UNBLOCK the downloaded zip file using the **Right Click** | **Properties** menu and then checking the **Unblock** check-box from the **General** tab.
 * Extract the zip file to an empty local folder on a machine which has .NET Framework 4.5 installed.
 	* This will extract the Documenter application binaries along with the sample data files for "Contoso".
-	* Make sure that the tool runs by double-clicking on the cmd file AzureADConnectSyncDocumenter-Contoso.cmd.
+	* Make sure that the tool runs by double-clicking on the .cmd file AzureADConnectSyncDocumenter-Contoso.cmd.
 * Export the Server Configuration of your pilot / test Azure AD Connect sync server by running Get-ADSyncServerConfiguration cmdlet defined in ADSync module shipped with Azure AD Connect.
 
 ```PowerShell
@@ -45,7 +45,7 @@ How to use the tool:
 	* e.g. the "Production" configuration files for the customer "Contoso" are provided as a sample under the "Data\Contoso\Production" folder. This is the folder where the files of the ***as-is*** or ***baseline*** configuration are located.
 * Make a copy of AzureADConnectSyncDocumenter-Contoso.cmd with a name appropriate for your environment (say AzureADConnectSyncDocumenter-Fabrikam.cmd) and edit your copy for the values of "Pilot" and "Production" directories.
 	* If you don't have a baseline / production config, specify the same path as the "Pilot" config.
-* Run your updated updated batch file. Upon successful execution, the generated report will be found in the Documenter "Report" folder. 
+* Run your updated batch file. Upon successful execution, the generated report will be found in the Documenter "Report" folder. 
 
 **!!NOTE!!** _**If the name(s) of the connector(s) do(es) not exactly match between the supplied "Pilot"  and "Production" configuration files, then before running the tool, "prep" the exported config files by manually editing the xml files located in the "Connectors" folder so that the name of the connector(s) match. The name of the connector is located inside the "name" element at the start of the content.**_
 
