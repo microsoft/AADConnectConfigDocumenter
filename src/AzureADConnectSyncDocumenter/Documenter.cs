@@ -20,6 +20,7 @@ namespace AzureADConnectConfigDocumenter
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Text;
     using System.Web.UI;
     using System.Xml;
     using System.Xml.Linq;
@@ -437,6 +438,41 @@ namespace AzureADConnectConfigDocumenter
             {
                 Logger.Instance.WriteMethodExit("Syntax: '{0}'. Attribute Type: '{1}'.", syntax, attributeType);
             }
+        }
+
+        /// <summary>
+        /// Gets the escaped XPath string for querying an attribute value.
+        /// </summary>
+        /// <param name="input">The input string</param>
+        /// <returns>An equivalent XPath string with single and double quotes characters are properly escaped.</returns>
+        public static string GetEscapedXPathStringForAttributeValue(string input)
+        {
+            if (input == null)
+            {
+                return string.Format("{0}{0}", HtmlTextWriter.SingleQuoteChar);
+            }
+
+            // If input has no ' then enclose it in a '
+            if (!input.Contains(HtmlTextWriter.SingleQuoteChar))
+            {
+                return string.Format("{0}{1}{0}", HtmlTextWriter.SingleQuoteChar, input);
+            }
+
+            // If input has no " then enclose it in a "
+            if (!input.Contains(HtmlTextWriter.DoubleQuoteChar))
+            {
+                return string.Format("{0}{1}{0}", HtmlTextWriter.DoubleQuoteChar, input);
+            }
+
+            // If input has both " and ' in it then use concat function
+            var parts = input.Split(new char[] { HtmlTextWriter.DoubleQuoteChar }, StringSplitOptions.None);
+            var sb = new StringBuilder("concat(");
+            foreach (var part in parts)
+            {
+                sb.AppendFormat("{0}{1}{0},'{0}',", HtmlTextWriter.DoubleQuoteChar, part);
+            }
+
+            return sb.ToString().TrimEnd(',') + ")";
         }
 
         /// <summary>

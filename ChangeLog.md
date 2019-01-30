@@ -8,6 +8,13 @@ All notable changes to AADConnectConfigDocumenter project will be documented in 
 
 ------------
 
+### Version 1.19.0130.0
+
+#### Fixed
+- Fixed issue #22 - quotes in custom synchronization rule names caused the tool to throw error.
+
+------------
+
 ### Version 1.18.0928.0
 
 #### Fixed

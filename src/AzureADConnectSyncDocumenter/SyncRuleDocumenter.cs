@@ -327,7 +327,7 @@ namespace AzureADConnectConfigDocumenter
         {
             Logger.Instance.WriteMethodEntry("Current Connector Guid: '{0}'. Pilot Config: '{1}'.", currentConnectorGuid, pilotConfig);
 
-            var xpath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and name = '" + this.SyncRuleName + "'";
+            var xpath = Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[translate(connector, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + currentConnectorGuid + "' and name = " + Documenter.GetEscapedXPathStringForAttributeValue(this.SyncRuleName);
 
             try
             {
