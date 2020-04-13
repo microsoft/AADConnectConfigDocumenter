@@ -85,6 +85,7 @@ namespace AzureADConnectConfigDocumenter
                 this.defaultSyncRuleVisibility = false;
                 this.ReportFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".tmp.html");
                 this.ReportToCFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".TOC.tmp.html");
+                this.SyncRuleChangesScriptFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".tmp.ps1");
 
                 // Set Logger call context items
                 Logger.SetContextItem(SyncRuleDocumenter.LoggerContextItemSyncRuleName, this.SyncRuleName);
@@ -160,7 +161,7 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The Tuple of configuration report and associated TOC
         /// </returns>
-        public override Tuple<string, string> GetReport()
+        public override Tuple<string, string, string> GetReport()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -181,7 +182,7 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The Tuple of configuration report and associated TOC
         /// </returns>
-        public Tuple<string, string> GetReport(SyncRuleReportType reportType)
+        public Tuple<string, string, string> GetReport(SyncRuleReportType reportType)
         {
             Logger.Instance.WriteMethodEntry("Sync Rule Report Type: '{0}'.", reportType);
 
@@ -292,10 +293,12 @@ namespace AzureADConnectConfigDocumenter
                     bookmark += this.syncRuleReportType.ToString();
                     this.ReportFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".tmp.html");
                     this.ReportToCFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".TOC.tmp.html");
+                    this.SyncRuleChangesScriptFileName = Documenter.GetTempFilePath(this.SyncRuleGuid + ".tmp.ps1");
                 }
 
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
+                this.SyncRuleChangesScriptWriter = new StreamWriter(this.SyncRuleChangesScriptFileName);
 
                 if (this.defaultSyncRule && this.defaultSyncRuleVisibility == false)
                 {
@@ -482,14 +485,14 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Description
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", this.GetConnectorSyncRuleDescriptionHeader() }, { "RowSpan", 1 }, { "ColSpan", 2 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", this.GetConnectorSyncRuleDescriptionHeader() }, { "RowSpan", 1 }, { "ColSpan", 2 } }.Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // Setting
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Setting" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Setting" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }.Values.Cast<object>().ToArray());
 
                 // Configuration
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Configuration" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 70 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Configuration" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 70 } }.Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -650,20 +653,20 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Scoping Filter
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Scoping Filter" }, { "RowSpan", 1 }, { "ColSpan", 4 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Scoping Filter" }, { "RowSpan", 1 }, { "ColSpan", 4 } }.Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // Group#
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }.Values.Cast<object>().ToArray());
 
                 // Operator
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }.Values.Cast<object>().ToArray());
 
                 // Value
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 30 } }.Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -801,20 +804,20 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Join Rules
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Join Rules" }, { "RowSpan", 1 }, { "ColSpan", 4 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Join Rules" }, { "RowSpan", 1 }, { "ColSpan", 4 } }.Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // Group#
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Group#" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Source Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 40 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 40 } }.Values.Cast<object>().ToArray());
 
                 // Target Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Target Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 40 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Target Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 40 } }.Values.Cast<object>().ToArray());
 
                 // Case Sensitive
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Case Sensitive" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Case Sensitive" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -955,23 +958,23 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Transformations
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Transformations" }, { "RowSpan", 1 }, { "ColSpan", 5 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Transformations" }, { "RowSpan", 1 }, { "ColSpan", 5 } }.Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // Target Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", this.syncRuleDirection == SyncRuleDirection.Inbound ? "Target (MV) Attribute" : "Target (CS) Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 20 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", this.syncRuleDirection == SyncRuleDirection.Inbound ? "Target (MV) Attribute" : "Target (CS) Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 20 } }.Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 50 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 50 } }.Values.Cast<object>().ToArray());
 
                 // Flow Type
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Flow Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Flow Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Apply Once
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Apply Once" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Apply Once" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Merge Type
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Merge Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Merge Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -1015,13 +1018,14 @@ namespace AzureADConnectConfigDocumenter
         {
             Logger.Instance.WriteMethodEntry();
 
+            var script = string.Empty;
+
             try
             {
                 Logger.Instance.WriteInfo("Creating installation script for sync rule. Name = '{0}'. Id = '{1}'.", this.SyncRuleName, this.SyncRuleGuid);
 
                 var config = this.Environment != ConfigEnvironment.ProductionOnly ? this.PilotXml : this.ProductionXml;
                 var syncRule = config.XPathSelectElement(Documenter.GetSynchronizationRuleXmlRootXPath(this.Environment != ConfigEnvironment.ProductionOnly) + "/synchronizationRule[id = '" + this.SyncRuleGuid + "']");
-                var script = string.Empty;
 
                 // if the sync rule is part of the default config (i.e. starts with tag "Microsoft.")
                 // we'll igonre any changes, except for the supported change i.e. to the Disabled settings.
@@ -1075,14 +1079,7 @@ namespace AzureADConnectConfigDocumenter
                 }
                 else
                 {
-                    if (this.Environment == ConfigEnvironment.ProductionOnly)
-                    {
-                        script = this.CreateRemoveADSyncRuleScript(syncRule);
-                    }
-                    else
-                    {
-                        script = this.CreateNewADSyncRuleScript(syncRule);
-                    }
+                    script = this.Environment == ConfigEnvironment.ProductionOnly ? this.CreateRemoveADSyncRuleScript(syncRule) : this.CreateNewADSyncRuleScript(syncRule);
                 }
 
                 #region div
@@ -1117,10 +1114,12 @@ namespace AzureADConnectConfigDocumenter
                     syncRuleScript.AppendLine("'@");
                     syncRuleScript.AppendLine("Write-Error $errMsg");
 
+                    script = syncRuleScript.ToString();
+
                     this.ReportWriter.WriteBeginTag("div");
                     this.ReportWriter.WriteAttribute("class", "PowerShellScript");
                     this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
-                    this.ReportWriter.WriteLine(syncRuleScript.ToString());
+                    this.ReportWriter.WriteLine(script);
                     this.ReportWriter.WriteEndTag("div");
 
                     #endregion div
@@ -1132,6 +1131,8 @@ namespace AzureADConnectConfigDocumenter
             }
             finally
             {
+                this.SyncRuleChangesScriptWriter.WriteLine(script);
+
                 Logger.Instance.WriteMethodExit();
             }
         }
@@ -1196,7 +1197,7 @@ namespace AzureADConnectConfigDocumenter
                 syncRuleScript.AppendLine();
                 syncRuleScript.AppendFormat("$syncRuleName = '{0}'", syncRuleName);
                 syncRuleScript.AppendLine();
-                syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' has unsupported chanages detected.\" -f $syncRuleName, $connectorName)");
+                syncRuleScript.AppendLine("Write-Warning(\"The sync rule '{0}' for the connector '{1}' has unsupported changes detected.\" -f $syncRuleName, $connectorName)");
                 syncRuleScript.AppendLine("Write-Warning (\"Only supported change to an out-of-box default rule is to make it `\"Disabled`\".\")");
                 if (precedenceChange)
                 {
@@ -1451,7 +1452,7 @@ namespace AzureADConnectConfigDocumenter
                     var valueMergeType = (string)transformation.Element("valueMergeType");
                     var applyOnce = (string)transformation.Attribute("execute-once");
                     var sourceAttributes = transformation.XPathSelectElements("src/attr");
-                    string flowType = !string.IsNullOrEmpty(expression) ? "Expression" : sourceAttributes.Any() ? "Direct" : "Constant";
+                    var flowType = !string.IsNullOrEmpty(expression) ? "Expression" : sourceAttributes.Any() ? "Direct" : "Constant";
 
                     syncRuleScript.AppendLine("Add-ADSyncAttributeFlowMapping `");
                     syncRuleScript.AppendLine("-SynchronizationRule $syncRule[0] `");

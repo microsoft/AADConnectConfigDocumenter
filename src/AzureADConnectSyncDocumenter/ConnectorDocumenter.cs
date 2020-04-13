@@ -72,7 +72,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ConnectorName = connectorName;
                 this.Environment = configEnvironment;
 
-                string xpath = "/ma-data[name ='" + this.ConnectorName + "']";
+                var xpath = "/ma-data[name ='" + this.ConnectorName + "']";
                 var connector = configEnvironment == ConfigEnvironment.ProductionOnly ? this.ProductionXml.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(false) + xpath, Documenter.NamespaceManager) : this.PilotXml.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(true) + xpath, Documenter.NamespaceManager);
 
                 this.ConnectorGuid = (string)connector.Element("id");
@@ -298,6 +298,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
+                this.SyncRuleChangesScriptWriter = new StreamWriter(this.SyncRuleChangesScriptFileName);
 
                 var sectionTitle = this.ConnectorName + " Connector Configuration";
 
@@ -447,6 +448,106 @@ namespace AzureADConnectConfigDocumenter
         }
 
         #endregion Connector Properties
+
+        #region Connector Parameters
+
+        /// <summary>
+        /// Processes the connector parameters.
+        /// </summary>
+        /// <param name="partitionName">Name of the partition.</param>
+        protected void ProcessConnectorParameters(string partitionName)
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                Logger.Instance.WriteInfo("Processing Partition Parameters.");
+
+                this.CreateSimpleSettingsDataSets(2); // 1 = Name, 2 = Value
+
+                this.FillConnectorParametersDataSet(partitionName, true);
+                this.FillConnectorParametersDataSet(partitionName, false);
+
+                this.CreateSimpleSettingsDiffgram();
+
+                this.PrintConnectorParameters();
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
+        /// Fills the connector parameters data set.
+        /// </summary>
+        /// <param name="partitionName">Name of the partition.</param>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
+        protected void FillConnectorParametersDataSet(string partitionName, bool pilotConfig)
+        {
+            Logger.Instance.WriteMethodEntry("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
+
+            try
+            {
+                var config = pilotConfig ? this.PilotXml : this.ProductionXml;
+                var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
+
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
+
+                if (connector != null)
+                {
+                    var partition = connector.XPathSelectElement("ma-partition-data/partition[selected = 1 and name = '" + partitionName + "']");
+
+                    if (partition != null)
+                    {
+                        var table = dataSet.Tables[0];
+
+                        var parameters = partition.XPathSelectElements("parameter-values/parameter");
+
+                        // Sort by name
+                        parameters = from parameter in parameters
+                                     let name = (string)parameter.Attribute("name")
+                                     where name.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0
+                                     orderby name
+                                     select parameter;
+
+                        for (var parameterIndex = 0; parameterIndex < parameters.Count(); ++parameterIndex)
+                        {
+                            var parameter = parameters.ElementAt(parameterIndex);
+                            Documenter.AddRow(table, new object[] { (string)parameter.Attribute("name"), (string)parameter });
+                        }
+
+                        table.AcceptChanges();
+                    }
+                }
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Partion Name: '{0}'. Pilot Config: '{1}'.", partitionName, pilotConfig);
+            }
+        }
+
+        /// <summary>
+        /// Prints the connector parameters.
+        /// </summary>
+        protected void PrintConnectorParameters()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable("Partition Parameters", new OrderedDictionary { { "Parameter Name", 50 }, { "Parameter Value", 50 } });
+
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+            }
+            finally
+            {
+                this.ResetDiffgram(); // reset the diffgram variables
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        #endregion Connector Parameters
 
         #region Provisioning Hierarchy
 
@@ -624,40 +725,40 @@ namespace AzureADConnectConfigDocumenter
 
                 // Table 1
                 // Container
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Include / Exclude
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Sort Column1
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 2 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 2 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column2
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column3
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 2 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 2 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column4
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", 3 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", 3 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column5
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 6 }, { "Hidden", true }, { "SortOrder", 4 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 6 }, { "Hidden", true }, { "SortOrder", 4 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column6
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 7 }, { "Hidden", true }, { "SortOrder", 5 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 7 }, { "Hidden", true }, { "SortOrder", 5 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column7
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", 6 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", 6 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column8
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", 7 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", 7 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column9
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 10 }, { "Hidden", true }, { "SortOrder", 8 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 10 }, { "Hidden", true }, { "SortOrder", 8 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Sort Column10
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 11 }, { "Hidden", true }, { "SortOrder", 9 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 11 }, { "Hidden", true }, { "SortOrder", 9 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 printTable.AcceptChanges();
 
@@ -757,14 +858,7 @@ namespace AzureADConnectConfigDocumenter
                     row[2 + i] = string.Empty;
                     if (i < partsCount)
                     {
-                        if (partsCount == 1)
-                        {
-                            row[2 + i] = " " + distinguishedNameParts[0]; // so that the domain root is always sorted first
-                        }
-                        else
-                        {
-                            row[2 + i] = distinguishedNameParts[partsCount - 1 - i];
-                        }
+                        row[2 + i] = partsCount == 1 ? " " + distinguishedNameParts[0] : distinguishedNameParts[partsCount - 1 - i];
                     }
                 }
 
@@ -1262,64 +1356,64 @@ namespace AzureADConnectConfigDocumenter
 
                 // Table 1
                 // Metaverse Attribute
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Table 2
                 // Source
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Sync Rule
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 5 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 5 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Precedence
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Sync Rule Scoping Condition
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 4 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 4 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Sync Rule Guid
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Table 3
                 // Metaverse Attribute
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule Name
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Table 4
                 // Inbound Sync Rule Name
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Source
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Target Attribute
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Precedence
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 5 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 9 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 5 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 9 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Target Connector
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 6 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 8 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 6 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 8 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Scoping Condition
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 7 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 7 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Target Connector Guid
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Guid
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 printTable.AcceptChanges();
 
@@ -1506,47 +1600,47 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Import Flows
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Import Flows" }, { "RowSpan", 1 }, { "ColSpan", 5 }, { "ColWidth", 0 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Import Flows" }, { "RowSpan", 1 }, { "ColSpan", 5 }, { "ColWidth", 0 } }.Values.Cast<object>().ToArray());
 
                 // Export Flows
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Export Flows" }, { "RowSpan", 1 }, { "ColSpan", 7 }, { "ColWidth", 0 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Export Flows" }, { "RowSpan", 1 }, { "ColSpan", 7 }, { "ColWidth", 0 } }.Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // Metaverse attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Metaverse Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 8 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Metaverse Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 8 } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "&#8592;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "&#8592;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }.Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Connector Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Connector Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule Scoping Condition
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Inbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Inbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Metaverse attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 5 }, { "ColumnName", "Metaverse Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 8 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 5 }, { "ColumnName", "Metaverse Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 8 } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 6 }, { "ColumnName", "&#8594;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 6 }, { "ColumnName", "&#8594;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }.Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 7 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 7 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Target
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 8 }, { "ColumnName", "Target" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 8 }, { "ColumnName", "Target" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 9 }, { "ColumnName", "Outbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 9 }, { "ColumnName", "Outbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Target Connector
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 10 }, { "ColumnName", "Target Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 10 }, { "ColumnName", "Target Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Scoping Condition
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 11 }, { "ColumnName", "Outbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 11 }, { "ColumnName", "Outbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -1724,61 +1818,61 @@ namespace AzureADConnectConfigDocumenter
 
                 // Table 1
                 // DataSource Attribute
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Table 2
                 // Source
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 5 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 5 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Precedence
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Scoping Condition
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 4 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 4 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Guid
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Table 3
                 // Outbound Sync Rule Name
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Metaverse Attribute
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Table 4
                 // Outbound Sync Rule Name
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Source
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule Precedence
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 5 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 9 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 5 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 9 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Source Connector
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 6 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 8 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 6 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 8 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule Scoping Condition
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 7 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 7 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Source Connector Guid
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule Guid
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 3 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
 
                 printTable.AcceptChanges();
 
@@ -1981,44 +2075,44 @@ namespace AzureADConnectConfigDocumenter
 
                 // Header Row 1
                 // Export Flows
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Export Flows" }, { "RowSpan", 1 }, { "ColSpan", 5 }, { "ColWidth", 0 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Export Flows" }, { "RowSpan", 1 }, { "ColSpan", 5 }, { "ColWidth", 0 } }.Values.Cast<object>().ToArray());
 
                 // Import Flows
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Import Flows" }, { "RowSpan", 1 }, { "ColSpan", 6 }, { "ColWidth", 0 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Import Flows" }, { "RowSpan", 1 }, { "ColSpan", 6 }, { "ColWidth", 0 } }.Values.Cast<object>().ToArray());
 
                 // Header Row 2
                 // DataSource Attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "CS Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "CS Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "&#8592;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "&#8592;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }.Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Outbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Outbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Outbound Sync Rule Scoping Condition
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Outbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 13 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Outbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 13 } }.Values.Cast<object>().ToArray());
 
                 // Metaverse attribute
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 5 }, { "ColumnName", "Metaverse Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 5 }, { "ColumnName", "Metaverse Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Flow Direction
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 6 }, { "ColumnName", "&#8592;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 6 }, { "ColumnName", "&#8592;" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 2 } }.Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 7 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 7 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 8 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 8 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Source Connector
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 9 }, { "ColumnName", "Source Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 9 }, { "ColumnName", "Source Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule Scoping Condition
-                headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 10 }, { "ColumnName", "Inbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 15 } }).Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 10 }, { "ColumnName", "Inbound Sync Rule Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 15 } }.Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
@@ -2202,6 +2296,7 @@ namespace AzureADConnectConfigDocumenter
                     var report = connectorDocumenter.GetReport(reportType);
                     this.ReportWriter.Write(report.Item1);
                     this.ReportToCWriter.Write(report.Item2);
+                    this.SyncRuleChangesScriptWriter.Write(report.Item3);
                 }
 
                 var pilotSyncRulesNames = from syncRule in pilotSyncRules
@@ -2219,6 +2314,7 @@ namespace AzureADConnectConfigDocumenter
                     var report = connectorDocumenter.GetReport(reportType);
                     this.ReportWriter.Write(report.Item1);
                     this.ReportToCWriter.Write(report.Item2);
+                    this.SyncRuleChangesScriptWriter.Write(report.Item3);
                 }
 
                 if (!sectionPrinted)
@@ -2390,23 +2486,23 @@ namespace AzureADConnectConfigDocumenter
 
                 // Table 1
                 // Step Number
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Step Name
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Table 2
                 // Step Number
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Setting
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Configuration
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Setting Number
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 printTable.AcceptChanges();
 

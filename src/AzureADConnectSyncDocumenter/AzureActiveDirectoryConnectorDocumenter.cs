@@ -41,6 +41,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 this.ReportFileName = Documenter.GetTempFilePath(this.ConnectorName + ".tmp.html");
                 this.ReportToCFileName = Documenter.GetTempFilePath(this.ConnectorName + ".TOC.tmp.html");
+                this.SyncRuleChangesScriptFileName = Documenter.GetTempFilePath(this.ConnectorName + ".tmp.ps1");
             }
             finally
             {
@@ -54,7 +55,7 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The Tuple of configuration report and associated TOC
         /// </returns>
-        public override Tuple<string, string> GetReport()
+        public override Tuple<string, string, string> GetReport()
         {
             Logger.Instance.WriteMethodEntry();
 

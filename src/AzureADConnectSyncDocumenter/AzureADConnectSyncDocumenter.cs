@@ -30,28 +30,28 @@ namespace AzureADConnectConfigDocumenter
         /// The current pilot / test configuration directory.
         /// This is the revised / target configuration which has introduced new changes to the baseline / production environment. 
         /// </summary>
-        private string pilotConfigDirectory;
+        private readonly string pilotConfigDirectory;
 
         /// <summary>
         /// The current production configuration directory.
         /// The is the baseline / reference configuration on which the changes will be reported.
         /// </summary>
-        private string productionConfigDirectory;
+        private readonly string productionConfigDirectory;
 
         /// <summary>
         /// The relative path of the current pilot / test configuration directory.
         /// </summary>
-        private string pilotConfigRelativePath;
+        private readonly string pilotConfigRelativePath;
 
         /// <summary>
         /// The relative path of the current production configuration directory.
         /// </summary>
-        private string productionConfigRelativePath;
+        private readonly string productionConfigRelativePath;
 
         /// <summary>
         /// The configuration report file path
         /// </summary>
-        private string configReportFilePath;
+        private readonly string configReportFilePath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AzureADConnectSyncDocumenter"/> class.
@@ -70,6 +70,7 @@ namespace AzureADConnectConfigDocumenter
                 this.productionConfigRelativePath = referenceSystem;
                 this.ReportFileName = Documenter.GetTempFilePath("Report.tmp.html");
                 this.ReportToCFileName = Documenter.GetTempFilePath("Report.TOC.tmp.html");
+                this.SyncRuleChangesScriptFileName = Documenter.GetTempFilePath("Report.tmp.ps1");
 
                 var rootDirectory = Directory.GetCurrentDirectory().TrimEnd('\\');
 
@@ -96,7 +97,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var report = this.GetReport();
-                this.WriteReport("AAD Connect Sync Service Configuration", report.Item1, report.Item2, this.pilotConfigRelativePath, this.productionConfigRelativePath, this.configReportFilePath);
+                this.WriteReport("AAD Connect Sync Service Configuration", report, this.pilotConfigRelativePath, this.productionConfigRelativePath, this.configReportFilePath);
             }
             finally
             {
@@ -111,16 +112,17 @@ namespace AzureADConnectConfigDocumenter
         /// The Tuple of configuration report and associated TOC
         /// </returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed. XhtmlTextWriter takes care of disposting StreamWriter.")]
-        public override Tuple<string, string> GetReport()
+        public override Tuple<string, string, string> GetReport()
         {
             Logger.Instance.WriteMethodEntry();
 
-            Tuple<string, string> report;
+            Tuple<string, string, string> report;
 
             try
             {
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(this.ReportFileName));
                 this.ReportToCWriter = new XhtmlTextWriter(new StreamWriter(this.ReportToCFileName));
+                this.SyncRuleChangesScriptWriter = new StreamWriter(this.SyncRuleChangesScriptFileName);
 
                 var sectionTitle = "AAD Connect Sync Service Configuration";
 
@@ -338,6 +340,7 @@ namespace AzureADConnectConfigDocumenter
 
                 this.ReportWriter.Write(report.Item1);
                 this.ReportToCWriter.Write(report.Item2);
+                this.SyncRuleChangesScriptWriter.Write(report.Item3);
             }
             finally
             {
@@ -459,6 +462,7 @@ namespace AzureADConnectConfigDocumenter
                 var report = connectorDocumenter.GetReport();
                 this.ReportWriter.Write(report.Item1);
                 this.ReportToCWriter.Write(report.Item2);
+                this.SyncRuleChangesScriptWriter.Write(report.Item3);
             }
             finally
             {

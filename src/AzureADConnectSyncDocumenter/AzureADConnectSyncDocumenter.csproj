@@ -97,6 +97,8 @@
     </None>
     <EmbeddedResource Include="Scripts\PowerShellScriptHeader.ps1" />
     <EmbeddedResource Include="Scripts\PowerShellScriptSectionHeader.ps1" />
+    <EmbeddedResource Include="Scripts\PowerShellScriptFooter.ps1" />
+    <EmbeddedResource Include="Scripts\PowerShellScriptFooterNoChanges.ps1" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Documenter.js" />

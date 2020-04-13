@@ -6,6 +6,9 @@
 #
 #    When the script is executed, the sync rule configuration of the server is made same as what was provided as the "Pilot" configuration.
 #    The "Pilot" configuration was the first argument passed when running the AAD Connect Config Documenter executable.
+#
+#    Only supported changes to the sync rules are effected via this script. For any unsupported changes to the sync rules or any sync rule changes 
+#    that must be effected using the Azure AD Connect Wizard, a warning message is displayed when the script is run.
 #############################################################################################################################################
 
 function Get-CurrentLine {

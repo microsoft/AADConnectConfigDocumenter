@@ -2,9 +2,11 @@
 
 All notable changes to AADConnectConfigDocumenter project will be documented in this file. The "Unreleased" section at the top is for keeping track of important changes that might make it to upcoming releases.
 
-### Version [Unreleased]
+### Version [1.20.0413.0]
 
-* Support for adding report metadata to include section / concept contents.
+#### Added
+- Added table for Connector parameters to address GitHub Issue #25
+- Report generation now also creates sync rule changes migration script.
 
 ------------
 

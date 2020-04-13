@@ -85,7 +85,7 @@ namespace AzureADConnectConfigDocumenter
         /// <summary>
         /// The namespace manager
         /// </summary>
-        private static XmlNamespaceManager namespaceManager = new XmlNamespaceManager(new NameTable());
+        public static readonly XmlNamespaceManager NamespaceManager = new XmlNamespaceManager(new NameTable());
 
         /// <summary>
         /// Initializes static members of the <see cref="Documenter"/> class.
@@ -97,8 +97,8 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                Documenter.namespaceManager.AddNamespace("dsml", Documenter.DsmlNamespace.NamespaceName);
-                Documenter.namespaceManager.AddNamespace("ms-dsml", Documenter.MmsDsmlNamespace.NamespaceName);
+                Documenter.NamespaceManager.AddNamespace("dsml", Documenter.DsmlNamespace.NamespaceName);
+                Documenter.NamespaceManager.AddNamespace("ms-dsml", Documenter.MmsDsmlNamespace.NamespaceName);
             }
             finally
             {
@@ -216,17 +216,6 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
-        /// Gets the namespace manager.
-        /// </summary>
-        /// <value>
-        /// The namespace manager.
-        /// </value>
-        protected static XmlNamespaceManager NamespaceManager
-        {
-            get { return Documenter.namespaceManager; }
-        }
-
-        /// <summary>
         /// Gets the DSML namespace.
         /// </summary>
         /// <value>
@@ -318,6 +307,14 @@ namespace AzureADConnectConfigDocumenter
         protected XhtmlTextWriter ReportToCWriter { get; set; }
 
         /// <summary>
+        /// Gets or sets the sync rule changes script writer.
+        /// </summary>
+        /// <value>
+        /// The sync rule changes script writer.
+        /// </value>
+        protected StreamWriter SyncRuleChangesScriptWriter { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the report file.
         /// </summary>
         /// <value>
@@ -326,12 +323,20 @@ namespace AzureADConnectConfigDocumenter
         protected string ReportFileName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the report to c file.
+        /// Gets or sets the name of the report toc file.
         /// </summary>
         /// <value>
-        /// The name of the report to c file.
+        /// The name of the report toc file.
         /// </value>
         protected string ReportToCFileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the sync rule changes script file.
+        /// </summary>
+        /// <value>
+        /// The name of the sync rule changes script file.
+        /// </value>
+        protected string SyncRuleChangesScriptFileName { get; set; }
 
         /// <summary>
         /// Gets the temporary file path.
@@ -449,19 +454,19 @@ namespace AzureADConnectConfigDocumenter
         {
             if (input == null)
             {
-                return string.Format("{0}{0}", HtmlTextWriter.SingleQuoteChar);
+                return string.Format("{0}{0}", HtmlTextWriter.SingleQuoteChar, StringComparison.OrdinalIgnoreCase);
             }
 
             // If input has no ' then enclose it in a '
             if (!input.Contains(HtmlTextWriter.SingleQuoteChar))
             {
-                return string.Format("{0}{1}{0}", HtmlTextWriter.SingleQuoteChar, input);
+                return string.Format("{0}{1}{0}", HtmlTextWriter.SingleQuoteChar, input, StringComparison.OrdinalIgnoreCase);
             }
 
             // If input has no " then enclose it in a "
             if (!input.Contains(HtmlTextWriter.DoubleQuoteChar))
             {
-                return string.Format("{0}{1}{0}", HtmlTextWriter.DoubleQuoteChar, input);
+                return string.Format("{0}{1}{0}", HtmlTextWriter.DoubleQuoteChar, input, StringComparison.OrdinalIgnoreCase);
             }
 
             // If input has both " and ' in it then use concat function
@@ -480,7 +485,7 @@ namespace AzureADConnectConfigDocumenter
         /// </summary>
         /// <returns>The Tuple of configuration report and associated TOC</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "The method performs a time-consuming operation.")]
-        public abstract Tuple<string, string> GetReport();
+        public abstract Tuple<string, string, string> GetReport();
 
         /// <summary>
         /// Gets the XPath for "mv-data" node
@@ -739,7 +744,7 @@ namespace AzureADConnectConfigDocumenter
         {
             Logger.Instance.WriteMethodEntry();
 
-            DataTable diffgramTable = CreateDiffgramTable(pilotTable);
+            var diffgramTable = CreateDiffgramTable(pilotTable);
 
             try
             {
@@ -1007,23 +1012,23 @@ namespace AzureADConnectConfigDocumenter
 
                 if (!string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Count != 0)
                 {
-                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", columnNames.Count } }).Values.Cast<object>().ToArray());
+                    headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", columnNames.Count } }.Values.Cast<object>().ToArray());
 
                     for (var i = 0; i < columnNames.Count; ++i)
                     {
-                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", i }, { "ColumnName", columnNames.Cast<DictionaryEntry>().ElementAt(i).Key }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", columnNames[i] } }).Values.Cast<object>().ToArray());
+                        headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", i }, { "ColumnName", columnNames.Cast<DictionaryEntry>().ElementAt(i).Key }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", columnNames[i] } }.Values.Cast<object>().ToArray());
                     }
                 }
                 else if (string.IsNullOrEmpty(columnName) && columnNames != null && columnNames.Count != 0)
                 {
                     for (var i = 0; i < columnNames.Count; ++i)
                     {
-                        headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", i }, { "ColumnName", columnNames.Cast<DictionaryEntry>().ElementAt(i).Key }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", columnNames[i] } }).Values.Cast<object>().ToArray());
+                        headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", i }, { "ColumnName", columnNames.Cast<DictionaryEntry>().ElementAt(i).Key }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", columnNames[i] } }.Values.Cast<object>().ToArray());
                     }
                 }
                 else if (!string.IsNullOrEmpty(columnName))
                 {
-                    headerTable.Rows.Add((new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", 2 } }).Values.Cast<object>().ToArray());
+                    headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", columnName }, { "RowSpan", 1 }, { "ColSpan", 2 } }.Values.Cast<object>().ToArray());
                 }
 
                 return headerTable;
@@ -1180,15 +1185,13 @@ namespace AzureADConnectConfigDocumenter
 
             try
             {
-                var dataRow = row as DataRow;
-                if (dataRow != null)
+                if (row is DataRow dataRow)
                 {
                     table.Rows.Add(dataRow);
                 }
                 else
                 {
-                    var values = row as object[];
-                    if (values != null)
+                    if (row is object[] values)
                     {
                         dataRow = table.Rows.Add(values);
                     }
@@ -1207,11 +1210,14 @@ namespace AzureADConnectConfigDocumenter
             }
             catch (DataException e)
             {
-                var dataRow = row as DataRow;
-                var values = (dataRow != null) ? dataRow.ItemArray : row as object[];
+                var values = (row is DataRow dataRow) ? dataRow.ItemArray : row as object[];
                 var rowString = (values != null) ? string.Join("|", values) : string.Empty;
-                var errorMsg = e.Message + " Data Row: " + rowString + e.StackTrace;
+                var columnString = string.Join("|", table.Columns.Cast<DataColumn>().Select(x => x.ColumnName).ToArray());
+                var errorMsg = e.Message + "Data Columns: " + columnString + ". Data Row: " + rowString + e.StackTrace;
                 Logger.Instance.WriteError(errorMsg);
+
+                var tableString = string.Join(System.Environment.NewLine, table.Rows.OfType<DataRow>().Select(x => string.Join("|", x.ItemArray)));
+                Logger.Instance.WriteError(tableString);
             }
         }
 
@@ -1227,7 +1233,7 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var qualifiedResource = "AzureADConnectConfigDocumenter.Scripts." + resourceName;
-                using (StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(qualifiedResource)))
+                using (var reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(qualifiedResource)))
                 {
                     return reader.ReadToEnd();
                 }
@@ -1302,7 +1308,7 @@ namespace AzureADConnectConfigDocumenter
         /// The Tuple of configuration report and associated TOC
         /// </returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Reviewed.")]
-        protected Tuple<string, string> GetReportTuple()
+        protected Tuple<string, string, string> GetReportTuple()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -1310,20 +1316,28 @@ namespace AzureADConnectConfigDocumenter
             {
                 this.ReportWriter.Close();
                 this.ReportToCWriter.Close();
+                this.SyncRuleChangesScriptWriter.Close();
 
                 string report;
                 string toc;
+                string script;
 
                 using (var reportReader = new StreamReader(this.ReportFileName))
                 {
                     report = reportReader.ReadToEnd();
-                    using (var tocReader = new StreamReader(this.ReportToCFileName))
-                    {
-                        toc = tocReader.ReadToEnd();
-                    }
                 }
 
-                return new Tuple<string, string>(report, toc);
+                using (var tocReader = new StreamReader(this.ReportToCFileName))
+                {
+                    toc = tocReader.ReadToEnd();
+                }
+
+                using (var scriptReader = new StreamReader(this.SyncRuleChangesScriptFileName))
+                {
+                    script = scriptReader.ReadToEnd();
+                }
+
+                return new Tuple<string, string, string>(report, toc, script);
             }
             finally
             {
@@ -1335,18 +1349,21 @@ namespace AzureADConnectConfigDocumenter
         /// Writes the report.
         /// </summary>
         /// <param name="reportHeader">The report header.</param>
-        /// <param name="reportHtml">The report html.</param>
-        /// <param name="tocHtml">The TOC html.</param>
+        /// <param name="report">The report tuple.</param>
         /// <param name="pilotConfigPath">The pilot config path.</param>
         /// <param name="productionConfigPath">The production config path.</param>
         /// <param name="configReportFilePath">The config report file path.</param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed. XhtmlTextWriter takes care of disposting StreamWriter.")]
-        protected void WriteReport(string reportHeader, string reportHtml, string tocHtml, string pilotConfigPath, string productionConfigPath, string configReportFilePath)
+        protected void WriteReport(string reportHeader, Tuple<string, string, string> report, string pilotConfigPath, string productionConfigPath, string configReportFilePath)
         {
             Logger.Instance.WriteMethodEntry();
 
             try
             {
+                var reportHtml = report.Item1;
+                var tocHtml = report.Item2;
+                var syncRuleScript = report.Item3;
+
                 this.ReportWriter = new XhtmlTextWriter(new StreamWriter(configReportFilePath));
 
                 this.ReportWriter.WriteFullBeginTag("html");
@@ -1421,6 +1438,21 @@ namespace AzureADConnectConfigDocumenter
 
                 this.ReportWriter.WriteEndTag("body");
                 this.ReportWriter.WriteEndTag("html");
+
+                using (var syncRuleScriptFile = new StreamWriter(configReportFilePath.Replace(".html", ".ps1")))
+                {
+                    syncRuleScriptFile.WriteLine(Documenter.GetEmbeddedScriptResource("PowerShellScriptHeader.ps1"));
+
+                    if (!string.IsNullOrWhiteSpace(syncRuleScript))
+                    {
+                        syncRuleScriptFile.WriteLine(syncRuleScript);
+                        syncRuleScriptFile.WriteLine(Documenter.GetEmbeddedScriptResource("PowerShellScriptFooter.ps1"));
+                    }
+                    else
+                    {
+                        syncRuleScriptFile.WriteLine(Documenter.GetEmbeddedScriptResource("PowerShellScriptFooterNoChanges.ps1"));
+                    }
+                }
             }
             finally
             {
@@ -1756,8 +1788,8 @@ namespace AzureADConnectConfigDocumenter
                     throw new ArgumentNullException("rows");
                 }
 
-                int currentTableIndex = 0;
-                int currentCellIndex = 0;
+                var currentTableIndex = 0;
+                var currentCellIndex = 0;
                 this.WriteRows(rows.Cast<DataRow>().ToArray(), currentTableIndex, ref currentCellIndex);
             }
             finally
@@ -1803,7 +1835,7 @@ namespace AzureADConnectConfigDocumenter
                     {
                         // Start the new row
                         this.ReportWriter.WriteBeginTag("tr");
-                        if (row[Documenter.HtmlTableRowVisibilityStatusColumn] as string == Documenter.CanHide)
+                        if ((row[Documenter.HtmlTableRowVisibilityStatusColumn] as string) == Documenter.CanHide)
                         {
                             this.ReportWriter.WriteAttribute("class", cellClass + " " + Documenter.CanHide);
                         }
@@ -2352,7 +2384,7 @@ namespace AzureADConnectConfigDocumenter
 
                 for (var i = 0; i < columnCount; ++i)
                 {
-                    printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", i }, { "Hidden", false }, { "SortOrder", (i == keyIndex) ? 0 : -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                    printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", i }, { "Hidden", false }, { "SortOrder", (i == keyIndex) ? 0 : -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
                 }
 
                 printTable.AcceptChanges();
@@ -2493,7 +2525,7 @@ namespace AzureADConnectConfigDocumenter
 
                 for (var i = 0; i < columnCount; ++i)
                 {
-                    printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", i }, { "Hidden", i == 0 }, { "SortOrder", (i == 0) ? 0 : -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                    printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", i }, { "Hidden", i == 0 }, { "SortOrder", (i == 0) ? 0 : -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
                 }
 
                 printTable.AcceptChanges();

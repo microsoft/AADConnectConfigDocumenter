@@ -41,6 +41,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 this.ReportFileName = Documenter.GetTempFilePath(this.ConnectorName + ".tmp.html");
                 this.ReportToCFileName = Documenter.GetTempFilePath(this.ConnectorName + ".TOC.tmp.html");
+                this.SyncRuleChangesScriptFileName = Documenter.GetTempFilePath(this.ConnectorName + ".tmp.ps1");
             }
             finally
             {
@@ -54,7 +55,7 @@ namespace AzureADConnectConfigDocumenter
         /// <returns>
         /// The Tuple of configuration report and associated TOC
         /// </returns>
-        public override Tuple<string, string> GetReport()
+        public override Tuple<string, string, string> GetReport()
         {
             Logger.Instance.WriteMethodEntry();
 
@@ -120,6 +121,16 @@ namespace AzureADConnectConfigDocumenter
                 this.CreateSimpleOrderedSettingsDiffgram();
 
                 this.PrintActiveDirectoryConnectionOption();
+
+                // Connector Parameters
+                this.CreateSimpleSettingsDataSets(2);  // 1 = Name, 2 = Value
+
+                this.FillActiveDirectoryConnectorParametersDataSet(true);
+                this.FillActiveDirectoryConnectorParametersDataSet(false);
+
+                this.CreateSimpleSettingsDiffgram();
+
+                this.PrintActiveDirectoryConnectorParameters();
             }
             finally
             {
@@ -278,6 +289,74 @@ namespace AzureADConnectConfigDocumenter
 
         #endregion AD Connection Option
 
+        #region AD Connector Parameters
+
+        /// <summary>
+        /// Fills the active directory connector parameters data set.
+        /// </summary>
+        /// <param name="pilotConfig">if set to <c>true</c>, the pilot configuration is loaded. Otherwise, the production configuration is loaded.</param>
+        protected void FillActiveDirectoryConnectorParametersDataSet(bool pilotConfig)
+        {
+            Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
+
+            try
+            {
+                var config = pilotConfig ? this.PilotXml : this.ProductionXml;
+                var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
+
+                var connector = config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[name ='" + this.ConnectorName + "']");
+
+                if (connector != null)
+                {
+                    var table = dataSet.Tables[0];
+
+                    var parameters = connector.XPathSelectElements("private-configuration/adma-configuration/parameter-values/parameter");
+
+                    // Sort by name
+                    parameters = from parameter in parameters
+                                 let name = (string)parameter.Attribute("name")
+                                 let use = (string)parameter.Attribute("use")
+                                 where string.Equals(use, "global", StringComparison.OrdinalIgnoreCase)
+                                 orderby name
+                                 select parameter;
+
+                    for (var parameterIndex = 0; parameterIndex < parameters.Count(); ++parameterIndex)
+                    {
+                        var parameter = parameters.ElementAt(parameterIndex);
+                        Documenter.AddRow(table, new object[] { (string)parameter.Attribute("name"), (string)parameter });
+                    }
+
+                    table.AcceptChanges();
+                }
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit("Pilot Config: '{0}'", pilotConfig);
+            }
+        }
+
+        /// <summary>
+        /// Prints the active directory connector parameters.
+        /// </summary>
+        protected void PrintActiveDirectoryConnectorParameters()
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                var headerTable = Documenter.GetSimpleSettingsHeaderTable("Connector Parameters", new OrderedDictionary { { "Parameter Name", 50 }, { "Parameter Value", 50 } });
+
+                this.WriteTable(this.DiffgramDataSet.Tables[0], headerTable);
+            }
+            finally
+            {
+                this.ResetDiffgram(); // reset the diffgram variables
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        #endregion AD Connector Parameters
+
         #endregion AD Connection Information
 
         #region AD Partitions
@@ -364,6 +443,9 @@ namespace AzureADConnectConfigDocumenter
 
                 this.PrintActiveDirectoryConnectionOption();
 
+                // Connector parameters
+                this.ProcessConnectorParameters(partitionName);
+
                 // Container Credential Settings
                 this.CreateSimpleSettingsDataSets(2); // 1 = Setting, 2 = Configuration
 
@@ -448,20 +530,20 @@ namespace AzureADConnectConfigDocumenter
 
                 // Table 1
                 // Setting Display Order
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Setting
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Table 2
                 // Setting
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Configuration Order
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Configuration
-                printTable.Rows.Add((new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }).Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 printTable.AcceptChanges();
 

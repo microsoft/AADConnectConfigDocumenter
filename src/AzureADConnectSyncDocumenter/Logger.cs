@@ -120,12 +120,7 @@ namespace AzureADConnectConfigDocumenter
             }
 
             var contextItems = LoggerCallContextItems.GetContextItems();
-            if (contextItems == null || contextItems.Count == 0 || !contextItems.ContainsKey(key))
-            {
-                return null;
-            }
-
-            return LoggerCallContextItems.GetContextItemValue(contextItems[key]);
+            return contextItems == null || contextItems.Count == 0 || !contextItems.ContainsKey(key) ? null : LoggerCallContextItems.GetContextItemValue(contextItems[key]);
         }
 
         /// <summary>
@@ -447,7 +442,7 @@ namespace AzureADConnectConfigDocumenter
             var methodName = "UnknownMethodName";
             try
             {
-                var frames = (new StackTrace()).GetFrames();
+                var frames = new StackTrace().GetFrames();
                 var loggerTypeFullName = Convert.ToString(Logger.logInstance, CultureInfo.InvariantCulture);
                 for (var i = 1; frames != null && i < frames.Length; ++i)
                 {
@@ -534,39 +529,50 @@ namespace AzureADConnectConfigDocumenter
 
             message = logMessagePrefix + Logger.GetExtendedLogProperties() + message;
 
-            if (message.Length > LogMessageLength)
+            string messageToLog;
+            do
             {
-                message = message.Substring(0, LogMessageLength);
-            }
+                messageToLog = message;
+                if (messageToLog.Length > LogMessageLength)
+                {
+                    messageToLog = message.Substring(0, LogMessageLength);
+                    message = message.Substring(messageToLog.Length);
+                }
+                else
+                {
+                    message = string.Empty;
+                }
 
-            foreach (var traceSource in this.traceSources)
-            {
-                try
+                foreach (var traceSource in this.traceSources)
                 {
-                    if (args != null && args.Length > 0)
+                    try
                     {
-                        traceSource.TraceEvent(eventType, eventId, message, args);
+                        if (args != null && args.Length > 0)
+                        {
+                            traceSource.TraceEvent(eventType, eventId, messageToLog, args);
+                        }
+                        else
+                        {
+                            traceSource.TraceEvent(eventType, eventId, messageToLog);
+                        }
                     }
-                    else
+                    catch (FormatException e)
                     {
-                        traceSource.TraceEvent(eventType, eventId, message);
+                        Debug.WriteLine(e);
+                        traceSource.TraceEvent(eventType, eventId, messageToLog);
                     }
-                }
-                catch (FormatException e)
-                {
-                    Debug.WriteLine(e);
-                    traceSource.TraceEvent(eventType, eventId, message);
-                }
-                catch (Win32Exception e)
-                {
-                    Debug.WriteLine(e);
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e);
+                    catch (Win32Exception e)
+                    {
+                        Debug.WriteLine(e);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e);
+                    }
                 }
             }
-        }
+            while (message.Length > 0);
+         }
 
         /// <summary>
         /// Event Identifiers
