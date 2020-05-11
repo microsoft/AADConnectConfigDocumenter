@@ -1439,7 +1439,7 @@ namespace AzureADConnectConfigDocumenter
                 this.ReportWriter.WriteEndTag("body");
                 this.ReportWriter.WriteEndTag("html");
 
-                using (var syncRuleScriptFile = new StreamWriter(configReportFilePath.Replace(".html", ".ps1")))
+                using (var syncRuleScriptFile = new StreamWriter(configReportFilePath.Replace(".html", ".ps1.txt")))
                 {
                     syncRuleScriptFile.WriteLine(Documenter.GetEmbeddedScriptResource("PowerShellScriptHeader.ps1"));
 

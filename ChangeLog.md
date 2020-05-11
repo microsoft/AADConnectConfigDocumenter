@@ -2,6 +2,13 @@
 
 All notable changes to AADConnectConfigDocumenter project will be documented in this file. The "Unreleased" section at the top is for keeping track of important changes that might make it to upcoming releases.
 
+### Version [1.20.0511.0]
+
+#### Changed
+- Changed sync rule changes migration script extension from .ps1 to .ps1.txt
+
+------------
+
 ### Version [1.20.0413.0]
 
 #### Added
