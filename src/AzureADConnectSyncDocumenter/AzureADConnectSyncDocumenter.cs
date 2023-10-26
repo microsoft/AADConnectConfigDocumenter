@@ -380,7 +380,7 @@ namespace AzureADConnectConfigDocumenter
                     var configEnvironment = production.Any(productionConnector => (string)productionConnector.Element("name") == (string)connector.Element("name")) ? ConfigEnvironment.PilotAndProduction : ConfigEnvironment.PilotOnly;
                     if (configEnvironment == ConfigEnvironment.PilotOnly)
                     {
-                        Logger.Instance.WriteWarning("The connector '{0}' only exists in the first set of configuration files. If this is not expected, please edit the config files to match names of this connector in the two enviorments as instructed in the ReadMe wiki.", (string)connector.Element("name"));
+                        Logger.Instance.WriteWarning("The connector '{0}' only exists in the first set of configuration files. If this is not expected, please edit the config files to match names of this connector in the two environments as instructed in the ReadMe wiki.", (string)connector.Element("name"));
                     }
 
                     this.ProcessConnectorConfiguration(connector, configEnvironment);
@@ -390,7 +390,7 @@ namespace AzureADConnectConfigDocumenter
 
                 foreach (var connector in production)
                 {
-                    Logger.Instance.WriteWarning("The connector '{0}' only exists in the second set of configuration files and will be documented as a connector that is deleted from the configuration. If this is not intended, please edit the config files to match names of this connector in the two enviorments as instructed in the ReadMe wiki.", (string)connector.Element("name"));
+                    Logger.Instance.WriteWarning("The connector '{0}' only exists in the second set of configuration files and will be documented as a connector that is deleted from the configuration. If this is not intended, please edit the config files to match names of this connector in the two environments as instructed in the ReadMe wiki.", (string)connector.Element("name"));
 
                     this.ProcessConnectorConfiguration(connector, ConfigEnvironment.ProductionOnly);
                 }
