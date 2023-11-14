@@ -1252,10 +1252,10 @@ namespace AzureADConnectConfigDocumenter
         {
             Logger.Instance.WriteMethodEntry();
             //columns and order
-            //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundExpression, outboundFlowType, targetAttribute
+            //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundFlowType, outboundExpression, targetAttribute
             try
             {
-                var table = new DataTable("ImportSummary") { Locale = CultureInfo.InvariantCulture };
+                var table = new DataTable("customizedImportSummary") { Locale = CultureInfo.InvariantCulture };
                 var column1 = new DataColumn("inboundSyncRuleName");
                 var column2 = new DataColumn("inboundSyncRuleScopingConditionString");
                 var column3 = new DataColumn("inboundExpression");
@@ -1268,8 +1268,8 @@ namespace AzureADConnectConfigDocumenter
                 var column10 = new DataColumn("outboundSyncRuleName");
                 var column11 = new DataColumn("outboundSyncRuleScopingConditionString");
                 var column12 = new DataColumn("outboundObjectType");
-                var column13 = new DataColumn("outboundExpression");
-                var column14 = new DataColumn("outboundFlowType");
+                var column13 = new DataColumn("outboundFlowType");
+                var column14 = new DataColumn("outboundExpression");
                 var column15 = new DataColumn("targetAttribute");
 
                 table.Columns.Add(column1);
@@ -1315,7 +1315,7 @@ namespace AzureADConnectConfigDocumenter
             {
                 var printTable = Documenter.GetPrintTable();
                 //columns and order
-                //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundExpression,  outboundFlowType,targetAttribute
+                //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundFlowType, outboundExpression, targetAttribute
 
                 // Inbound Sync Rule Name
                 printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 5 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
@@ -1353,11 +1353,11 @@ namespace AzureADConnectConfigDocumenter
                 // Outbound Object Type
                 printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 11 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Outbound Expression
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 12 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
                 // Outbound Flow Type
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 13 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 12 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
+
+                // Outbound Expression
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 13 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 // Target Attribute
                 printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 14 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
@@ -1379,7 +1379,7 @@ namespace AzureADConnectConfigDocumenter
         protected void FillConnectorObjectImportAttributeFlowsSummary(bool pilotConfig)
         {
             //columns and order
-            //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundExpression, outboundFlowType, targetAttribute
+            //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundFlowType, outboundExpression, targetAttribute
             Logger.Instance.WriteMethodEntry("Pilot Config: '{0}'.", pilotConfig);
 
             try
@@ -1544,8 +1544,8 @@ namespace AzureADConnectConfigDocumenter
                                         }
                                     }
                                     //columns and order
-                                    //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundExpression, outboundFlowType, targetAttribute
-                                    Documenter.AddRow(table, new object[] { inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, "&#8594;", metaverseAttribute, metaverseObjectType, "&#8594;", outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingCondition, outboundObjectType, outboundExpression, outboundFlowType, targetAttribute });
+                                    //inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, inboundArrow, metaverseAttribute, metaverseObjectType, outboundArrow, outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingConditionString, outboundObjectType, outboundFlowType, outboundExpression, targetAttribute
+                                    Documenter.AddRow(table, new object[] { inboundSyncRuleName, inboundSyncRuleScopingConditionString, inboundExpression, inboundFlowType, "&#8594;", metaverseAttribute, metaverseObjectType, "&#8594;", outboundConnectorName, outboundSyncRuleName, outboundSyncRuleScopingCondition, outboundObjectType, outboundFlowType, outboundExpression, targetAttribute });
                                 }
                             }
                         }
