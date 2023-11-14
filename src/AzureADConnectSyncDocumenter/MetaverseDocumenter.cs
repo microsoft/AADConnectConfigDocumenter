@@ -198,76 +198,36 @@ namespace AzureADConnectConfigDocumenter
         private void CreateMetaverseObjectTypeDataSets()
         {
             Logger.Instance.WriteMethodEntry();
-
+            //columns and order
+            //Precedence, Connector, InboundSyncRule, inboundFlowType, Source, inboundSyncRuleScopingConditionString, Attribute, Type, Multivalued, Indexed
             try
             {
-                var table = new DataTable("MetaverseObjectType") { Locale = CultureInfo.InvariantCulture };
-
-                var column1 = new DataColumn("Attribute");
-                var column2 = new DataColumn("Type");
-                var column3 = new DataColumn("Multi-valued");
-                var column4 = new DataColumn("Indexed");
+                var table = new DataTable("customizedMetaverseObjectType") { Locale = CultureInfo.InvariantCulture };
+                var column1 = new DataColumn("Precedence", typeof(int));
+                var column2 = new DataColumn("Connector");
+                var column3= new DataColumn("InboundSyncRule");
+                var column4 = new DataColumn("inboundFlowType");
+                var column5 = new DataColumn("Source");
+                var column6 = new DataColumn("inboundSyncRuleScopingConditionString");
+                var column7 = new DataColumn("metaverseAttribute");
+                var column8 = new DataColumn("metaverseObjectType");
+                var column9 = new DataColumn("Multivalued");
+                var column10 = new DataColumn("Indexed");
 
                 table.Columns.Add(column1);
                 table.Columns.Add(column2);
                 table.Columns.Add(column3);
                 table.Columns.Add(column4);
-                table.PrimaryKey = new[] { column1 };
-
-                var table2 = new DataTable("MetaverseObjectTypePrecedence") { Locale = CultureInfo.InvariantCulture };
-
-                var column12 = new DataColumn("Attribute");
-                var column22 = new DataColumn("Precedence", typeof(int));
-                var column32 = new DataColumn("Connector");
-                var column42 = new DataColumn("Inbound Sync Rule");
-                var column52 = new DataColumn("Source");
-                var column62 = new DataColumn("ConnectorGuid");
-                var column72 = new DataColumn("SyncRuleGuid");
-
-                table2.Columns.Add(column12);
-                table2.Columns.Add(column22);
-                table2.Columns.Add(column32);
-                table2.Columns.Add(column42);
-                table2.Columns.Add(column52);
-                table2.Columns.Add(column62);
-                table2.Columns.Add(column72);
-                table2.PrimaryKey = new[] { column12, column32, column42 };
-
-                var table3 = new DataTable("SyncRuleScopingCondition") { Locale = CultureInfo.InvariantCulture };
-
-                var column13 = new DataColumn("Attribute");
-                var column23 = new DataColumn("Connector");
-                var column33 = new DataColumn("Inbound Sync Rule");
-                var column43 = new DataColumn("Group#");
-                var column53 = new DataColumn("Scope#");
-                var column63 = new DataColumn("CS Attribute");
-                var column73 = new DataColumn("Operator");
-                var column83 = new DataColumn("Value");
-                var column93 = new DataColumn("ConnectorGuid");
-                var column103 = new DataColumn("SyncRuleGuid");
-
-                table3.Columns.Add(column13);
-                table3.Columns.Add(column23);
-                table3.Columns.Add(column33);
-                table3.Columns.Add(column43);
-                table3.Columns.Add(column53);
-                table3.Columns.Add(column63);
-                table3.Columns.Add(column73);
-                table3.Columns.Add(column83);
-                table3.Columns.Add(column93);
-                table3.Columns.Add(column103);
-                table3.PrimaryKey = new[] { column13, column23, column33, column43, column53, column63, column73 };
+                table.Columns.Add(column5);
+                table.Columns.Add(column6);
+                table.Columns.Add(column7);
+                table.Columns.Add(column8);
+                table.Columns.Add(column9);
+                table.Columns.Add(column10);
+                table.PrimaryKey = new[] { column1, column2, column3, column4, column5, column6, column7, column8, column9, column10 };
 
                 this.PilotDataSet = new DataSet("MetaverseObjectType") { Locale = CultureInfo.InvariantCulture };
                 this.PilotDataSet.Tables.Add(table);
-                this.PilotDataSet.Tables.Add(table2);
-                this.PilotDataSet.Tables.Add(table3);
-
-                var dataRelation12 = new DataRelation("DataRelation12", new[] { column1 }, new[] { column12 }, false);
-                var dataRelation23 = new DataRelation("DataRelation23", new[] { column12, column32, column42 }, new[] { column13, column23, column33 }, false);
-
-                this.PilotDataSet.Relations.Add(dataRelation12);
-                this.PilotDataSet.Relations.Add(dataRelation23);
 
                 this.ProductionDataSet = this.PilotDataSet.Clone();
 
@@ -292,72 +252,39 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var printTable = Documenter.GetPrintTable();
+                //columns and order
+                //Precedence, Connector, InboundSyncRule, inboundFlowType, Source, inboundSyncRuleScopingConditionString, metaverseAttribute, metaverseObjectType, Multivalued, Indexed
 
                 // Table 1
-                // Attribute
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
+                // Precedence
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 0 }, { "Hidden", false }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Type
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
+                // Connector
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 5 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Multi-valued
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
+                // InboundSyncRule
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 6 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Indexed
+                // inboundFlowType
                 printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Table 2
-                // Attribute
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // Precedence
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 1 }, { "Hidden", false }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // Connector
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 2 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 5 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // Inbound Sync Rule
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 3 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", 6 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
                 // Source
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 4 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 4 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // ConnectorGuid
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 5 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
+                // inboundSyncRuleScopingConditionString
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 5 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // SyncRuleGuid
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 1 }, { "ColumnIndex", 6 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
+                // metaverseAttribute
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 6 }, { "Hidden", false }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Table 3
-                // Attribute
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 0 }, { "Hidden", true }, { "SortOrder", 0 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
+                // metaverseObjectType
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 7 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Connector
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 1 }, { "Hidden", true }, { "SortOrder", 1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
+                // Multi-valued
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 8 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
-                // Inbound Sync Rule
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 2 }, { "Hidden", true }, { "SortOrder", 2 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // Group#
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 3 }, { "Hidden", true }, { "SortOrder", 3 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // Scope#
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 4 }, { "Hidden", true }, { "SortOrder", 4 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // CS Attribute
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 5 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // Operator
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 6 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // Value
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 7 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
-
-                // ConnectorGuid
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 8 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
-
-                // SyncRuleGuid
-                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 2 }, { "ColumnIndex", 9 }, { "Hidden", true }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", true } }.Values.Cast<object>().ToArray());
+                // Indexed
+                printTable.Rows.Add(new OrderedDictionary { { "TableIndex", 0 }, { "ColumnIndex", 9 }, { "Hidden", false }, { "SortOrder", -1 }, { "BookmarkIndex", -1 }, { "JumpToBookmarkIndex", -1 }, { "ChangeIgnored", false } }.Values.Cast<object>().ToArray());
 
                 printTable.AcceptChanges();
 
@@ -383,8 +310,6 @@ namespace AzureADConnectConfigDocumenter
                 var dataSet = pilotConfig ? this.PilotDataSet : this.ProductionDataSet;
 
                 var table = dataSet.Tables[0];
-                var table2 = dataSet.Tables[1];
-                var table3 = dataSet.Tables[2];
 
                 var attributes = config.XPathSelectElements(Documenter.GetMetaverseXmlRootXPath(pilotConfig) + "/mv-data//dsml:class[dsml:name = '" + this.currentObjectType + "' ]/dsml:attribute", Documenter.NamespaceManager);
 
@@ -394,33 +319,33 @@ namespace AzureADConnectConfigDocumenter
                              orderby name
                              select attribute;
                 var attributeIndex = -1;
+
+                string metaverseObjectType = this.currentObjectType;
+
                 foreach (var attribute in attributes)
                 {
                     ++attributeIndex;
-                    var attributeName = ((string)attribute.Attribute("ref") ?? string.Empty).Trim('#');
+                    var metaverseAttribute = ((string)attribute.Attribute("ref") ?? string.Empty).Trim('#');
 
                     // Set Logger call context items
-                    Logger.SetContextItem(MetaverseDocumenter.LoggerContextItemMetaverseAttribute, attributeName);
+                    Logger.SetContextItem(MetaverseDocumenter.LoggerContextItemMetaverseAttribute, metaverseAttribute);
 
                     Logger.Instance.WriteInfo("Processing Attribute Information.");
 
-                    var attributeInfo = config.XPathSelectElement(Documenter.GetMetaverseXmlRootXPath(pilotConfig) + "/mv-data//dsml:attribute-type[dsml:name = '" + attributeName + "']", Documenter.NamespaceManager);
+                    var attributeInfo = config.XPathSelectElement(Documenter.GetMetaverseXmlRootXPath(pilotConfig) + "/mv-data//dsml:attribute-type[dsml:name = '" + metaverseAttribute + "']", Documenter.NamespaceManager);
 
                     var attributeSyntax = (string)attributeInfo.Element(Documenter.DsmlNamespace + "syntax");
 
                     var row = table.NewRow();
 
-                    row[0] = attributeName;
-                    row[1] = Documenter.GetAttributeType(attributeSyntax, (string)attributeInfo.Attribute(Documenter.MmsDsmlNamespace + "indexable"));
-                    row[2] = ((string)attributeInfo.Attribute("single-value") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase) ? "No" : "Yes";
-                    row[3] = ((string)attributeInfo.Attribute(Documenter.MmsDsmlNamespace + "indexed") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase) ? "Yes" : "No";
-
-                    Documenter.AddRow(table, row);
+                    string type = Documenter.GetAttributeType(attributeSyntax, (string)attributeInfo.Attribute(Documenter.MmsDsmlNamespace + "indexable"));
+                    string singleValue = ((string)attributeInfo.Attribute("single-value") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase) ? "No" : "Yes";
+                    string indexed = ((string)attributeInfo.Attribute(Documenter.MmsDsmlNamespace + "indexed") ?? string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase) ? "Yes" : "No";
 
                     Logger.Instance.WriteVerbose("Processed Attribute Information.");
 
                     // Fetch Sync Rules
-                    var syncRules = config.XPathSelectElements(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[targetObjectType = '" + this.currentObjectType + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and attribute-mappings/mapping/dest = '" + attributeName + "']");
+                    var syncRules = config.XPathSelectElements(Documenter.GetSynchronizationRuleXmlRootXPath(pilotConfig) + "/synchronizationRule[targetObjectType = '" + this.currentObjectType + "' and direction = 'Inbound' " + Documenter.SyncRuleDisabledCondition + " and attribute-mappings/mapping/dest = '" + metaverseAttribute + "']");
                     syncRules = from syncRule in syncRules
                                 let precedence = (int)syncRule.Element("precedence")
                                 orderby precedence
@@ -429,10 +354,9 @@ namespace AzureADConnectConfigDocumenter
                     var syncRuleIndex = -1;
                     foreach (var syncRule in syncRules)
                     {
+                        string inboundSyncRuleScopingConditionString = "";
                         ++syncRuleIndex;
-                        var row2 = table2.NewRow();
-                        row2[0] = attributeName;
-                        row2[1] = syncRuleIndex + 1; // Care only about the precedence relative rank here than actual value
+                        int rank = syncRuleIndex + 1; // Care only about the precedence relative rank here than actual value
                         var connector = ((string)syncRule.Element("connector") ?? string.Empty).ToUpperInvariant();
 
                         var connectorName = (string)config.XPathSelectElement(Documenter.GetConnectorXmlRootXPath(pilotConfig) + "/ma-data[translate(id, '" + Documenter.LowercaseLetters + "', '" + Documenter.UppercaseLetters + "') = '" + connector + "']/name");
@@ -442,61 +366,51 @@ namespace AzureADConnectConfigDocumenter
                             continue;
                         }
 
-                        var syncRuleName = (string)syncRule.Element("name");
-                        row2[2] = connectorName;
-                        row2[3] = syncRuleName;
+                        var inboundSyncRuleName = (string)syncRule.Element("name");
 
-                        Logger.Instance.WriteVerbose("Processing Sync Rule Info for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, syncRuleName);
+                        Logger.Instance.WriteVerbose("Processing Sync Rule Info for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, inboundSyncRuleName);
 
-                        var mappingExpression = syncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + attributeName + "']/expression");
-                        var mappingSourceAttribute = syncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + attributeName + "']/src/attr");
-                        var mappingSource = syncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + attributeName + "']/src");
+                        var mappingExpression = (string)syncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + metaverseAttribute + "']/expression");
+                        var mappingSourceAttribute = (string)syncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + metaverseAttribute + "']/src/attr");
+                        var mappingSource = (string)syncRule.XPathSelectElement("attribute-mappings/mapping[dest = '" + metaverseAttribute + "']/src");
+                        string inboundExpression = (string)mappingExpression ?? (string)mappingSourceAttribute ?? (string)mappingSource ?? "??";
+                        string inboundFlowType = !string.IsNullOrEmpty(mappingExpression) ? "Expression" : "Direct";
 
-                        row2[4] = (string)mappingExpression ?? (string)mappingSourceAttribute ?? (string)mappingSource ?? "??";
-                        row2[5] = connector;
-                        row2[6] = (string)syncRule.Element("id");
 
-                        Documenter.AddRow(table2, row2);
-
-                        Logger.Instance.WriteVerbose("Processed Sync Rule Info for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, syncRuleName);
+                        Logger.Instance.WriteVerbose("Processed Sync Rule Info for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, inboundSyncRuleName);
 
                         // Fetch Sync Rule Scoping Conditions
-                        var conditions = syncRule.XPathSelectElements("synchronizationCriteria/conditions");
+                        var inboundSyncRuleScopingConditions = syncRule.XPathSelectElements("./synchronizationCriteria/conditions");
+                        var inboundSyncRuleScopingConditionCount = inboundSyncRuleScopingConditions.Count();
                         var conditionIndex = -1;
-                        foreach (var condition in conditions)
+                        foreach (var condition in inboundSyncRuleScopingConditions)
                         {
                             ++conditionIndex;
-
-                            Logger.Instance.WriteVerbose("Processing Sync Rule Scope for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, syncRuleName);
+                            Logger.Instance.WriteVerbose("Processing Sync Rule Scope for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, inboundSyncRuleName);
 
                             var scopes = condition.Elements("scope");
-                            var scopeIndex = -1;
-                            foreach (var scope in scopes)
+                            // Putting all scopes into inboundSyncRuleScopingConditionString for single row in table
+                            //foreach (var scope in scopes)
+                            //{
+                            //    string csAttribute = (string)scope.Element("csAttribute");
+                            //    string csOperator = (string)scope.Element("csOperator");
+                            //    string csValue = (string)scope.Element("csValue");
+                            //}
+                            inboundSyncRuleScopingConditionString += scopes.Select(scope => string.Format(CultureInfo.InvariantCulture, "{0} {1} {2}", (string)scope.Element("csAttribute"), (string)scope.Element("csOperator"), (string)scope.Element("csValue"))).Aggregate((x, j) => x + "<br><b>AND</b><br>" + j);
+                            if (conditionIndex < inboundSyncRuleScopingConditionCount - 1)
                             {
-                                ++scopeIndex;
-                                var row3 = table3.NewRow();
-                                row3[0] = attributeName;
-                                row3[1] = connectorName;
-                                row3[2] = syncRuleName;
-                                row3[3] = conditionIndex;
-                                row3[4] = scopeIndex;
-                                row3[5] = (string)scope.Element("csAttribute");
-                                row3[6] = (string)scope.Element("csOperator");
-                                row3[7] = (string)scope.Element("csValue");
-                                row3[8] = connector;
-                                row3[9] = (string)syncRule.Element("id");
-
-                                Documenter.AddRow(table3, row3);
+                                inboundSyncRuleScopingConditionString += "<br><b>OR</b><br>";
                             }
 
-                            Logger.Instance.WriteVerbose("Processed Sync Rule Scope for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, syncRuleName);
+                            Logger.Instance.WriteVerbose("Processed Sync Rule Scope for Connector: '{0}'. Sync Rule: '{1}'.", connectorName, inboundSyncRuleName);
                         }
+                        //columns and order
+                        //Precedence, Connector, InboundSyncRule, inboundFlowType, Source, inboundSyncRuleScopingConditionString, metaverseAttribute, metaverseObjectType, Multivalued, Indexed
+                        Documenter.AddRow(table, new object[] { rank, connectorName, inboundSyncRuleName, inboundFlowType, inboundExpression, inboundSyncRuleScopingConditionString, metaverseAttribute, metaverseObjectType, singleValue, indexed });
                     }
                 }
 
                 table.AcceptChanges();
-                table2.AcceptChanges();
-                table3.AcceptChanges();
             }
             finally
             {
@@ -536,48 +450,52 @@ namespace AzureADConnectConfigDocumenter
             try
             {
                 var headerTable = Documenter.GetHeaderTable();
+                //columns and order
+                //Precedence, Connector, InboundSyncRule, inboundFlowType, Source, inboundSyncRuleScopingConditionString, metaverseAttribute, metaverseObjectType, Multivalued, Indexed
+
+                // Column widths need to match the column order left to right of the final table view.  Not specific to column name
+                // Updated column order
+                // Rank 4
+                // Connector 10
+                // Inbound Sync Rule 10
+                // inboundFlowType 7
+                // Source 20
+                // inboundSyncRuleScopingConditionString 18
+                // Attribute 10
+                // Type 4
+                // Multi-valued 4
+                // Indexed 4
 
                 // Header Row 1
-                // Attribute
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Attribute" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 13 } }.Values.Cast<object>().ToArray());
-
-                // Type
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Type" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 7 } }.Values.Cast<object>().ToArray());
-
-                // Multi-valued
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 2 }, { "ColumnName", "Multi-valued" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 4 } }.Values.Cast<object>().ToArray());
-
-                // Indexed
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 3 }, { "ColumnName", "Indexed" }, { "RowSpan", 3 }, { "ColSpan", 1 }, { "ColWidth", 4 } }.Values.Cast<object>().ToArray());
-
-                // Precedence
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 4 }, { "ColumnName", "Precedence" }, { "RowSpan", 1 }, { "ColSpan", 7 }, { "ColWidth", 0 } }.Values.Cast<object>().ToArray());
-
-                // Header Row 2
                 // Precedence Display - Rank or Manual or Equal
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 0 }, { "ColumnName", "Rank" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 4 } }.Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 0 }, { "ColumnName", "Rank" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 4 } }.Values.Cast<object>().ToArray());
 
                 // Connector
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 1 }, { "ColumnName", "Connector" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 15 } }.Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 1 }, { "ColumnName", "Connector" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
 
                 // Inbound Sync Rule
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 2 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 15 } }.Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 2 }, { "ColumnName", "Inbound Sync Rule" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
+
+                // inboundFlowType
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 3 }, { "ColumnName", "Inbound Flow Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 7 } }.Values.Cast<object>().ToArray());
 
                 // Source
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 3 }, { "ColumnName", "Source" }, { "RowSpan", 2 }, { "ColSpan", 1 }, { "ColWidth", 15 } }.Values.Cast<object>().ToArray());
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 4 }, { "ColumnName", "Source" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 23 } }.Values.Cast<object>().ToArray());
 
-                // Scoping Condition
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 1 }, { "ColumnIndex", 4 }, { "ColumnName", "Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 3 }, { "ColWidth", 0 } }.Values.Cast<object>().ToArray());
+                // Inbound Sync Rule Scoping Condition String
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 5 }, { "ColumnName", "Scoping Condition" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 21 } }.Values.Cast<object>().ToArray());
 
-                // Header Row 3
-                // CS Attribute
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 0 }, { "ColumnName", "CS Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 10 } }.Values.Cast<object>().ToArray());
+                // Attribute
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 6 }, { "ColumnName", "Metaverse Attribute" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 13 } }.Values.Cast<object>().ToArray());
 
-                // Operator
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 1 }, { "ColumnName", "Operator" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 8 } }.Values.Cast<object>().ToArray());
+                // Type
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 7 }, { "ColumnName", "Metaverse Object Type" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 4 } }.Values.Cast<object>().ToArray());
 
-                // Value
-                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 2 }, { "ColumnIndex", 2 }, { "ColumnName", "Value" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 5 } }.Values.Cast<object>().ToArray());
+                // Multivalued
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 8 }, { "ColumnName", "Multi-valued" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 4 } }.Values.Cast<object>().ToArray());
+
+                // Indexed
+                headerTable.Rows.Add(new OrderedDictionary { { "RowIndex", 0 }, { "ColumnIndex", 9 }, { "ColumnName", "Indexed" }, { "RowSpan", 1 }, { "ColSpan", 1 }, { "ColWidth", 4 } }.Values.Cast<object>().ToArray());
 
                 headerTable.AcceptChanges();
 
