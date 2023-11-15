@@ -1799,6 +1799,97 @@ namespace AzureADConnectConfigDocumenter
         }
 
         /// <summary>
+        /// Writes the rows for customized tables so that the following columns can span rows and not be duplicated - "metaverseAttribute", "metaverseObjectType", "Multivalued", "Indexed"
+        /// </summary>
+        /// <param name="rows">The rows.</param>
+        protected void WriteCustomizedRows(DataRow[] rows)
+        {
+            Logger.Instance.WriteMethodEntry();
+
+            try
+            {
+                if (rows == null)
+                {
+                    throw new ArgumentNullException("rows");
+                }
+                else if (rows.Length == 0)
+                {
+                    return;
+                }
+                var test = rows.GroupBy(row => row["metaverseAttribute"]);
+                var printTable = this.DiffgramDataSet.Tables["PrintSettings"];
+                var maxCellCount = printTable.Select("Hidden = false").Count();
+                foreach (var rowx in test)
+                {
+                    var rowCount = rowx.Count();
+                    int currentCellIndex = 0;
+                    bool writtenOnce = false;
+                    for (var i = 0; i < rowCount; ++i)
+                    {
+                        var row = rowx.ElementAt(i);
+                        var cellClass = (string)row[Documenter.RowStateColumn];
+
+                        if (currentCellIndex == 0)
+                        {
+                            // Start the new row
+                            this.ReportWriter.WriteBeginTag("tr");
+                            if ((row[Documenter.HtmlTableRowVisibilityStatusColumn] as string) == Documenter.CanHide)
+                            {
+                                this.ReportWriter.WriteAttribute("class", cellClass + " " + Documenter.CanHide);
+                            }
+                            else
+                            {
+                                this.ReportWriter.WriteAttribute("class", cellClass);
+                            }
+
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                        }
+
+                        currentCellIndex = printTable.Select("Hidden = false AND TableIndex < " + 0).Count();
+
+                        var rowSpan = 1;
+
+                        var printColumns = printTable.Select("Hidden = false AND TableIndex = " + 0).Select(rowX => rowX["ColumnIndex"]);
+                        var writeOnceColumns = new string[] { "metaverseAttribute", "metaverseObjectType", "Multivalued", "Indexed" };
+                        foreach (var column in row.Table.Columns.Cast<DataColumn>().Where(column => printColumns.Contains(column.Ordinal)))
+                        {
+                            if (writeOnceColumns.Contains(column.ColumnName))
+                            {
+                                if (!writtenOnce)
+                                {
+                                    this.WriteCell(row, column, rowCount, 0);
+                                }
+                            }
+                            else
+                            {
+                                this.WriteCell(row, column, rowSpan, 0);
+                            }
+                            ++currentCellIndex;
+                        }
+                        // complete the row if required
+                        for (; currentCellIndex < maxCellCount; ++currentCellIndex)
+                        {
+                            this.ReportWriter.WriteBeginTag("td");
+                            this.ReportWriter.WriteAttribute("class", cellClass);
+                            this.ReportWriter.WriteAttribute("rowspan", "1");
+                            this.ReportWriter.Write(HtmlTextWriter.TagRightChar);
+                            this.ReportWriter.Write("-");
+                            this.ReportWriter.WriteEndTag("td");
+                        }
+                        this.ReportWriter.WriteEndTag("tr");
+                        this.ReportWriter.WriteLine();
+                        currentCellIndex = 0;
+                        writtenOnce = true;
+                    }
+                }
+            }
+            finally
+            {
+                Logger.Instance.WriteMethodExit();
+            }
+        }
+
+        /// <summary>
         /// Writes the rows.
         /// </summary>
         /// <param name="rows">The rows.</param>
@@ -2169,7 +2260,14 @@ namespace AzureADConnectConfigDocumenter
 
             if (dataTable != null && dataTable.Rows.Count > 0)
             {
-                this.WriteRows(dataTable.Rows);
+                if (dataTable.TableName.StartsWith("customized"))
+                {
+                    this.WriteCustomizedRows(dataTable.Rows.Cast<DataRow>().ToArray());
+                }
+                else
+                {
+                    this.WriteRows(dataTable.Rows);
+                }
             }
 
             #endregion rows
